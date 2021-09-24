@@ -249,7 +249,7 @@ namespace CoreSystems.Support
             }
 
             LoadModifiers(session, ammo, out AmmoModsFound);
-            GetModifiableValues(ammo.AmmoDef, out BaseDamage, out Health, out GravityMultiplier, out MaxTrajectory, out EnergyBaseDmg, out EnergyAreaDmg, out EnergyDetDmg, out EnergyShieldDmg);
+            GetModifiableValues(ammo.AmmoDef, out BaseDamage, out Health, out GravityMultiplier, out MaxTrajectory, out EnergyBaseDmg, out EnergyAreaDmg, out EnergyDetDmg, out EnergyShieldDmg, out ShieldModifier);
 
             FixedFireAmmo = system.TurretMovement == WeaponSystem.TurretType.Fixed && ammo.AmmoDef.Trajectory.Guidance == None;
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
@@ -286,7 +286,6 @@ namespace CoreSystems.Support
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
-            ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier;
             ArmorCoreActive = session.ArmorCoreActive;
             
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
@@ -890,7 +889,7 @@ namespace CoreSystems.Support
             }
         }
 
-        private void GetModifiableValues(AmmoDef ammoDef, out float baseDamage, out float health, out float gravityMultiplier, out float maxTrajectory, out bool energyBaseDmg, out bool energyAreaDmg, out bool energyDetDmg, out bool energyShieldDmg)
+        private void GetModifiableValues(AmmoDef ammoDef, out float baseDamage, out float health, out float gravityMultiplier, out float maxTrajectory, out bool energyBaseDmg, out bool energyAreaDmg, out bool energyDetDmg, out bool energyShieldDmg, out double shieldModifier)
         {
             baseDamage = AmmoModsFound && modifierMap[BaseDmgStr].HasData() ? modifierMap[BaseDmgStr].GetAsFloat : ammoDef.BaseDamage;
             health = AmmoModsFound && modifierMap[HealthStr].HasData() ? modifierMap[HealthStr].GetAsFloat : ammoDef.Health;
@@ -901,6 +900,8 @@ namespace CoreSystems.Support
             energyAreaDmg = AmmoModsFound && modifierMap[EnergyAreaDmgStr].HasData() ? modifierMap[EnergyAreaDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.AreaEffect != DamageTypes.Damage.Kinetic;
             energyDetDmg = AmmoModsFound && modifierMap[EnergyDetDmgStr].HasData() ? modifierMap[EnergyDetDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Detonation != DamageTypes.Damage.Kinetic;
             energyShieldDmg = AmmoModsFound && modifierMap[EnergyShieldDmgStr].HasData() ? modifierMap[EnergyShieldDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Shield != DamageTypes.Damage.Kinetic;
+
+            shieldModifier = AmmoModsFound && modifierMap[ShieldModStr].HasData() ? modifierMap[ShieldModStr].GetAsDouble : ammoDef.DamageScales.Shields.Modifier;
         }
 
     }

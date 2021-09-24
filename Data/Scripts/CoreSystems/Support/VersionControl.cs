@@ -211,9 +211,9 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
                     },
                     Weapons = new[]
                     {
-                    new CoreSettings.ServerSettings.WeaponMod {PartName = "WeaponSubtypeId1", Variable = "MaxTargetDistance", Value = "1500"},
-                    new CoreSettings.ServerSettings.WeaponMod {PartName = "weaponSubtypeId2", Variable = "DeviateShotAngle", Value = "0.25"},
-                    new CoreSettings.ServerSettings.WeaponMod {PartName = "weaponSubtypeId2", Variable = "AimingTolerance", Value = "0.1"},
+                    new CoreSettings.ServerSettings.WeaponMod {PartName = "PartName1", Variable = "MaxTargetDistance", Value = "1500"},
+                    new CoreSettings.ServerSettings.WeaponMod {PartName = "PartName2", Variable = "DeviateShotAngle", Value = "0.25"},
+                    new CoreSettings.ServerSettings.WeaponMod {PartName = "PartName2", Variable = "AimingTolerance", Value = "0.1"},
                     },
                 };
             }

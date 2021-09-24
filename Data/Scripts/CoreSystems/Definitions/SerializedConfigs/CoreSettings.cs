@@ -102,9 +102,9 @@ namespace CoreSystems.Settings
                 },
                 Weapons = new[]
                 {
-                    new WeaponMod {PartName = "WeaponSubtypeId1", Variable = "MaxTargetDistance", Value = "1500"},
-                    new WeaponMod {PartName = "weaponSubtypeId2", Variable = "DeviateShotAngle", Value = "0.25"},
-                    new WeaponMod {PartName = "weaponSubtypeId2", Variable = "AimingTolerance", Value = "0.1"},
+                    new WeaponMod {PartName = "PartName1", Variable = "MaxTargetDistance", Value = "1500"},
+                    new WeaponMod {PartName = "PartName2", Variable = "DeviateShotAngle", Value = "0.25"},
+                    new WeaponMod {PartName = "PartName2", Variable = "AimingTolerance", Value = "0.1"},
                 },
             };
         }
