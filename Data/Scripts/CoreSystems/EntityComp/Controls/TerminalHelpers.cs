@@ -188,7 +188,7 @@ namespace CoreSystems.Control
         internal static bool HasTracking(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTracking;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && (comp.HasTracking || comp.TrackingWeapon.System.HasGuidedAmmo);
         }
 
         internal static bool CanBeArmed(IMyTerminalBlock block)
