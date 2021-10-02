@@ -79,7 +79,7 @@ namespace CoreSystems.Platform
                 DesiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             }
             else
-                DesiredPower = Comp.IdlePower;
+                DesiredPower = System.WConst.IdlePower;
         }
 
         internal void UpdateShotEnergy()

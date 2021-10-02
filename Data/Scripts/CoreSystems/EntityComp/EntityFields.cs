@@ -58,7 +58,7 @@ namespace CoreSystems.Support
         internal float HeatPerSecond;
         internal float HeatSinkRate;
         internal float SinkPower;
-        internal float IdlePower = 0.001f;
+        internal float IdlePower;
         internal float MaxIntegrity;
         internal float CurrentInventoryVolume;
         internal int PowerGroupId;
@@ -194,9 +194,10 @@ namespace CoreSystems.Support
             LazyUpdate = Type == CompType.Support || Type == CompType.Upgrade;
             InventoryEntity = TypeSpecific != CompTypeSpecific.Rifle ? CoreEntity : topEntity;
             CoreInventory = (MyInventory)InventoryEntity.GetInventoryBase();
-            SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
+            IdlePower = Platform.Structure.CombinedIdlePower;
+            SinkPower = IdlePower;
 
             Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Structure.PartHashes.Length];
             for (int i = 0; i < Monitors.Length; i++)
