@@ -790,7 +790,7 @@ namespace CoreSystems.Support
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid);
 
-            burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
+            burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && wDef.HardPoint.Loading.DelayAfterBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
 
             reloadable = !energyAmmo || mustCharge && (system.WConst.ReloadTime > 0 && !burstMode);
 
