@@ -251,11 +251,17 @@ namespace CoreSystems
         {
             var packet = data.Packet;
 
-            if (packet.PType == PacketType.ClientAiRemove && PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
-            else if ((packet.PType == PacketType.ClientAiAdd))
+            if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
             {
-                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
+                switch (packet.PType)
+                {
+                    case PacketType.ClientAiRemove:
+                        PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
+                        break;
+                    case PacketType.ClientAiAdd:
+                        PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
+                        break;
+                }
             }
             else return Error(data, Msg("SenderId not found"));
 
