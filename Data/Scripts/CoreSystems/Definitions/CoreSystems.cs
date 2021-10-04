@@ -36,6 +36,8 @@ namespace CoreSystems.Support
     {
         public readonly UpgradeDefinition Values;
 
+        public float IdlePower;
+
         public bool AnimationsInited;
 
         public UpgradeSystem(Session session, MyStringHash partNameIdHash, UpgradeDefinition values, string partName, int partIdHash, int partId)
@@ -50,6 +52,8 @@ namespace CoreSystems.Support
             PartName = partName;
             PartType = (HardwareDef.HardwareType)Values.HardPoint.HardWare.Type;
             StayCharged = values.HardPoint.Other.StayCharged;
+            IdlePower = values.HardPoint.HardWare.IdlePower > 0 ? values.HardPoint.HardWare.IdlePower : 0.001f;
+
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
         }
@@ -58,6 +62,8 @@ namespace CoreSystems.Support
     internal class SupportSystem : CoreSystem
     {
         public readonly SupportDefinition Values;
+
+        public float IdlePower;
 
         public bool AnimationsInited;
 
@@ -72,6 +78,7 @@ namespace CoreSystems.Support
             PartId = partId;
             PartName = partName;
             StayCharged = values.HardPoint.Other.StayCharged;
+            IdlePower = values.HardPoint.HardWare.IdlePower > 0 ? values.HardPoint.HardWare.IdlePower : 0.001f;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
@@ -244,6 +251,8 @@ namespace CoreSystems.Support
             if (PartAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay))
                 if (delay > DelayToFire)
                     DelayToFire = (int)delay;
+
+            ApproximatePeakPower = WConst.IdlePower;
 
             var ammoSelections = 0;
             for (int i = 0; i < AmmoTypes.Length; i++)
@@ -484,6 +493,7 @@ namespace CoreSystems.Support
         private const string CheckBoxStr = "CheckInflatedBox";
         private const string CheckAnyStr = "CheckForAnyWeapon";
         private const string MuzzleCheckStr = "MuzzleCheck";
+        private const string IdlePowerStr = "IdlePower";
 
         private readonly Dictionary<string, BaseProcessor> modifierMap = new Dictionary<string, BaseProcessor>()
         {
@@ -503,23 +513,25 @@ namespace CoreSystems.Support
             {CheckBoxStr, new BoolProcessor() },
             {CheckAnyStr, new BoolProcessor() },
             {MuzzleCheckStr, new BoolProcessor() },
+            {IdlePowerStr, new FloatProcessor() },
         };
 
-        public readonly double MaxTargetDistance;
-        public readonly double AimingToleranceRads;
+        internal readonly double MaxTargetDistance;
+        internal readonly double AimingToleranceRads;
 
-        public readonly float MinTargetDistance;
-        public readonly float DeviateShotAngleRads;
+        internal readonly float MinTargetDistance;
+        internal readonly float DeviateShotAngleRads;
+        internal readonly float IdlePower;
 
-        public readonly int ReloadTime;
-        public readonly int RateOfFire;
+        internal readonly int ReloadTime;
+        internal readonly int RateOfFire;
 
-        public bool WeaponModsFound;
+        internal bool WeaponModsFound;
 
         internal WeaponConstants(Session session, WeaponDefinition values)
         {
             LoadModifiers(session, values, out WeaponModsFound);
-            GetModifiableValues(values, out MaxTargetDistance, out MinTargetDistance, out RateOfFire, out ReloadTime, out DeviateShotAngleRads, out AimingToleranceRads);
+            GetModifiableValues(values, out MaxTargetDistance, out MinTargetDistance, out RateOfFire, out ReloadTime, out DeviateShotAngleRads, out AimingToleranceRads, out IdlePower);
         }
 
         private void LoadModifiers(Session session, WeaponDefinition weaponDef, out bool modsFound)
@@ -538,7 +550,7 @@ namespace CoreSystems.Support
             }
         }
 
-        private void GetModifiableValues(WeaponDefinition weaponDef, out double maxTargetDistance, out float minTargetDistance, out int rateOfFire, out int reloadTime, out float deviateShotAngleRads, out double aimingToleranceRads)
+        private void GetModifiableValues(WeaponDefinition weaponDef, out double maxTargetDistance, out float minTargetDistance, out int rateOfFire, out int reloadTime, out float deviateShotAngleRads, out double aimingToleranceRads, out float idlePower)
         {
             var givenMaxDist = WeaponModsFound && modifierMap[MaxTargetStr].HasData() ? modifierMap[MaxTargetStr].GetAsFloat : weaponDef.Targeting.MaxTargetDistance;
             maxTargetDistance = givenMaxDist > 0 ? givenMaxDist : double.MaxValue;
@@ -554,6 +566,9 @@ namespace CoreSystems.Support
 
             var givenAimingTolerance = WeaponModsFound && modifierMap[AimTolStr].HasData() ? modifierMap[AimTolStr].GetAsDouble : weaponDef.HardPoint.AimingTolerance;
             aimingToleranceRads = MathHelperD.ToRadians(givenAimingTolerance);
+
+            var givenIdlePower = WeaponModsFound && modifierMap[IdlePowerStr].HasData() ? modifierMap[IdlePowerStr].GetAsFloat : weaponDef.HardPoint.HardWare.IdlePower;
+            idlePower = givenIdlePower > 0 ? givenIdlePower : 0.001f;
         }
 
     }

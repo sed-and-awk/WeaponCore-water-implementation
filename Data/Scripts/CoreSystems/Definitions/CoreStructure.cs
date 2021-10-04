@@ -24,6 +24,7 @@ namespace CoreSystems.Support
         internal StructureTypes StructureType;
         internal EnittyTypes EntityType;
         internal float ApproximatePeakPowerCombined;
+        internal float CombinedIdlePower;
         internal int PowerPriority;
         internal enum EnittyTypes
         {
@@ -130,6 +131,7 @@ namespace CoreSystems.Support
                     HasTurret = true;
                 
                 ApproximatePeakPowerCombined += coreSystem.ApproximatePeakPower;
+                CombinedIdlePower += coreSystem.WConst.IdlePower;
 
                 PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;
@@ -188,6 +190,8 @@ namespace CoreSystems.Support
                 var partHash = (tDef.Key + partNameIdHash).GetHashCode();
                 HashToId.Add(partHash, partId);
                 var coreSystem = new UpgradeSystem(Session, partNameIdHash, upgradeDef, typeName, partHash, partId);
+
+                CombinedIdlePower += coreSystem.IdlePower;
 
                 PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;
@@ -253,6 +257,8 @@ namespace CoreSystems.Support
                 var partHash = (tDef.Key + partNameIdHash).GetHashCode();
                 HashToId.Add(partHash, partId);
                 var coreSystem = new SupportSystem(Session, partNameIdHash, supportDef, typeName, partHash, partId);
+
+                CombinedIdlePower += coreSystem.IdlePower;
 
                 PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;
