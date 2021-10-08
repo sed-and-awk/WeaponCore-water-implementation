@@ -477,9 +477,8 @@ namespace CoreSystems.Support
                 if (Drone && OffenseRating < 10)
                     OffenseRating = 10;
 
-                if (detectInfo.Armed && (targetAi != null || IsGrid && targetSphere.Radius > 25 || Target is IMyCharacter)) {
+                if (!myAi.PlanetSurfaceInRange && detectInfo.Armed && (targetAi != null || IsGrid && targetSphere.Radius > 25 || Target is IMyCharacter)) 
                     TargetLosCheck();
-                }
             }
 
             private void TargetLosCheck()

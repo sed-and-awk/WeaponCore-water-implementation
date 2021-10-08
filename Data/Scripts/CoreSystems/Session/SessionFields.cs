@@ -400,7 +400,7 @@ namespace CoreSystems
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
-            0, // Muzzled SteamId goes here
+            76561198339035377, // king_of_draconia
         };
         
         internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
