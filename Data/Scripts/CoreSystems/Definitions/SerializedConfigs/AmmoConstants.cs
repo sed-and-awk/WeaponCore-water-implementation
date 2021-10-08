@@ -808,7 +808,7 @@ namespace CoreSystems.Support
                 var reloadTime = system.WConst.ReloadTime > 0 ? system.WConst.ReloadTime : 1;
                 chargeSize = requiredPowerPerTick * reloadTime;
                 var chargeCeil = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
-                Log.Line($"{ammoPair.AmmoName} - shotEnergyCost {shotEnergyCost} - requiredPowerPerTick {requiredPowerPerTick} - chargeSize {chargeSize}");
+                
                 energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeCeil;
                 return;
             }
