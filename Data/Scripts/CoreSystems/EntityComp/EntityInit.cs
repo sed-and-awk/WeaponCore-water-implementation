@@ -13,7 +13,7 @@ namespace CoreSystems.Support
     {
         private void PowerInit()
         {
-            Cube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
+            Cube.ResourceSink.SetRequiredInputFuncByType(GId, () => IsWorking ? SinkPower : 0);
             Cube.ResourceSink.SetMaxRequiredInputByType(GId, 0);
 
             Cube.ResourceSink.Update();

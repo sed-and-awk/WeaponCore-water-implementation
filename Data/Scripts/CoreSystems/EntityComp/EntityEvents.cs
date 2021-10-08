@@ -219,13 +219,11 @@ namespace CoreSystems.Support
                         .Append($"\nHeat Dissipated: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
                         .Append($"\nCurrent Heat: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
 
-                if (HeatPerSecond > 0 && comp.HasEnergyWeapon)
-                    stringBuilder.Append("\n__________________________________");
-
                 if (comp.HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW");
-                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ApproximatePeakPowerCombined.ToString("0.00") + " MJ");
+                    stringBuilder.Append("\n__________________________________")
+                        .Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW")
+                        .Append("\nRequired Power: " + Platform.Structure.ActualPeakPowerCombined.ToString("0.00") + " MJ");
                 }
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
