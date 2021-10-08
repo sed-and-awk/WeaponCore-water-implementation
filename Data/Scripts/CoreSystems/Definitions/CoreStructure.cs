@@ -24,6 +24,7 @@ namespace CoreSystems.Support
         internal StructureTypes StructureType;
         internal EnittyTypes EntityType;
         internal float ApproximatePeakPowerCombined;
+        internal float ActualPeakPowerCombined;
         internal float CombinedIdlePower;
         internal int PowerPriority;
         internal enum EnittyTypes
@@ -136,6 +137,7 @@ namespace CoreSystems.Support
                 PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;
             }
+            ActualPeakPowerCombined = ApproximatePeakPowerCombined / 60;
 
             if (PrimaryPart == -1)
                 PrimaryPart = 0;

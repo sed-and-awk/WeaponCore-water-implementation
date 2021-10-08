@@ -393,8 +393,8 @@ namespace CoreSystems
                         Log.Line("StopShooting OnOffAnimations");
                     }
 
-                    if (w.InCharger)
-                        w.ExitCharger = true;
+                    //if (w.InCharger)
+                        //w.ExitCharger = true;
                 }
                 else {
 
