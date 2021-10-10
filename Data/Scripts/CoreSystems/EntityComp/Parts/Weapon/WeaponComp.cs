@@ -151,8 +151,8 @@ namespace CoreSystems.Platform
                     if (maxTrajectory2 < weaponMaxRange)
                         maxTrajectory2 = weaponMaxRange;
 
-                    if (weapon.ProtoWeaponAmmo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                        weapon.ProtoWeaponAmmo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                    if (weapon.ProtoWeaponAmmo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MaxAmmo)
+                        weapon.ProtoWeaponAmmo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MaxAmmo;
 
                     if (Session.IsServer && weapon.TrackTarget)
                         Session.AcqManager.Monitor(weapon.Acquire);
