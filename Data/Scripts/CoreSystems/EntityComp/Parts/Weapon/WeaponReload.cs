@@ -268,14 +268,14 @@ namespace CoreSystems.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
 
                 var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
-                MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= ProtoWeaponAmmo.CurrentMags ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : (int)ProtoWeaponAmmo.CurrentMags;
-                if (!isPhantom && Comp.CoreInventory.ItemsCanBeRemoved(MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
-                    Comp.CoreInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, MagsLoaded);
-                else if (!isPhantom && Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)) {
-                    Comp.CoreInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, MagsLoaded);
+                Reload.MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= ProtoWeaponAmmo.CurrentMags ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : (int)ProtoWeaponAmmo.CurrentMags;
+                if (!isPhantom && Comp.CoreInventory.ItemsCanBeRemoved(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
+                    Comp.CoreInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, Reload.MagsLoaded);
+                else if (!isPhantom && Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)) {
+                    Comp.CoreInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, Reload.MagsLoaded);
                 }
 
-                ProtoWeaponAmmo.CurrentMags = !isPhantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : ProtoWeaponAmmo.CurrentMags - MagsLoaded;
+                ProtoWeaponAmmo.CurrentMags = !isPhantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : ProtoWeaponAmmo.CurrentMags - Reload.MagsLoaded;
                 if (System.Session.IsServer && ProtoWeaponAmmo.CurrentMags == 0)
                     CheckInventorySystem = true;
             }
@@ -352,7 +352,9 @@ namespace CoreSystems.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, false);
 
                     //ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-                    ProtoWeaponAmmo.CurrentAmmo = MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                    ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                    Log.Line($"Reloaded - MagsLoaded: {Reload.MagsLoaded}");
+
                     if (System.Session.IsServer) {
 
                         ++Reload.EndId;
