@@ -103,6 +103,8 @@ namespace CoreSystems.Support
         public readonly int MagazineSize;
         public readonly int PatternIndexCnt;
         public readonly int AmmoIdxPos;
+        public readonly int MagsToLoad;
+        public readonly int MaxAmmo;
 
         public readonly bool HasEjectEffect;
         public readonly bool Pulse;
@@ -311,7 +313,11 @@ namespace CoreSystems.Support
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyCost, out EnergyMagSize, out ChargSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
+
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
+            MagsToLoad = wDef.HardPoint.Loading.MagsToLoad > 0 ? wDef.HardPoint.Loading.MagsToLoad : 1;
+            MaxAmmo = MagsToLoad * MagazineSize;
+
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps, out RealShotsPerMin);
             ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120;
             

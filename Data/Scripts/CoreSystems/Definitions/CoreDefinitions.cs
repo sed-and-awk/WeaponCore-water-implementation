@@ -433,6 +433,7 @@ namespace CoreSystems.Support
                 [ProtoMember(17)] internal bool DeterministicSpin;
                 [ProtoMember(18)] internal bool SpinFree;
                 [ProtoMember(19)] internal bool StayCharged;
+                [ProtoMember(20)] internal int MagsToLoad;
             }
 
 
