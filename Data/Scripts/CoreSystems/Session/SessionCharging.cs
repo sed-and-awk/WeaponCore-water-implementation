@@ -127,7 +127,7 @@ namespace CoreSystems
             var invalidStates = ai != comp.Ai || comp.Ai.MarkedForClose || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || comp.Platform.State != CorePlatform.PlatformState.Ready;
             
             if (complete || weaponFailure || invalidStates) {
-                var serverFullyLoaded = IsServer && w.ProtoWeaponAmmo.CurrentAmmo >= w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                var serverFullyLoaded = IsServer && w.ProtoWeaponAmmo.CurrentAmmo == w.Reload.MagsLoaded * w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 var clientReadyToLoad = IsClient && w.Reload.EndId > w.ClientEndId;
                 var fullyCharged = serverFullyLoaded || clientReadyToLoad;
 
