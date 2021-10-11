@@ -192,7 +192,7 @@ namespace CoreSystems
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
-        [ProtoMember(4)] public int MagsLoaded;
+        [ProtoMember(4)] public int MagsLoaded = 1;
 
         public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {

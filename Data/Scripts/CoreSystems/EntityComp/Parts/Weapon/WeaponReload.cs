@@ -353,7 +353,6 @@ namespace CoreSystems.Platform
 
                     //ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
                     ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-                    Log.Line($"Reloaded - MagsLoaded: {Reload.MagsLoaded}");
 
                     if (System.Session.IsServer) {
 
