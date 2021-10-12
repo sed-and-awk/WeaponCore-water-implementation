@@ -252,7 +252,7 @@ namespace CoreSystems.Platform
                 for (int i = 0; i < comp.Collection.Count; i++)
                 {
                     var w = comp.Collection[i];
-                    if (!change && (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
+                    //if (!change && (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                     comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
                 }
             }
@@ -659,13 +659,9 @@ namespace CoreSystems.Platform
 
                 if (numOfWeapons == loadedWeapons) {
 
-                    if (Session.IsClient) {
-                        foreach (var w in Collection)
-                            w.PartState.Action = TriggerActions.TriggerOnce;
-
+                    if (Session.IsClient)
                         Session.SendActionShootUpdate(this, TriggerActions.TriggerOnce);
 
-                    }
                     return true;
                 }
 
