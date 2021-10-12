@@ -48,7 +48,7 @@ namespace CoreSystems.Support
         private const string EnergyAreaDmgStr = "EnergyAreaEffectDamage";
         private const string EnergyDetDmgStr = "EnergyDetonationDamage";
         private const string EnergyShieldDmgStr = "EnergyShieldDamage";
-        private const string ClientPredAmmoStr = "ClientPredictedAmmo";
+        private const string ClientPredAmmoStr = "DisableClientPredictedAmmo";
 
         private readonly Dictionary<string, BaseProcessor> modifierMap = new Dictionary<string, BaseProcessor>()
         {
