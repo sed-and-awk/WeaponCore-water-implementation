@@ -48,6 +48,7 @@ namespace CoreSystems.Support
         private const string EnergyAreaDmgStr = "EnergyAreaEffectDamage";
         private const string EnergyDetDmgStr = "EnergyDetonationDamage";
         private const string EnergyShieldDmgStr = "EnergyShieldDamage";
+        private const string ClientPredAmmoStr = "ClientPredictedAmmo";
 
         private readonly Dictionary<string, BaseProcessor> modifierMap = new Dictionary<string, BaseProcessor>()
         {
@@ -66,6 +67,7 @@ namespace CoreSystems.Support
             {EnergyAreaDmgStr, new BoolProcessor() },
             {EnergyDetDmgStr, new BoolProcessor() },
             {EnergyShieldDmgStr, new BoolProcessor() },
+            {ClientPredAmmoStr, new BoolProcessor() },
         };
 
         public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
@@ -319,7 +321,9 @@ namespace CoreSystems.Support
             MaxAmmo = MagsToLoad * MagazineSize;
 
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps, out RealShotsPerMin);
-            ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120;
+
+            var clientPredictedAmmoDisabled = AmmoModsFound && modifierMap[ClientPredAmmoStr].HasData() ? modifierMap[ClientPredAmmoStr].GetAsBool : false;
+            ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120 && !clientPredictedAmmoDisabled;
             
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
