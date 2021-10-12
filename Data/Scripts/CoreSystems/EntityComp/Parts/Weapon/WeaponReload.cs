@@ -268,7 +268,7 @@ namespace CoreSystems.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
 
                 var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
-                Reload.MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= ProtoWeaponAmmo.CurrentMags ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : (int)ProtoWeaponAmmo.CurrentMags;
+                Reload.MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= ProtoWeaponAmmo.CurrentMags || Comp.Session.IsCreative ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : (int)ProtoWeaponAmmo.CurrentMags;
                 if (!isPhantom && Comp.CoreInventory.ItemsCanBeRemoved(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
                     Comp.CoreInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, Reload.MagsLoaded);
                 else if (!isPhantom && Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)) {
