@@ -717,9 +717,9 @@ namespace CoreSystems.Support
                 detonationRadius = ammoDef.AreaEffect.Detonation.DetonationRadius;
 
             ammoAreaEffect = ammoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled;
-            areaRadiusSmall = Session.ModRadius(areaEffectSize, false);
+            areaRadiusSmall = Session.ModRadius(areaEffectSize / 5, false);
             areaRadiusLarge = Session.ModRadius(areaEffectSize, true);
-            detonateRadiusSmall = Session.ModRadius(detonationRadius, false);
+            detonateRadiusSmall = Session.ModRadius(detonationRadius / 5, false);
             detonateRadiusLarge = Session.ModRadius(detonationRadius, true);
             eWar = areaEffect > (AreaEffectType)2;
             eWarEffect = areaEffect > (AreaEffectType)3;

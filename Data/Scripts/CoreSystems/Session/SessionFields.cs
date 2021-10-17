@@ -402,7 +402,7 @@ namespace CoreSystems
         {
             76561198339035377, // king_of_draconia
         };
-        
+
         internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
         {
             76561198025274552,

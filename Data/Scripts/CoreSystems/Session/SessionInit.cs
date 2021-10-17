@@ -225,7 +225,9 @@ namespace CoreSystems
                     {
                         var ae = ammo.AreaEffect;
                         var areaRadius = ae.Base.Radius > 0 ? ae.Base.Radius : ae.AreaEffectRadius;
+                        var smallAreaRadius = areaRadius / 5;
                         var detonateRadius = ae.Detonation.DetonationRadius;
+                        var smallDetonateRadius = detonateRadius / 5;
                         var fragments = ammo.Fragment.Fragments > 0 ? ammo.Fragment.Fragments : 1;
                         if (areaRadius > 0)
                         {
@@ -234,10 +236,10 @@ namespace CoreSystems
                             if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
                                 GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
 
-                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
-                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
-                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
-                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(smallAreaRadius, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(smallAreaRadius, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(smallAreaRadius / fragments, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(smallAreaRadius / fragments, false));
 
                         }
                         if (detonateRadius > 0)
@@ -247,10 +249,10 @@ namespace CoreSystems
                             if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
                                 GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
 
-                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
-                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
-                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
-                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(smallDetonateRadius, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(smallDetonateRadius, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(smallDetonateRadius / fragments, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(smallDetonateRadius / fragments, false));
                         }
                     }
                 }
