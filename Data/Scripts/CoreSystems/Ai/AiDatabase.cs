@@ -182,6 +182,7 @@ namespace CoreSystems.Support
         internal void NearByShield()
         {
             NearByFriendlyShields.Clear();
+            ShieldFortified = false;
             for (int i = 0; i < NearByShieldsTmp.Count; i++) {
 
                 var shield = NearByShieldsTmp[i];
@@ -190,6 +191,7 @@ namespace CoreSystems.Support
                 if (shieldGrid != null) {
 
                     if (shield.Id == TopEntity.EntityId || AiType == AiTypes.Grid && GridEntity.IsSameConstructAs(shieldGrid))  {
+                        ShieldFortified = Session.SApi.IsFortified(shield.ShieldEnt as IMyTerminalBlock);
                         MyShield = shield.ShieldEnt;
                     }
                     else {

@@ -191,7 +191,8 @@ namespace CoreSystems
                 if (info.AmmoDef.Mass <= 0) return;
 
                 var speed = info.AmmoDef.Const.DesiredProjectileSpeed > 0 ? info.AmmoDef.Const.DesiredProjectileSpeed : 1;
-                if (Session.IsServer) ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.AmmoDef.Mass * speed);
+                if (Session.IsServer && !shield.CubeGrid.IsStatic && !SApi.IsFortified(shield)) 
+                    ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.AmmoDef.Mass * speed);
             }
             else if (!_shieldNull)
             {

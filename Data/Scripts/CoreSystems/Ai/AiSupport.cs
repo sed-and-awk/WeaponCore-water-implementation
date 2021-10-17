@@ -423,7 +423,7 @@ namespace CoreSystems.Support
             AiInit = false;
             TouchingWater = false;
             BlockMonitoring = false;
-
+            ShieldFortified = false;
             Data.Clean();
 
             MyShield = null;

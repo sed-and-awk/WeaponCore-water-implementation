@@ -116,6 +116,7 @@ namespace CoreSystems.Support
         internal bool StaticGridInRange;
         internal bool FriendlyShieldNear;
         internal bool ShieldNear;
+        internal bool ShieldFortified;
         internal bool HasPower;
         internal bool HadPower;
         internal bool CheckProjectiles;
