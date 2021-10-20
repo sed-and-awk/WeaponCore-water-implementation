@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
+using VRage.Game.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using static CoreSystems.Support.PartAnimation;
@@ -506,7 +507,7 @@ namespace CoreSystems.Support
             {InvSizeStr, new NonZeroFloatProcessor() },
             {HeatPerStr, new IntProcessor() },
             {MaxHeatStr, new IntProcessor() },
-            {HeatSinkStr, new NonZeroIntProcessor() },
+            {HeatSinkStr, new FloatProcessor() },
             {HeatCDStr, new FloatProcessor() },
             {PartCapStr, new NonZeroIntProcessor() },
             {RestrictRadStr, new DoubleProcessor() },
@@ -522,7 +523,7 @@ namespace CoreSystems.Support
         internal readonly float MinTargetDistance;
         internal readonly float DeviateShotAngleRads;
         internal readonly float IdlePower;
-
+        internal readonly float HeatSinkRate;
         internal readonly int ReloadTime;
         internal readonly int RateOfFire;
 
@@ -531,7 +532,7 @@ namespace CoreSystems.Support
         internal WeaponConstants(Session session, WeaponDefinition values)
         {
             LoadModifiers(session, values, out WeaponModsFound);
-            GetModifiableValues(values, out MaxTargetDistance, out MinTargetDistance, out RateOfFire, out ReloadTime, out DeviateShotAngleRads, out AimingToleranceRads, out IdlePower);
+            GetModifiableValues(values, out MaxTargetDistance, out MinTargetDistance, out RateOfFire, out ReloadTime, out DeviateShotAngleRads, out AimingToleranceRads, out IdlePower, out HeatSinkRate);
         }
 
         private void LoadModifiers(Session session, WeaponDefinition weaponDef, out bool modsFound)
@@ -550,7 +551,7 @@ namespace CoreSystems.Support
             }
         }
 
-        private void GetModifiableValues(WeaponDefinition weaponDef, out double maxTargetDistance, out float minTargetDistance, out int rateOfFire, out int reloadTime, out float deviateShotAngleRads, out double aimingToleranceRads, out float idlePower)
+        private void GetModifiableValues(WeaponDefinition weaponDef, out double maxTargetDistance, out float minTargetDistance, out int rateOfFire, out int reloadTime, out float deviateShotAngleRads, out double aimingToleranceRads, out float idlePower, out float heatSinkRate)
         {
             var givenMaxDist = WeaponModsFound && modifierMap[MaxTargetStr].HasData() ? modifierMap[MaxTargetStr].GetAsFloat : weaponDef.Targeting.MaxTargetDistance;
             maxTargetDistance = givenMaxDist > 0 ? givenMaxDist : double.MaxValue;
@@ -569,7 +570,8 @@ namespace CoreSystems.Support
 
             var givenIdlePower = WeaponModsFound && modifierMap[IdlePowerStr].HasData() ? modifierMap[IdlePowerStr].GetAsFloat : weaponDef.HardPoint.HardWare.IdlePower;
             idlePower = givenIdlePower > 0 ? givenIdlePower : 0.001f;
-        }
 
+            heatSinkRate = WeaponModsFound && modifierMap[HeatSinkStr].HasData() ? modifierMap[HeatSinkStr].GetAsFloat : weaponDef.HardPoint.Loading.HeatSinkRate;
+        }
     }
 }

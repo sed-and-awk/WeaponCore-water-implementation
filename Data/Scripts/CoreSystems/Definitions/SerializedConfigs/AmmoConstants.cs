@@ -49,8 +49,9 @@ namespace CoreSystems.Support
         private const string EnergyDetDmgStr = "EnergyDetonationDamage";
         private const string EnergyShieldDmgStr = "EnergyShieldDamage";
         private const string ClientPredAmmoStr = "DisableClientPredictedAmmo";
+        private const string FallOffDistanceStr = "FallOffDistance";
 
-        private readonly Dictionary<string, BaseProcessor> modifierMap = new Dictionary<string, BaseProcessor>()
+        private readonly Dictionary<string, BaseProcessor> _modifierMap = new Dictionary<string, BaseProcessor>()
         {
             {BaseDmgStr, new NonZeroFloatProcessor() },
             {AreaDmgStr, new FloatProcessor() },
@@ -68,6 +69,7 @@ namespace CoreSystems.Support
             {EnergyDetDmgStr, new BoolProcessor() },
             {EnergyShieldDmgStr, new BoolProcessor() },
             {ClientPredAmmoStr, new BoolProcessor() },
+            {FallOffDistanceStr, new FloatProcessor() },
         };
 
         public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
@@ -107,7 +109,6 @@ namespace CoreSystems.Support
         public readonly int AmmoIdxPos;
         public readonly int MagsToLoad;
         public readonly int MaxAmmo;
-
         public readonly bool HasEjectEffect;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
@@ -174,6 +175,7 @@ namespace CoreSystems.Support
         public readonly bool EnergyDetDmg;
         public readonly bool EnergyShieldDmg;
 
+        public readonly float FallOffDistance;
         public readonly float EnergyCost;
         public readonly float ChargSize;
         public readonly float RealShotsPerMin;
@@ -290,6 +292,8 @@ namespace CoreSystems.Support
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
+            FallOffDistance = AmmoModsFound && _modifierMap[FallOffDistanceStr].HasData() ? _modifierMap[FallOffDistanceStr].GetAsFloat : ammo.AmmoDef.DamageScales.FallOff.Distance;
+
             ArmorCoreActive = session.ArmorCoreActive;
             
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
@@ -302,7 +306,7 @@ namespace CoreSystems.Support
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out DetonationRadius, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
             Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
 
-            var givenSpeed = AmmoModsFound && modifierMap[SpeedStr].HasData() ? modifierMap[SpeedStr].GetAsFloat : ammo.AmmoDef.Trajectory.DesiredSpeed;
+            var givenSpeed = AmmoModsFound && _modifierMap[SpeedStr].HasData() ? _modifierMap[SpeedStr].GetAsFloat : ammo.AmmoDef.Trajectory.DesiredSpeed;
             DesiredProjectileSpeed = !IsBeamWeapon ? givenSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND;
 
             ComputeShieldBypass(ammo, out ShieldDamageBypassMod);
@@ -322,7 +326,7 @@ namespace CoreSystems.Support
 
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps, out RealShotsPerMin);
 
-            var clientPredictedAmmoDisabled = AmmoModsFound && modifierMap[ClientPredAmmoStr].HasData() ? modifierMap[ClientPredAmmoStr].GetAsBool : false;
+            var clientPredictedAmmoDisabled = AmmoModsFound && _modifierMap[ClientPredAmmoStr].HasData() && _modifierMap[ClientPredAmmoStr].GetAsBool;
             ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120 && !clientPredictedAmmoDisabled;
             
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
@@ -577,7 +581,7 @@ namespace CoreSystems.Support
             {
 
 
-                var heatGenPerSec = (l.HeatPerShot * shotsPerSec) - l.HeatSinkRate; //heat - cooldown
+                var heatGenPerSec = (l.HeatPerShot * shotsPerSec) - system.WConst.HeatSinkRate; //heat - cooldown
 
 
 
@@ -585,7 +589,7 @@ namespace CoreSystems.Support
                 {
 
                     var safeToOverheat = (l.MaxHeat - (l.MaxHeat * l.Cooldown)) / heatGenPerSec;
-                    var cooldownTime = (l.MaxHeat - (l.MaxHeat * l.Cooldown)) / l.HeatSinkRate;
+                    var cooldownTime = (l.MaxHeat - (l.MaxHeat * l.Cooldown)) / system.WConst.HeatSinkRate;
 
                     var timeHeatCycle = (safeToOverheat + cooldownTime);
 
@@ -653,14 +657,14 @@ namespace CoreSystems.Support
                 return 0;
 
             float areaEffectDamage;
-            if (AmmoModsFound && modifierMap[AreaDmgStr].HasData())
-                areaEffectDamage = modifierMap[AreaDmgStr].GetAsFloat;
+            if (AmmoModsFound && _modifierMap[AreaDmgStr].HasData())
+                areaEffectDamage = _modifierMap[AreaDmgStr].GetAsFloat;
             else
                 areaEffectDamage = a.AreaEffect.Base.EffectStrength > 0 ? a.AreaEffect.Base.EffectStrength : a.AreaEffect.AreaEffectDamage;
 
             double areaEffectSize;
-            if (AmmoModsFound && modifierMap[AreaRadStr].HasData())
-                areaEffectSize = modifierMap[AreaRadStr].GetAsDouble;
+            if (AmmoModsFound && _modifierMap[AreaRadStr].HasData())
+                areaEffectSize = _modifierMap[AreaRadStr].GetAsDouble;
             else
                 areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
 
@@ -696,23 +700,23 @@ namespace CoreSystems.Support
         {
             areaEffect = ammoDef.AreaEffect.AreaEffect;
 
-            if (AmmoModsFound && modifierMap[AreaDmgStr].HasData())
-                areaEffectDamage = modifierMap[AreaDmgStr].GetAsFloat;
+            if (AmmoModsFound && _modifierMap[AreaDmgStr].HasData())
+                areaEffectDamage = _modifierMap[AreaDmgStr].GetAsFloat;
             else
                 areaEffectDamage = ammoDef.AreaEffect.Base.EffectStrength > 0 ? ammoDef.AreaEffect.Base.EffectStrength : ammoDef.AreaEffect.AreaEffectDamage;
 
-            if (AmmoModsFound && modifierMap[AreaRadStr].HasData())
-                areaEffectSize = modifierMap[AreaRadStr].GetAsDouble;
+            if (AmmoModsFound && _modifierMap[AreaRadStr].HasData())
+                areaEffectSize = _modifierMap[AreaRadStr].GetAsDouble;
             else
                 areaEffectSize = ammoDef.AreaEffect.Base.Radius > 0 ? ammoDef.AreaEffect.Base.Radius : ammoDef.AreaEffect.AreaEffectRadius;
 
-            if (AmmoModsFound && modifierMap[DetDmgStr].HasData())
-                detonationDamage = modifierMap[DetDmgStr].GetAsFloat;
+            if (AmmoModsFound && _modifierMap[DetDmgStr].HasData())
+                detonationDamage = _modifierMap[DetDmgStr].GetAsFloat;
             else
                 detonationDamage = ammoDef.AreaEffect.Detonation.DetonationDamage;
 
-            if (AmmoModsFound && modifierMap[DetRadStr].HasData())
-                detonationRadius = modifierMap[DetRadStr].GetAsFloat;
+            if (AmmoModsFound && _modifierMap[DetRadStr].HasData())
+                detonationRadius = _modifierMap[DetRadStr].GetAsFloat;
             else
                 detonationRadius = ammoDef.AreaEffect.Detonation.DetonationRadius;
 
@@ -809,7 +813,7 @@ namespace CoreSystems.Support
             if (mustCharge)
             {
                 var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
-                energyCost = AmmoModsFound && modifierMap[EnergyCostStr].HasData() ? modifierMap[EnergyCostStr].GetAsFloat : ammoPair.AmmoDef.EnergyCost;
+                energyCost = AmmoModsFound && _modifierMap[EnergyCostStr].HasData() ? _modifierMap[EnergyCostStr].GetAsFloat : ammoPair.AmmoDef.EnergyCost;
                 var shotEnergyCost = ewar ? energyCost * AreaEffectDamage : energyCost * BaseDamage;
                 var shotsPerTick = system.WConst.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_MINUTE;
                 var energyPerTick = shotEnergyCost * shotsPerTick;
@@ -892,7 +896,7 @@ namespace CoreSystems.Support
                 foreach (var mod in ammoMods)
                 {
                     BaseProcessor processor;
-                    if (modifierMap.TryGetValue(mod.Key, out processor))
+                    if (_modifierMap.TryGetValue(mod.Key, out processor))
                         processor.WriteData(mod.Value);
                 }
                 modsFound = true;
@@ -901,17 +905,17 @@ namespace CoreSystems.Support
 
         private void GetModifiableValues(AmmoDef ammoDef, out float baseDamage, out float health, out float gravityMultiplier, out float maxTrajectory, out bool energyBaseDmg, out bool energyAreaDmg, out bool energyDetDmg, out bool energyShieldDmg, out double shieldModifier)
         {
-            baseDamage = AmmoModsFound && modifierMap[BaseDmgStr].HasData() ? modifierMap[BaseDmgStr].GetAsFloat : ammoDef.BaseDamage;
-            health = AmmoModsFound && modifierMap[HealthStr].HasData() ? modifierMap[HealthStr].GetAsFloat : ammoDef.Health;
-            gravityMultiplier = AmmoModsFound && modifierMap[GravityStr].HasData() ? modifierMap[GravityStr].GetAsFloat : ammoDef.Trajectory.GravityMultiplier;
-            maxTrajectory = AmmoModsFound && modifierMap[MaxTrajStr].HasData() ? modifierMap[MaxTrajStr].GetAsFloat : ammoDef.Trajectory.MaxTrajectory;
+            baseDamage = AmmoModsFound && _modifierMap[BaseDmgStr].HasData() ? _modifierMap[BaseDmgStr].GetAsFloat : ammoDef.BaseDamage;
+            health = AmmoModsFound && _modifierMap[HealthStr].HasData() ? _modifierMap[HealthStr].GetAsFloat : ammoDef.Health;
+            gravityMultiplier = AmmoModsFound && _modifierMap[GravityStr].HasData() ? _modifierMap[GravityStr].GetAsFloat : ammoDef.Trajectory.GravityMultiplier;
+            maxTrajectory = AmmoModsFound && _modifierMap[MaxTrajStr].HasData() ? _modifierMap[MaxTrajStr].GetAsFloat : ammoDef.Trajectory.MaxTrajectory;
 
-            energyBaseDmg = AmmoModsFound && modifierMap[EnergyBaseDmgStr].HasData() ? modifierMap[EnergyBaseDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Base != DamageTypes.Damage.Kinetic;
-            energyAreaDmg = AmmoModsFound && modifierMap[EnergyAreaDmgStr].HasData() ? modifierMap[EnergyAreaDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.AreaEffect != DamageTypes.Damage.Kinetic;
-            energyDetDmg = AmmoModsFound && modifierMap[EnergyDetDmgStr].HasData() ? modifierMap[EnergyDetDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Detonation != DamageTypes.Damage.Kinetic;
-            energyShieldDmg = AmmoModsFound && modifierMap[EnergyShieldDmgStr].HasData() ? modifierMap[EnergyShieldDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Shield != DamageTypes.Damage.Kinetic;
+            energyBaseDmg = AmmoModsFound && _modifierMap[EnergyBaseDmgStr].HasData() ? _modifierMap[EnergyBaseDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Base != DamageTypes.Damage.Kinetic;
+            energyAreaDmg = AmmoModsFound && _modifierMap[EnergyAreaDmgStr].HasData() ? _modifierMap[EnergyAreaDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.AreaEffect != DamageTypes.Damage.Kinetic;
+            energyDetDmg = AmmoModsFound && _modifierMap[EnergyDetDmgStr].HasData() ? _modifierMap[EnergyDetDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Detonation != DamageTypes.Damage.Kinetic;
+            energyShieldDmg = AmmoModsFound && _modifierMap[EnergyShieldDmgStr].HasData() ? _modifierMap[EnergyShieldDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Shield != DamageTypes.Damage.Kinetic;
 
-            shieldModifier = AmmoModsFound && modifierMap[ShieldModStr].HasData() ? modifierMap[ShieldModStr].GetAsDouble : ammoDef.DamageScales.Shields.Modifier;
+            shieldModifier = AmmoModsFound && _modifierMap[ShieldModStr].HasData() ? _modifierMap[ShieldModStr].GetAsDouble : ammoDef.DamageScales.Shields.Modifier;
         }
 
     }

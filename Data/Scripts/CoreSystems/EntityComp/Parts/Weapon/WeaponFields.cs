@@ -327,7 +327,7 @@ namespace CoreSystems.Platform
             AimOffset = System.Values.HardPoint.HardWare.Offset;
             FixedOffset = System.Values.HardPoint.HardWare.FixedOffset;
 
-            HsRate = System.Values.HardPoint.Loading.HeatSinkRate / 3;
+            HsRate = system.WConst.HeatSinkRate / 3;
             EnergyPriority = System.Values.HardPoint.Other.EnergyPriority;
             var toleranceInRadians = System.WConst.AimingToleranceRads;
             AimCone.ConeAngle = toleranceInRadians;
