@@ -137,7 +137,6 @@ namespace CoreSystems.Support
             _isBlockProtected = (Func<IMySlimBlock, bool>)delegates["IsBlockProtected"];
             _getFacesFast = (Func<MyEntity, MyTuple<bool, Vector3I>>)delegates["GetFacesFast"];
             _isFortified = (Func<IMyTerminalBlock, bool>)delegates["IsFortified"];
-
         }
 
         public Vector3D? RayAttackShield(IMyTerminalBlock block, RayD ray, long attackerId, float damage, bool energy, bool drawParticle) =>
