@@ -196,10 +196,10 @@ namespace CoreSystems.Support
                 Ai.IsStatic = Ai.TopEntity.Physics?.IsStatic ?? false;
                 Ai.Construct.Refresh(Ai, Constructs.RefreshCaller.Init);
 
-                if (IsBlock && !FunctionalBlock.Enabled)
+                if (IsBlock)
                 {
                     for (int i = 0; i < Platform.Weapons.Count; i++)
-                        Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
+                        Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, FunctionalBlock.Enabled, 1);
                 }
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

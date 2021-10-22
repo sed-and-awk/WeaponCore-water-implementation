@@ -296,6 +296,7 @@ namespace CoreSystems.Support
                     StopFiring,
                     StopTracking,
                     LockDelay,
+                    Init,
                 }
 
 

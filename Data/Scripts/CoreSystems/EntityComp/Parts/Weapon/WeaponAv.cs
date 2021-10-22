@@ -125,7 +125,9 @@ namespace CoreSystems.Platform
 
         internal void DelayedStart(object o)
         {
-            EventTriggerStateChanged(EventTriggers.TurnOff, true);
+            var enabled = o as bool? ?? false;
+            var state = enabled ? EventTriggers.Init : EventTriggers.TurnOff;
+            EventTriggerStateChanged(state, true);
         }
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
@@ -230,6 +232,7 @@ namespace CoreSystems.Platform
                         }
                     case EventTriggers.TurnOn:
                     case EventTriggers.TurnOff:
+                    case EventTriggers.Init:
                         if (active)
                         {
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
@@ -298,7 +301,7 @@ namespace CoreSystems.Platform
                     var animationLength = 0u;
 
                     LastEvent = state;
-                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.Tracking || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
+                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.Tracking || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Init;
 
                     if (System.PartAnimationLengths.TryGetValue(state, out animationLength))
                     {
