@@ -134,6 +134,7 @@ namespace CoreSystems.Platform
         internal uint LastLoadedTick;
         internal uint OffDelay;
         internal uint AnimationDelayTick;
+        internal uint TrackingDelayTick;
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
         internal uint StopBarrelAvTick;
