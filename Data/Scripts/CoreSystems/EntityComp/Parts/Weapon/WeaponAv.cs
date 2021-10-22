@@ -125,7 +125,9 @@ namespace CoreSystems.Platform
 
         internal void DelayedStart(object o)
         {
-            EventTriggerStateChanged(EventTriggers.TurnOff, true);
+            var enabled = o as bool? ?? false;
+            var state = enabled ? EventTriggers.Init : EventTriggers.TurnOff;
+            EventTriggerStateChanged(state, true);
         }
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
@@ -199,30 +201,28 @@ namespace CoreSystems.Platform
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
-                                if (active && !animation.Running)
+                                if (active)
                                 {
                                     if (animation.TriggerOnce && animation.Triggered) continue;
 
                                     set = true;
                                     animation.Triggered = true;
-                                    animation.Running = true;
                                     animation.CanPlay = canPlay;
 
+                                    startDelay = TrackingDelayTick > session.Tick ? (TrackingDelayTick - session.Tick) : 0;
+
+                                    if (!animation.Running)
+                                        animation.PlayTicks[0] = session.Tick + animation.MotionDelay + startDelay;
+                                    else
+                                        animation.PlayTicks.Add(session.Tick + animation.MotionDelay + startDelay);
+
                                     Comp.Session.AnimationsToProcess.Add(animation);
-                                    animation.StartTick = session.Tick + animation.MotionDelay;
-
-                                    if (LastEvent == EventTriggers.StopTracking || LastEvent == EventTriggers.Tracking)
-                                    {
-                                        startDelay = (AnimationDelayTick - session.Tick);
-                                        animation.StartTick += startDelay;
-                                    }
-
+                                    animation.Running = true;
+                                    
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
-                                else if (active && animation.DoesLoop)
-                                    animation.Looping = true;
-                                else if (!active)
+                                else
                                 {
                                     animation.Looping = false;
                                     animation.Triggered = false;
@@ -232,27 +232,27 @@ namespace CoreSystems.Platform
                         }
                     case EventTriggers.TurnOn:
                     case EventTriggers.TurnOff:
+                    case EventTriggers.Init:
                         if (active)
                         {
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
+
+                                animation.CanPlay = true;
+                                set = true;
+
+                                startDelay = AnimationDelayTick - session.Tick;
+                                if (state == EventTriggers.TurnOff)
+                                    startDelay += OffDelay;
+
                                 if (!animation.Running)
-                                {
-                                    animation.Running = true;
-                                    animation.CanPlay = true;
-
-                                    animation.StartTick = session.Tick + animation.MotionDelay + (AnimationDelayTick - session.Tick);
-                                    if (state == EventTriggers.TurnOff)
-                                    {
-                                        startDelay = OffDelay;
-                                        animation.StartTick += startDelay;
-                                    }
-
-                                    session.ThreadedAnimations.Enqueue(animation);
-                                }
+                                    animation.PlayTicks[0] = session.Tick + animation.MotionDelay + startDelay;
                                 else
-                                    animation.Reverse = false;
+                                    animation.PlayTicks.Add(session.Tick + animation.MotionDelay + startDelay);
+
+                                animation.Running = true;
+                                session.ThreadedAnimations.Enqueue(animation);
                             }
                         }
                         break;
@@ -275,7 +275,7 @@ namespace CoreSystems.Platform
                                     set = true;
 
                                     animation.StartTick = session.Tick + animation.MotionDelay;
-                                    
+
                                     session.ThreadedAnimations.Enqueue(animation);
 
                                     animation.Running = true;
@@ -301,13 +301,15 @@ namespace CoreSystems.Platform
                     var animationLength = 0u;
 
                     LastEvent = state;
-                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
+                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.Tracking || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Init;
 
                     if (System.PartAnimationLengths.TryGetValue(state, out animationLength))
                     {
                         var delay = session.Tick + animationLength + startDelay;
                         if (delay > AnimationDelayTick)
                             AnimationDelayTick = delay;
+                        if ((state == EventTriggers.Tracking || state == EventTriggers.StopTracking) && delay > TrackingDelayTick)
+                            TrackingDelayTick = delay;
                     }
 
                 }

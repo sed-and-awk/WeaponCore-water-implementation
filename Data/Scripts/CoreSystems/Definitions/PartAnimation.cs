@@ -63,6 +63,7 @@ namespace CoreSystems.Support {
         internal bool CanPlay;
         //internal bool Paused;
         internal uint StartTick;
+        internal List<uint> PlayTicks;
 
         private int _currentMove;
         private EmissiveState LastEmissive;
@@ -98,6 +99,7 @@ namespace CoreSystems.Support {
             DoesLoop = loop;
             DoesReverse = reverse;
             TriggerOnce = triggerOnce;
+            PlayTicks = new List<uint>() { 0 };
             _currentMove = 0;
 
             if (part != null)
@@ -186,6 +188,7 @@ namespace CoreSystems.Support {
             DoesLoop = copyFromAnimation.DoesLoop;
             DoesReverse = copyFromAnimation.DoesReverse;
             TriggerOnce = copyFromAnimation.TriggerOnce;
+            PlayTicks = new List<uint>() { 0 };
             _currentMove = 0;
             MovesPivotPos = copyFromAnimation.MovesPivotPos;
             FinalPos = copyFromAnimation.FinalPos;

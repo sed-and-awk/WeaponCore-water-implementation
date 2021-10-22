@@ -883,7 +883,7 @@ namespace CoreSystems
 
                 if (animation?.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null)
                 {
-                    if (animation.StartTick > Tick) continue;
+                    if (animation.StartTick > Tick|| animation.PlayTicks[0] > Tick) continue;
 
                     if (animation.MovesPivotPos || animation.CanPlay)
                     {
@@ -985,7 +985,8 @@ namespace CoreSystems
                     if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {
                         AnimationsToProcess.RemoveAtFast(i);
-                        animation.Running = false;
+                        if (animation.PlayTicks.Count > 1) animation.PlayTicks.RemoveAt(0);
+                        else animation.Running = false;
 
                         if (!DedicatedServer && animation.ResetEmissives && animation.EmissiveParts != null)
                         {
