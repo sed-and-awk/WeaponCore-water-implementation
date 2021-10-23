@@ -181,7 +181,10 @@ namespace CoreSystems.Platform
                 return false;
             }
             ClientStartId = Reload.StartId;
-            ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
+            
+            if (!ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && !ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
+
             ProtoWeaponAmmo.CurrentAmmo = 0;
 
             if (!Comp.Session.IsCreative) {
@@ -371,7 +374,6 @@ namespace CoreSystems.Platform
                     }
 
                 }
-
                 Loading = false;
             }
         }

@@ -301,7 +301,7 @@ namespace CoreSystems.Platform
                     var animationLength = 0u;
 
                     LastEvent = state;
-                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.Tracking || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Init;
+                    //LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.Tracking || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Init;
 
                     if (System.PartAnimationLengths.TryGetValue(state, out animationLength))
                     {
