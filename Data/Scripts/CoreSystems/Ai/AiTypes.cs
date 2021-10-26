@@ -108,8 +108,9 @@ namespace CoreSystems.Support
 
                 part.ExitCharger = false;
                 part.InCharger = false;
-                part.Loading = false; // why is this here???
 
+                if (part.BaseComp.Type != CoreComponent.CompType.Weapon || ((Weapon)part).ReloadEndTick >= uint.MaxValue - 1)
+                    part.Loading = false;
 
                 if (!MyUtils.IsZero(GroupRequested0) && !MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))
                     State = 2;

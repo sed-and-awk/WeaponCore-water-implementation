@@ -322,40 +322,41 @@ namespace CoreSystems.Platform
             var earlyExit = input == 2;
             using (Comp.CoreEntity.Pin()) {
 
-                var weaponDestroyed = PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose;
+                if (PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose) {
+                    CancelReload();
+                    return;
+                }
 
-                if (!weaponDestroyed) {
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack && !earlyExit) {
 
-                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack && !earlyExit) {
-                        ProtoWeaponAmmo.CurrentCharge = MaxCharge;
-                        EstimatedCharge = MaxCharge;
+                    ProtoWeaponAmmo.CurrentCharge = MaxCharge;
+                    EstimatedCharge = MaxCharge;
 
-                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick < uint.MaxValue - 1)
-                            return;
-                    }
-                    else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue)
-                    {
-                        ReloadEndTick = uint.MaxValue - 1;
+                    if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick < uint.MaxValue - 1)
                         return;
-                    }
+                }
+                else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue)
+                {
+                    ReloadEndTick = uint.MaxValue - 1;
+                    return;
+                }
 
-                    ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
-                    if (System.Session.IsServer) {
+                if (System.Session.IsServer) {
 
-                        ++Reload.EndId;
-                        ClientEndId = Reload.EndId;
-                        if (System.Session.MpActive)
-                            System.Session.SendWeaponReload(this);
+                    ++Reload.EndId;
+                    ClientEndId = Reload.EndId;
+                    if (System.Session.MpActive)
+                        System.Session.SendWeaponReload(this);
 
-                        if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                            --ProtoWeaponAmmo.CurrentMags;
-                    }
-                    else {
-                        ClientReloading = false;
-                        ClientMakeUpShots = 0;
-                        ClientEndId = Reload.EndId;
-                    }
+                    if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                        --ProtoWeaponAmmo.CurrentMags;
+                }
+                else {
+                    ClientReloading = false;
+                    ClientMakeUpShots = 0;
+                    ClientEndId = Reload.EndId;
                 }
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
