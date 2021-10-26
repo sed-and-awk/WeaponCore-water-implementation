@@ -157,7 +157,7 @@ namespace CoreSystems
                             }
                         }
                         else if (p.Loading && p.ReloadEndTick == Tick)
-                            p.Reloaded();
+                            p.Reloaded(1);
 
                         var reloading = p.ActiveAmmoDef.AmmoDef.Const.Reloadable && p.ClientMakeUpShots == 0 && (p.Loading || p.ProtoWeaponAmmo.CurrentAmmo == 0);
                         var canShoot = !p.PartState.Overheated && !reloading && !p.System.DesignatorWeapon && (!p.LastEventCanDelay || p.AnimationDelayTick <= Tick || p.ClientMakeUpShots > 0);
@@ -278,7 +278,7 @@ namespace CoreSystems
                             }
                         }
                         else if (w.Loading && w.ReloadEndTick == Tick)
-                            w.Reloaded();
+                            w.Reloaded(1);
 
 
                         ///

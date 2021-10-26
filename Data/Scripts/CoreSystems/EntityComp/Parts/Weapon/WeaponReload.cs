@@ -329,12 +329,15 @@ namespace CoreSystems.Platform
                     if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack && !earlyExit) {
                         ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                         EstimatedCharge = MaxCharge;
-                        
-                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick != uint.MaxValue)
+
+                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick < uint.MaxValue - 1)
                             return;
                     }
-                    else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue) 
+                    else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue)
+                    {
+                        ReloadEndTick = uint.MaxValue - 1;
                         return;
+                    }
 
                     ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
