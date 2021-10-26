@@ -53,7 +53,6 @@ namespace CoreSystems.Platform
         internal readonly bool PrimaryWeaponGroup;
         internal readonly bool AiOnlyWeapon;
 
-        internal Action<object> CancelableReloadAction = o => {};
 
         private int _nextVirtual;
         private uint _ticksUntilShoot;
@@ -64,7 +63,6 @@ namespace CoreSystems.Platform
         internal bool PreFired;
         internal bool FinishBurst;
         internal bool LockOnFireState;
-        internal bool ReloadSubscribed;
         internal bool ScheduleAmmoChange;
         internal bool CriticalReaction;
         internal uint LastMagSeenTick;
@@ -76,10 +74,8 @@ namespace CoreSystems.Platform
         internal uint ElevationTick;
         internal uint AzimuthTick;
         internal uint FastTargetResetTick;
-        internal uint FutureEventTickIndex;
         internal float HeatPerc;
 
-        internal int FutureEventListIndex;
         internal int BarrelRate;
         internal int ShotsFired;
         internal int LastMuzzle;
@@ -126,6 +122,7 @@ namespace CoreSystems.Platform
         internal float Dps;
         internal float ShotEnergyCost;
         internal float LastHeat;
+        internal uint ReloadEndTick = uint.MaxValue;
         internal uint CeaseFireDelayTick = uint.MaxValue / 2;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
@@ -138,7 +135,6 @@ namespace CoreSystems.Platform
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
         internal uint StopBarrelAvTick;
-        internal uint ReloadEndTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int RateOfFire;

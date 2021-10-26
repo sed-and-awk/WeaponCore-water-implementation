@@ -296,19 +296,14 @@ namespace CoreSystems.Platform
                 ChargeReload();
             
             if (!ActiveAmmoDef.AmmoDef.Const.MustCharge || ActiveAmmoDef.AmmoDef.Const.IsHybrid) {
+
                 var timeSinceShot = LastShootTick > 0 ? System.Session.Tick - LastShootTick : 0;
                 var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var burstDelay = ShowBurstDelayAsReload && delayTime > 0 && ShotsFired == 0;
 
                 if (System.WConst.ReloadTime > 0 || burstDelay) {
-                    CancelableReloadAction += Reloaded;
-                    ReloadSubscribed = true;
-
                     var reloadTime = (uint)(burstDelay ? System.WConst.ReloadTime + delayTime : System.WConst.ReloadTime);
-
                     ReloadEndTick = Comp.Session.Tick + reloadTime;
-
-                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, 1, reloadTime, out FutureEventTickIndex, out FutureEventListIndex);
                 }
                 else Reloaded();
             }
@@ -327,34 +322,20 @@ namespace CoreSystems.Platform
             var earlyExit = input == 2;
             using (Comp.CoreEntity.Pin()) {
 
-                LastLoadedTick = Comp.Session.Tick;
+                var weaponDestroyed = PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose;
 
-                var invalidStates = PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose;
-
-                if (!invalidStates) {
+                if (!weaponDestroyed) {
 
                     if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack && !earlyExit) {
                         ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                         EstimatedCharge = MaxCharge;
                         
-                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadSubscribed)
+                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick != uint.MaxValue)
                             return;
                     }
-                    else if (ReloadSubscribed) {
-                        CancelableReloadAction -= Reloaded;
-                        ReloadSubscribed = false;
+                    else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue) 
+                        return;
 
-                        if (earlyExit)
-                            Comp.Session.FutureEvents.DeSchedule(FutureEventTickIndex, FutureEventListIndex);
-
-                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging)
-                            return;
-                    }
-
-
-                    EventTriggerStateChanged(EventTriggers.Reloading, false);
-
-                    //ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
                     ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     if (System.Session.IsServer) {
@@ -372,9 +353,12 @@ namespace CoreSystems.Platform
                         ClientMakeUpShots = 0;
                         ClientEndId = Reload.EndId;
                     }
-
                 }
+
+                EventTriggerStateChanged(EventTriggers.Reloading, false);
+                LastLoadedTick = Comp.Session.Tick;
                 Loading = false;
+                ReloadEndTick = uint.MaxValue;
             }
         }
 
@@ -384,6 +368,17 @@ namespace CoreSystems.Platform
             EstimatedCharge = 0;
 
             Comp.Ai.Charger.Add(this);
+        }
+
+        public void CancelReload()
+        {
+            if (ReloadEndTick == uint.MaxValue)
+                return;
+
+            EventTriggerStateChanged(EventTriggers.Reloading, false);
+            LastLoadedTick = Comp.Session.Tick;
+            Loading = false;
+            ReloadEndTick = uint.MaxValue;
         }
     }
 }

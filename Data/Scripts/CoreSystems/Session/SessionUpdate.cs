@@ -156,6 +156,8 @@ namespace CoreSystems
                                     p.ClientReload();
                             }
                         }
+                        else if (p.Loading && p.ReloadEndTick == Tick)
+                            p.Reloaded();
 
                         var reloading = p.ActiveAmmoDef.AmmoDef.Const.Reloadable && p.ClientMakeUpShots == 0 && (p.Loading || p.ProtoWeaponAmmo.CurrentAmmo == 0);
                         var canShoot = !p.PartState.Overheated && !reloading && !p.System.DesignatorWeapon && (!p.LastEventCanDelay || p.AnimationDelayTick <= Tick || p.ClientMakeUpShots > 0);
@@ -275,6 +277,8 @@ namespace CoreSystems
                                     w.ClientReload();
                             }
                         }
+                        else if (w.Loading && w.ReloadEndTick == Tick)
+                            w.Reloaded();
 
 
                         ///

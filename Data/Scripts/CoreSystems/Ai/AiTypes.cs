@@ -108,7 +108,7 @@ namespace CoreSystems.Support
 
                 part.ExitCharger = false;
                 part.InCharger = false;
-                part.Loading = false;
+                part.Loading = false; // why is this here???
 
 
                 if (!MyUtils.IsZero(GroupRequested0) && !MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))

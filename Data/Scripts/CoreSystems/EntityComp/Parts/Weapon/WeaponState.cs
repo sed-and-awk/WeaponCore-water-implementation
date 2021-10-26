@@ -159,7 +159,7 @@ namespace CoreSystems.Platform
                 Log.Line($"power off set ammo to 0");
             }
 
-            Loading = false;
+            CancelReload();
             FinishBurst = false;
 
             if (IsShooting)

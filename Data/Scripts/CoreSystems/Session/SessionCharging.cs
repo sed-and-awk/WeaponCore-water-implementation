@@ -138,7 +138,7 @@ namespace CoreSystems
                     w.StopPowerDraw(weaponFailure || invalidStates, ai);
                     return true;
                 }
-                w.Loading = true;
+                w.Loading = true; // is this needed???
             }
 
             if (Tick60) {
