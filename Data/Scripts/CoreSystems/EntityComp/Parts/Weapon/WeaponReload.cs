@@ -98,19 +98,21 @@ namespace CoreSystems.Platform
             {
                 ProposedAmmoId = newAmmoId;
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
-                var canReload = ProtoWeaponAmmo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var canReload = ProtoWeaponAmmo.CurrentAmmo == 0;
+                var removeAmmo = !canReload && !instantChange && !Loading;
+
+                var unloadMag = removeAmmo && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo >= ActiveAmmoDef.AmmoDef.Const.MagazineSize && Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom;
+                int magsToUnload = ProtoWeaponAmmo.CurrentAmmo / ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
 
-                var unloadMag = !canReload && !instantChange && !Loading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo >= ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-                int magsToUnload = ProtoWeaponAmmo.CurrentAmmo / ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
-                if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
+                if (removeAmmo)
                 {
                     ProtoWeaponAmmo.CurrentAmmo = 0;
                     canReload = true;
-                    if (Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom) 
-                        System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = magsToUnload, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
                 }
+
+                if (unloadMag)
+                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = magsToUnload, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
 
                 if (instantChange)
                     ChangeActiveAmmoServer();
