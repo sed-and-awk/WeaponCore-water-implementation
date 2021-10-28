@@ -180,6 +180,7 @@ namespace CoreSystems.Platform
                         NoMagsToLoad = true;
                     }
                 }
+                Loading = false;
                 return false;
             }
             ClientStartId = Reload.StartId;
@@ -196,7 +197,6 @@ namespace CoreSystems.Platform
                     NoMagsToLoad = false;
                 }
             }
-
 
             ClientReloading = true;
             Loading = true;

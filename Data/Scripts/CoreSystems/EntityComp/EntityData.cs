@@ -21,7 +21,6 @@ namespace CoreSystems
             if (BaseComp.CoreEntity.Storage == null) 
             {
                 BaseComp.CoreEntity.Storage = new MyModStorageComponent { [BaseComp.Session.CompDataGuid] = "" };
-                Log.Line($"init");
             }
         }
 
