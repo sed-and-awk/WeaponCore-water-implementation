@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CoreSystems.Platform;
 using CoreSystems.Projectiles;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using VRage;
 using VRageMath;
 using static CoreSystems.WeaponRandomGenerator;
@@ -206,55 +207,27 @@ namespace CoreSystems.Support
         {
             try
             {
-                if (CompBase.Count == 0) {
-                    Log.Line("no valid weapon in powerDist");
-                    return;
+                GridMap map;
+                bool powered = false;
+                if (Session.GridDistributors.TryGetValue(GridEntity, out map))
+                {
+                    PowerDistributor = map.FakeController?.GridResourceDistributor;
+                    if (PowerDistributor != null && PowerDistributor.SourcesEnabled != MyMultipleEnabledEnum.NoObjects && PowerDistributor.ResourceState != MyResourceStateEnum.NoPower)
+                    {
+                        GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId, GridEntity);
+                        GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId, GridEntity);
+                        powered = true;
+                    }
                 }
 
-                GridCurrentPower = 0;
-                GridMaxPower = 0;
-                var first = PowerBlock != null;
-                foreach (var comp in CompBase.Values)
+                if (!powered)
                 {
-                    if (!comp.IsBlock)
-                        continue;
+                    GridCurrentPower = 0;
+                    GridMaxPower = 0;
+                    GridAvailablePower = 0;
 
-                    var powerBlock = first ? PowerBlock : comp.Cube;
-
-                    if (powerBlock == null || first && PowerDirty) {
-                        first = false;
-                        continue;
-                    }
-
-                    first = false;
-                    using (powerBlock.Pin()) {
-                        using (powerBlock.CubeGrid.Pin()) {
-                            try {
-
-                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose) 
-                                    continue;
-
-                                if (PowerBlock != powerBlock || PowerDistributor?.SourcesEnabled == MyMultipleEnabledEnum.NoObjects) {
-                                    PowerBlock = powerBlock;
-                                    FakeShipController.SlimBlock = powerBlock.SlimBlock;
-                                    PowerDistributor = FakeShipController.GridResourceDistributor;
-                                    PowerDirty = false;
-                                }
-
-                                if (PowerDistributor == null) {
-                                    Log.Line("powerDist is null");
-                                    return;
-                                }
-
-                                GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId, GridEntity);
-                                GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId, GridEntity);
-                                break;
-                            }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch", null, true); }
-                        }
-
-                    }
-                    Log.Line("no valid power blocks");
+                    HadPower = HasPower;
+                    HasPower = false;
                     return;
                 }
 
