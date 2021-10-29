@@ -160,7 +160,7 @@ namespace CoreSystems.Platform
             }
 
             CancelReload();
-            FinishBurst = false;
+            //FinishBurst = false;
 
             if (IsShooting)
                 StopShooting();

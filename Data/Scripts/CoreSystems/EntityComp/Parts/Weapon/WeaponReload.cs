@@ -180,7 +180,10 @@ namespace CoreSystems.Platform
                         NoMagsToLoad = true;
                     }
                 }
-                Loading = false;
+                
+                if (Loading && ClientMakeUpShots < 1)
+                    Reloaded(ReloadEndTick < uint.MaxValue - 1 ? 1 : 0);
+
                 return false;
             }
             ClientStartId = Reload.StartId;
@@ -200,7 +203,7 @@ namespace CoreSystems.Platform
 
             ClientReloading = true;
             Loading = true;
-            FinishBurst = false;
+            //FinishBurst = false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
@@ -260,7 +263,7 @@ namespace CoreSystems.Platform
 
             var hasAmmo = HasAmmo();
 
-            FinishBurst = false;
+            //FinishBurst = false;
 
             if (!hasAmmo) 
                 return false;
