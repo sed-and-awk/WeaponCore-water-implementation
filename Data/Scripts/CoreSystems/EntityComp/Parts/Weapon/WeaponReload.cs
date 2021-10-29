@@ -181,8 +181,8 @@ namespace CoreSystems.Platform
                     }
                 }
                 
-                if (Loading && ClientMakeUpShots < 1)
-                    Reloaded(ReloadEndTick < uint.MaxValue - 1 ? 1 : 0);
+                if (Loading && ClientMakeUpShots < 1 && ReloadEndTick < uint.MaxValue - 1)
+                    Reloaded(1);
 
                 return false;
             }

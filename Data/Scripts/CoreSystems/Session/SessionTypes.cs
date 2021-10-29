@@ -474,6 +474,10 @@ namespace CoreSystems
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.LastEvent}"); }
                     },
+                    {"ReloadEndTick", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ReloadEndTick - w.BaseComp.Session.Tick}"); }
+                    },
                     {"CurrentlyDegrading", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.CurrentlyDegrading}"); }
@@ -482,7 +486,14 @@ namespace CoreSystems
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShootTick <= w.BaseComp.Session.Tick}"); }
                     },
-
+                    {"Charging", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Charging}"); }
+                    },
+                    {"LastLoadedTick", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.BaseComp.Session.Tick - w.LastLoadedTick}"); }
+                    },
                 };
 
                 return weaponFields;
