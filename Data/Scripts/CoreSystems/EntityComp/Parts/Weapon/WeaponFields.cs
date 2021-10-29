@@ -123,6 +123,7 @@ namespace CoreSystems.Platform
         internal float ShotEnergyCost;
         internal float LastHeat;
         internal uint ReloadEndTick = uint.MaxValue;
+        internal uint ShowReloadEndTick;
         internal uint CeaseFireDelayTick = uint.MaxValue / 2;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
@@ -190,7 +191,6 @@ namespace CoreSystems.Platform
         internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
         internal bool PauseShoot;
-        internal bool LastEventCanDelay;
         internal bool ShowBurstDelayAsReload;
         internal bool ParentIsSubpart;
         internal bool CheckInventorySystem = true;
@@ -199,7 +199,7 @@ namespace CoreSystems.Platform
             get
             {
                 var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
-                var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon && (!LastEventCanDelay || AnimationDelayTick <= System.Session.Tick || ClientMakeUpShots > 0);
+                var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot;
 
                 /*

@@ -255,8 +255,8 @@ namespace CoreSystems.Platform
 
         internal bool ServerReload()
         {
-            if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay) 
-                return false;
+            //if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay) 
+            //    return false;
 
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
@@ -307,8 +307,8 @@ namespace CoreSystems.Platform
                 var burstDelay = ShowBurstDelayAsReload && delayTime > 0 && ShotsFired == 0;
 
                 if (System.WConst.ReloadTime > 0 || burstDelay) {
-                    var reloadTime = (uint)(burstDelay ? System.WConst.ReloadTime + delayTime : System.WConst.ReloadTime);
-                    ReloadEndTick = Comp.Session.Tick + reloadTime;
+                    ShowReloadEndTick = (uint)(burstDelay ? System.WConst.ReloadTime + delayTime : System.WConst.ReloadTime);
+                    ReloadEndTick = (uint)(Comp.Session.Tick + System.WConst.ReloadTime);
                 }
                 else Reloaded();
             }

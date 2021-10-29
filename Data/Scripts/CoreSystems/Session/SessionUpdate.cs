@@ -160,7 +160,7 @@ namespace CoreSystems
                             p.Reloaded(1);
 
                         var reloading = p.ActiveAmmoDef.AmmoDef.Const.Reloadable && p.ClientMakeUpShots == 0 && (p.Loading || p.ProtoWeaponAmmo.CurrentAmmo == 0);
-                        var canShoot = !p.PartState.Overheated && !reloading && !p.System.DesignatorWeapon && (!p.LastEventCanDelay || p.AnimationDelayTick <= Tick || p.ClientMakeUpShots > 0);
+                        var canShoot = !p.PartState.Overheated && !reloading && !p.System.DesignatorWeapon;
                         var validShootStates = p.PartState.Action == TriggerOn || p.PartState.Action == TriggerOnce || p.AiShooting && p.PartState.Action == TriggerOff;
                         var delayedFire = p.System.DelayCeaseFire && !p.Target.IsAligned && Tick - p.CeaseFireDelayTick <= p.System.CeaseFireDelay;
                         var shoot = (validShootStates || p.FinishBurst || delayedFire);
@@ -284,7 +284,7 @@ namespace CoreSystems
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && (w.System.WConst.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
+                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && (w.System.WConst.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ShowReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
@@ -374,7 +374,7 @@ namespace CoreSystems
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
-                        var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
+                        var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon;
                         var paintedTarget = comp.PainterMode && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = paintedTarget || w.PartState.Action == TriggerOn || w.PartState.Action == TriggerOnce || w.AiShooting && w.PartState.Action == TriggerOff;
                         var manualShot = (compManualMode || w.PartState.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
