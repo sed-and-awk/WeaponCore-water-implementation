@@ -159,6 +159,7 @@ namespace CoreSystems.Platform
                 Log.Line($"power off set ammo to 0");
             }
 
+            Log.Line($"LostPowerIsThisEverUsed");
             CancelReload();
             //FinishBurst = false;
 

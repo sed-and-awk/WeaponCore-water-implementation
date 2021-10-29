@@ -129,9 +129,9 @@ namespace CoreSystems
             if (complete || weaponFailure || invalidStates) {
                 var serverFullyLoaded = IsServer && w.ProtoWeaponAmmo.CurrentAmmo == w.Reload.MagsLoaded * w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 var clientReadyToLoad = IsClient && w.Reload.EndId > w.ClientEndId;
-                var fullyCharged = serverFullyLoaded || clientReadyToLoad;
+                var fullyCharged = serverFullyLoaded || w.Reload.EndId >= w.ClientEndId;
 
-                if (complete && (!serverFullyLoaded || clientReadyToLoad) && w.Loading)
+                if (complete && (IsServer && !serverFullyLoaded || clientReadyToLoad) && w.Loading)
                     w.Reloaded(IsClient ? 2 : 0);
 
                 if (!complete || fullyCharged) {

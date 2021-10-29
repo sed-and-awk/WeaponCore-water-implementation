@@ -171,7 +171,7 @@ namespace CoreSystems.Platform
 
             if (!syncUp) {
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-                if (ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
+                if (ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon && !Loading) {
                     
                     if (!Comp.Session.IsCreative) {
 
@@ -202,7 +202,7 @@ namespace CoreSystems.Platform
             }
 
             ClientReloading = true;
-            Loading = true;
+            //Loading = true;
             //FinishBurst = false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
