@@ -192,7 +192,6 @@ namespace CoreSystems.Projectiles
                         Vector3D? voxelHit = null;
                         if (tick - p.Info.VoxelCache.HitRefreshed < 60)
                         {
-
                             var cacheDist = ray.Intersects(p.Info.VoxelCache.HitSphere);
                             if (cacheDist.HasValue && cacheDist.Value <= p.Beam.Length)
                             {
@@ -608,9 +607,16 @@ namespace CoreSystems.Projectiles
             if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, p.Info));
             else GetEntityCompareDist(p.Info.HitList[0], null, p.Info);
             var pulseTrigger = false;
+            
+            var clearVoxelCache = false;
+            var voxelFound = false;
+
             for (int i = p.Info.HitList.Count - 1; i >= 0; i--)
             {
                 var ent = p.Info.HitList[i];
+                if (ent.EventType == Voxel)
+                    voxelFound = true;
+
                 if (!ent.Hit)
                 {
 
@@ -637,6 +643,9 @@ namespace CoreSystems.Projectiles
             var finalCount = p.Info.HitList.Count;
             if (finalCount > 0)
             {
+                if (voxelFound && p.Info.HitList[0].EventType != Voxel && p.Info.AmmoDef.Const.IsBeamWeapon)
+                    p.Info.VoxelCache.HitRefreshed = 0;
+
                 var checkHit = (!p.Info.AmmoDef.Const.IsBeamWeapon || !p.Info.ShieldBypassed || finalCount > 1); ;
 
                 var blockingEnt = !p.Info.ShieldBypassed || finalCount == 1 ? 0 : 1;

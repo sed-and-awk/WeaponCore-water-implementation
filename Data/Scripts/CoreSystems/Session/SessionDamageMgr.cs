@@ -49,6 +49,7 @@ namespace CoreSystems
                     var hitEnt = info.HitList[i];
                     var hitMax = info.ObjectsHit >= maxObjects;
                     var outOfPew = info.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
+
                     if (outOfPew && p.State == Projectile.ProjectileState.Detonate && i != info.HitList.Count - 1)
                     {
                         outOfPew = false;
@@ -468,6 +469,7 @@ namespace CoreSystems
 
                             if (canDamage)
                             {
+                                Log.Line($"hit");
                                 block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                             }
                             else
