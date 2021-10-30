@@ -63,7 +63,7 @@ namespace CoreSystems.Support
             {SpeedStr, new FloatProcessor() },
             {EnergyCostStr, new FloatProcessor() },
             {GravityStr, new FloatProcessor() },
-            {ShieldModStr, new FloatProcessor() },
+            {ShieldModStr, new DoubleProcessor() },
             {EnergyBaseDmgStr, new BoolProcessor() },
             {EnergyAreaDmgStr, new BoolProcessor() },
             {EnergyDetDmgStr, new BoolProcessor() },
