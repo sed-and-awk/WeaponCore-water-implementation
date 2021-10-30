@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using CoreSystems.Support;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 
@@ -11,7 +12,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Toggle Click To Fire");
+            action.Name = new StringBuilder(Localization.GetText("ActionWC_Shoot_Click"));
             action.Action = CustomActions.TerminalActionShootClick;
             action.Writer = CustomActions.ClickShootWriter;
             action.Enabled = TerminalHelpers.WeaponIsReady;
@@ -24,7 +25,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("ShootOnce");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder("Shoot Once");
+            action.Name = new StringBuilder(Localization.GetText("ActionShootOnce"));
             action.Action = CustomActions.TerminalActionShootOnce;
             action.Writer = TerminalHelpers.EmptyStringBuilder;
             action.Enabled = TerminalHelpers.ShootOnceWeapon;
@@ -38,7 +39,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Shoot");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Shoot On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionShoot"));
             action.Action = CustomActions.TerminActionToggleShoot;
             action.Writer = CustomActions.ShootStateWriter;
             action.Enabled = TerminalHelpers.WeaponIsReady;
@@ -52,7 +53,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Shoot_Off");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action.Name = new StringBuilder("Shoot Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionShoot_Off"));
             action.Action = CustomActions.TerminalActionShootOff;
             action.Writer = CustomActions.ShootStateWriter;
             action.Enabled = TerminalHelpers.WeaponIsReady;
@@ -66,7 +67,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Shoot_On");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder("Shoot On");
+            action.Name = new StringBuilder(Localization.GetText("ActionShoot_On"));
             action.Action = CustomActions.TerminalActionShootOn;
             action.Writer = CustomActions.ShootStateWriter;
             action.Enabled = TerminalHelpers.WeaponIsReady;
@@ -80,7 +81,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("SubSystems");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Cycle SubSystems");
+            action.Name = new StringBuilder(Localization.GetText("ActionSubSystems"));
             action.Action = CustomActions.TerminActionCycleSubSystem;
             action.Writer = CustomActions.SubSystemWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -94,7 +95,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Next Camera Channel");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Next Channel");
+            action0.Name = new StringBuilder(Localization.GetText("ActionNextCameraChannel"));
             action0.Action = CustomActions.TerminalActionCameraIncrease;
             action0.Writer = CustomActions.CameraWriter;
             action0.Enabled = TerminalHelpers.Istrue;
@@ -105,7 +106,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"Previous Camera Channel");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Previous Channel");
+            action1.Name = new StringBuilder(Localization.GetText("ActionPreviousCameraChannel"));
             action1.Action = CustomActions.TerminalActionCameraDecrease;
             action1.Writer = CustomActions.CameraWriter;
             action1.Enabled = TerminalHelpers.Istrue;
@@ -119,7 +120,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("ControlModes");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Control Mode");
+            action.Name = new StringBuilder(Localization.GetText("ActionControlModes"));
             action.Action = CustomActions.TerminalActionControlMode;
             action.Writer = CustomActions.ControlStateWriter;
             action.Enabled = TerminalHelpers.TurretOrGuidedAmmo;
@@ -133,7 +134,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Neutrals");
             action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
-            action.Name = new StringBuilder("Neutrals On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionNeutrals"));
             action.Action = CustomActions.TerminalActionToggleNeutrals;
             action.Writer = CustomActions.NeutralWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -147,7 +148,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Projectiles");
             action.Icon = @"Textures\GUI\Icons\Actions\MissileToggle.dds";
-            action.Name = new StringBuilder("Projectiles On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionProjectiles"));
             action.Action = CustomActions.TerminalActionToggleProjectiles;
             action.Writer = CustomActions.ProjectilesWriter;
             action.Enabled = TerminalHelpers.TrackProjectiles;
@@ -161,7 +162,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Biologicals");
             action.Icon = @"Textures\GUI\Icons\Actions\CharacterToggle.dds";
-            action.Name = new StringBuilder("Biologicals On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionBiologicals"));
             action.Action = CustomActions.TerminalActionToggleBiologicals;
             action.Writer = CustomActions.BiologicalsWriter;
             action.Enabled = TerminalHelpers.TrackBiologicals;
@@ -175,7 +176,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Meteors");
             action.Icon = @"Textures\GUI\Icons\Actions\MeteorToggle.dds";
-            action.Name = new StringBuilder("Meteors On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionMeteors"));
             action.Action = CustomActions.TerminalActionToggleMeteors;
             action.Writer = CustomActions.MeteorsWriter;
             action.Enabled = TerminalHelpers.TrackMeteors;
@@ -189,7 +190,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Grids");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Grids On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionGrids"));
             action.Action = CustomActions.TerminalActionToggleGrids;
             action.Writer = CustomActions.GridsWriter;
             action.Enabled = TerminalHelpers.TrackGrids;
@@ -217,7 +218,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Friendly");
             action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
-            action.Name = new StringBuilder("Friendly On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionFriendly"));
             action.Action = CustomActions.TerminalActionToggleFriendly;
             action.Writer = CustomActions.FriendlyWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -231,7 +232,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("Unowned");
             action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
-            action.Name = new StringBuilder("Unowned On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionUnowned"));
             action.Action = CustomActions.TerminalActionToggleUnowned;
             action.Writer = CustomActions.UnownedWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -245,7 +246,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("FocusTargets");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("FocusTargets On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionFocusTargets"));
             action.Action = CustomActions.TerminalActionToggleFocusTargets;
             action.Writer = CustomActions.FocusTargetsWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -259,7 +260,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("FocusSubSystem");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("FocusSubSystem On/Off");
+            action.Name = new StringBuilder(Localization.GetText("ActionFocusSubSystem"));
             action.Action = CustomActions.TerminalActionToggleFocusSubSystem;
             action.Writer = CustomActions.FocusSubSystemWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -273,7 +274,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("MaxSize Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder("MaxSize Increase");
+            action0.Name = new StringBuilder(Localization.GetText("ActionMaxSizeIncrease"));
             action0.Action = CustomActions.TerminalActionMaxSizeIncrease;
             action0.Writer = CustomActions.MaxSizeWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
@@ -284,7 +285,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>("MaxSize Decrease");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder("MaxSize Decrease");
+            action1.Name = new StringBuilder(Localization.GetText("ActionMaxSizeDecrease"));
             action1.Action = CustomActions.TerminalActionMaxSizeDecrease;
             action1.Writer = CustomActions.MaxSizeWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
@@ -298,7 +299,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("MinSize Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder("MinSize Increase");
+            action0.Name = new StringBuilder(Localization.GetText("ActionMinSizeIncrease"));
             action0.Action = CustomActions.TerminalActionMinSizeIncrease;
             action0.Writer = CustomActions.MinSizeWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
@@ -309,7 +310,7 @@ namespace CoreSystems.Control
             
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>("MinSize Decrease");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder("MinSize Decrease");
+            action1.Name = new StringBuilder(Localization.GetText("ActionMinSizeDecrease"));
             action1.Action = CustomActions.TerminalActionMinSizeDecrease;
             action1.Writer = CustomActions.MinSizeWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
@@ -323,7 +324,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("TrackingMode");
             action.Icon = @"Textures\GUI\Icons\Actions\MovingObjectToggle.dds";
-            action.Name = new StringBuilder("Tracking Mode");
+            action.Name = new StringBuilder(Localization.GetText("ActionTrackingMode"));
             action.Action = CustomActions.TerminalActionMovementMode;
             action.Writer = CustomActions.MovementModeWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -337,7 +338,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("WC_CycleAmmo");
             action.Icon = session.ModPath() + @"\Textures\GUI\Icons\Actions\Cycle_Ammo.dds";
-            action.Name = new StringBuilder("Cycle Consumable");
+            action.Name = new StringBuilder(Localization.GetText("ActionWC_CycleAmmo"));
             action.Action = CustomActions.TerminalActionCycleAmmo;
             action.Writer = CustomActions.AmmoSelectionWriter;
             action.Enabled = TerminalHelpers.AmmoSelection;
@@ -350,7 +351,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_RepelMode");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Repel Mode");
+            action.Name = new StringBuilder(Localization.GetText("ActionWC_RepelMode"));
             action.Action = CustomActions.TerminalActionToggleRepelMode;
             action.Writer = CustomActions.RepelWriter;
             action.Enabled = TerminalHelpers.HasTracking;
@@ -364,7 +365,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_CameraChannel");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Next Camera Channel");
+            action0.Name = new StringBuilder(Localization.GetText("ActionWC_Increase_CameraChannel"));
             action0.Action = CustomActions.TerminalActionCameraChannelIncrease;
             action0.Writer = CustomActions.WeaponCameraChannelWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
@@ -375,7 +376,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_CameraChannel");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Previous Camera Channel");
+            action1.Name = new StringBuilder(Localization.GetText("ActionWC_Decrease_CameraChannel"));
             action1.Action = CustomActions.TerminalActionCameraChannelDecrease;
             action1.Writer = CustomActions.WeaponCameraChannelWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
@@ -389,7 +390,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_LeadGroup");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Next Lead Group");
+            action0.Name = new StringBuilder(Localization.GetText("ActionWC_Increase_LeadGroup"));
             action0.Action = CustomActions.TerminalActionLeadGroupIncrease;
             action0.Writer = CustomActions.LeadGroupWriter;
             action0.Enabled = TerminalHelpers.TargetLead;
@@ -400,7 +401,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_LeadGroup");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Previous Lead Group");
+            action1.Name = new StringBuilder(Localization.GetText("ActionWC_Decrease_LeadGroup"));
             action1.Action = CustomActions.TerminalActionLeadGroupDecrease;
             action1.Writer = CustomActions.LeadGroupWriter;
             action1.Enabled = TerminalHelpers.TargetLead;
@@ -414,7 +415,7 @@ namespace CoreSystems.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Mask");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"Select Mask Type");
+            action.Name = new StringBuilder(Localization.GetText("ActionMask"));
             action.Action = CustomActions.TerminActionCycleDecoy;
             action.Writer = CustomActions.DecoyWriter;
             action.Enabled = TerminalHelpers.Istrue;
@@ -428,7 +429,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action0.Name = new StringBuilder($"{name} Toggle On/Off");
+            action0.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle")}");
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
             action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action0.Enabled = enabler;
@@ -439,7 +440,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action1.Name = new StringBuilder($"{name} On");
+            action1.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle_On")}");
             action1.Action = b => tc.Setter(b, true);
             action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action1.Enabled = enabler;
@@ -450,7 +451,7 @@ namespace CoreSystems.Control
 
             var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action2.Name = new StringBuilder($"{name} Off");
+            action2.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle_Off")}");
             action2.Action = b => tc.Setter(b, true);
             action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action2.Enabled = enabler;
@@ -465,7 +466,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action0.Name = new StringBuilder($"{name} Toggle On/Off");
+            action0.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle")}");
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
             action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action0.Enabled = enabler;
@@ -476,7 +477,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action1.Name = new StringBuilder($"{name} On");
+            action1.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle_On")}");
             action1.Action = b => tc.Setter(b, true);
             action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action1.Enabled = enabler;
@@ -487,7 +488,7 @@ namespace CoreSystems.Control
 
             var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action2.Name = new StringBuilder($"{name} Off");
+            action2.Name = new StringBuilder($"{name} {Localization.GetText("ActionWC_Toggle_Off")}");
             action2.Action = b => tc.Setter(b, true);
             action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action2.Enabled = enabler;
@@ -502,7 +503,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Increase {name}");
+            action0.Name = new StringBuilder($"{Localization.GetText("ActionWC_Increase")} {name}");
             action0.Action = b => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
             action0.Writer = TerminalHelpers.EmptyStringBuilder;
             action0.Enabled = enabler;
@@ -513,7 +514,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Decrease");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Decrease {name}");
+            action1.Name = new StringBuilder($"{Localization.GetText("ActionWC_Decrease")} {name}");
             action1.Action = b => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action1.Writer = TerminalHelpers.EmptyStringBuilder;
             action1.Enabled = enabler;
