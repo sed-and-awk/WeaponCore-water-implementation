@@ -608,7 +608,6 @@ namespace CoreSystems.Projectiles
             else GetEntityCompareDist(p.Info.HitList[0], null, p.Info);
             var pulseTrigger = false;
             
-            var clearVoxelCache = false;
             var voxelFound = false;
 
             for (int i = p.Info.HitList.Count - 1; i >= 0; i--)
