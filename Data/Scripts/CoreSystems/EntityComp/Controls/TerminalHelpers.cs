@@ -15,59 +15,59 @@ namespace CoreSystems.Control
     {
         internal static void AddUiControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddWeaponOnOff<T>(session, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", BlockUi.GetGuidance, BlockUi.RequestSetGuidance, UiGuidance);
+            AddWeaponOnOff<T>(session, "Guidance", Localization.GetText("TerminalGuidanceTitle"), Localization.GetText("TerminalGuidanceTooltip"), Localization.GetText("TerminalSwitchOn"), Localization.GetText("TerminalSwitchOff"), BlockUi.GetGuidance, BlockUi.RequestSetGuidance, UiGuidance);
 
-            AddSliderDamage<T>(session, "Weapon Damage", "Change Damage Per Shot", "Change the damage per shot", BlockUi.GetDps, BlockUi.RequestSetDps, UiStrengthSlider);
+            AddSliderDamage<T>(session, "Weapon Damage", Localization.GetText("TerminalWeaponDamageTitle"), Localization.GetText("TerminalWeaponDamageTooltip"), BlockUi.GetDps, BlockUi.RequestSetDps, UiStrengthSlider);
 
-            AddSliderRof<T>(session, "Weapon ROF", "Change Rate of Fire", "Change rate of fire", BlockUi.GetRof, BlockUi.RequestSetRof, UiRofSlider);
+            AddSliderRof<T>(session, "Weapon ROF", Localization.GetText("TerminalWeaponROFTitle"), Localization.GetText("TerminalWeaponROFTooltip"), BlockUi.GetRof, BlockUi.RequestSetRof, UiRofSlider);
 
-            AddCheckbox<T>(session, "Overload", "Overload Damage", "Overload damage", BlockUi.GetOverload, BlockUi.RequestSetOverload, true, UiOverLoad);
+            AddCheckbox<T>(session, "Overload", Localization.GetText("TerminalOverloadTitle"), Localization.GetText("TerminalOverloadTooltip"), BlockUi.GetOverload, BlockUi.RequestSetOverload, true, UiOverLoad);
 
 
-            AddWeaponCrticalTimeSliderRange<T>(session, "Detonation", "Detonation time", "Detonation time", BlockUi.GetArmedTimer, BlockUi.RequestSetArmedTimer, NotCounting, CanBeArmed, BlockUi.GetMinCriticalTime, BlockUi.GetMaxCriticalTime, true);
-            AddButtonNoAction<T>(session, "StartCount", "Start Countdown", "Start Countdown", BlockUi.StartCountDown, NotCounting, CanBeArmed);
-            AddButtonNoAction<T>(session, "StopCount", "Stop Countdown", "Stop Countdown", BlockUi.StopCountDown, IsCounting, CanBeArmed);
-            AddCheckboxNoAction<T>(session, "Arm", "Arm Reaction", "Arm Reaction", BlockUi.GetArmed, BlockUi.RequestSetArmed, true, CanBeArmed);
-            AddButtonNoAction<T>(session, "Trigger", "Trigger", "Trigger", BlockUi.TriggerCriticalReaction, IsArmed, CanBeArmed);
+            AddWeaponCrticalTimeSliderRange<T>(session, "Detonation", Localization.GetText("TerminalDetonationTitle"), Localization.GetText("TerminalDetonationTooltip"), BlockUi.GetArmedTimer, BlockUi.RequestSetArmedTimer, NotCounting, CanBeArmed, BlockUi.GetMinCriticalTime, BlockUi.GetMaxCriticalTime, true);
+            AddButtonNoAction<T>(session, "StartCount", Localization.GetText("TerminalStartCountTitle"), Localization.GetText("TerminalStartCountTooltip"), BlockUi.StartCountDown, NotCounting, CanBeArmed);
+            AddButtonNoAction<T>(session, "StopCount", Localization.GetText("TerminalStopCountTitle"), Localization.GetText("TerminalStopCountTooltip"), BlockUi.StopCountDown, IsCounting, CanBeArmed);
+            AddCheckboxNoAction<T>(session, "Arm", Localization.GetText("TerminalArmTitle"), Localization.GetText("TerminalArmTooltip"), BlockUi.GetArmed, BlockUi.RequestSetArmed, true, CanBeArmed);
+            AddButtonNoAction<T>(session, "Trigger", Localization.GetText("TerminalTriggerTitle"), Localization.GetText("TerminalTriggerTooltip"), BlockUi.TriggerCriticalReaction, IsArmed, CanBeArmed);
         }
 
         internal static void AddTurretOrTrackingControls<T>(Session session) where T : IMyTerminalBlock
         {
             Separator<T>(session, "WC_sep2", HasTracking);
 
-            AddWeaponRangeSliderNoAction<T>(session, "Weapon Range", "Aiming Radius", "Change the min/max targeting range", BlockUi.GetRange, BlockUi.RequestSetRange, BlockUi.ShowRange, BlockUi.GetMinRange, BlockUi.GetMaxRange, true, false);
+            AddWeaponRangeSliderNoAction<T>(session, "Weapon Range", Localization.GetText("TerminalWeaponRangeTitle"), Localization.GetText("TerminalWeaponRangeTooltip"), BlockUi.GetRange, BlockUi.RequestSetRange, BlockUi.ShowRange, BlockUi.GetMinRange, BlockUi.GetMaxRange, true, false);
 
-            AddOnOffSwitchNoAction<T>(session, "Neutrals", "Target Neutrals", "Fire on targets that are neutral", BlockUi.GetNeutrals, BlockUi.RequestSetNeutrals, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, "Neutrals", Localization.GetText("TerminalNeutralsTitle"), Localization.GetText("TerminalNeutralsTooltip"), BlockUi.GetNeutrals, BlockUi.RequestSetNeutrals, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, "Unowned", "Target Unowned", "Fire on targets with no owner", BlockUi.GetUnowned, BlockUi.RequestSetUnowned, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, "Unowned", Localization.GetText("TerminalUnownedTitle"), Localization.GetText("TerminalUnownedTooltip"), BlockUi.GetUnowned, BlockUi.RequestSetUnowned, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, "Biologicals", "Target Biologicals", "Fire on players and biological NPCs", BlockUi.GetBiologicals, BlockUi.RequestSetBiologicals, true, TrackBiologicals);
+            AddOnOffSwitchNoAction<T>(session, "Biologicals", Localization.GetText("TerminalBiologicalsTitle"), Localization.GetText("TerminalBiologicalsTooltip"), BlockUi.GetBiologicals, BlockUi.RequestSetBiologicals, true, TrackBiologicals);
 
-            AddOnOffSwitchNoAction<T>(session,  "Projectiles", "Target Projectiles", "Fire on incoming projectiles", BlockUi.GetProjectiles, BlockUi.RequestSetProjectiles, true, TrackProjectiles);
+            AddOnOffSwitchNoAction<T>(session,  "Projectiles", Localization.GetText("TerminalProjectilesTitle"), Localization.GetText("TerminalProjectilesTooltip"), BlockUi.GetProjectiles, BlockUi.RequestSetProjectiles, true, TrackProjectiles);
 
-            AddOnOffSwitchNoAction<T>(session, "Meteors", "Target Meteors", "Target Meteors", BlockUi.GetMeteors, BlockUi.RequestSetMeteors, true, TrackMeteors);
+            AddOnOffSwitchNoAction<T>(session, "Meteors", Localization.GetText("TerminalMeteorsTitle"), Localization.GetText("TerminalMeteorsTooltip"), BlockUi.GetMeteors, BlockUi.RequestSetMeteors, true, TrackMeteors);
 
-            AddOnOffSwitchNoAction<T>(session,  "Grids", "Target Grids", "Target Grids", BlockUi.GetGrids, BlockUi.RequestSetGrids, true, TrackGrids);
+            AddOnOffSwitchNoAction<T>(session,  "Grids", Localization.GetText("TerminalGridsTitle"), Localization.GetText("TerminalGridsTooltip"), BlockUi.GetGrids, BlockUi.RequestSetGrids, true, TrackGrids);
 
-            AddOnOffSwitchNoAction<T>(session, "FocusFire", "Target FocusFire", "Focus all fire on the specified target", BlockUi.GetFocusFire, BlockUi.RequestSetFocusFire, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, "FocusFire", Localization.GetText("TerminalFocusFireTitle"), Localization.GetText("TerminalFocusFireTooltip"), BlockUi.GetFocusFire, BlockUi.RequestSetFocusFire, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, "SubSystems", "Target SubSystems", "Target specific SubSystems of a target", BlockUi.GetSubSystems, BlockUi.RequestSetSubSystems, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, "SubSystems", Localization.GetText("TerminalSubSystemsTitle"), Localization.GetText("TerminalSubSystemsTooltip"), BlockUi.GetSubSystems, BlockUi.RequestSetSubSystems, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, "Repel", "Repel Mode", "Aggressively focus and repel small threats", BlockUi.GetRepel, BlockUi.RequestSetRepel, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, "Repel", Localization.GetText("TerminalRepelTitle"), Localization.GetText("TerminalRepelTooltip"), BlockUi.GetRepel, BlockUi.RequestSetRepel, true, HasTracking);
 
             Separator<T>(session, "WC_sep3", HasTracking);
 
-            AddComboboxNoAction<T>(session, "PickAmmo", "Pick Ammo", "Select the ammo type to use", BlockUi.GetAmmos, BlockUi.RequestSetAmmo, BlockUi.ListAmmos, AmmoSelection);
+            AddComboboxNoAction<T>(session, "PickAmmo", Localization.GetText("TerminalPickAmmoTitle"), Localization.GetText("TerminalPickAmmoTooltip"), BlockUi.GetAmmos, BlockUi.RequestSetAmmo, BlockUi.ListAmmos, AmmoSelection);
 
-            AddComboboxNoAction<T>(session, "PickSubSystem", "Pick SubSystem", "Select the target subsystem to focus fire on", BlockUi.GetSubSystem, BlockUi.RequestSubSystem, BlockUi.ListSubSystems, HasTracking);
+            AddComboboxNoAction<T>(session, "PickSubSystem", Localization.GetText("TerminalPickSubSystemTitle"), Localization.GetText("TerminalPickSubSystemTooltip"), BlockUi.GetSubSystem, BlockUi.RequestSubSystem, BlockUi.ListSubSystems, HasTracking);
 
-            AddComboboxNoAction<T>(session, "TrackingMode", "Tracking Mode", "Movement fire control requirements", BlockUi.GetMovementMode, BlockUi.RequestMovementMode, BlockUi.ListMovementModes, HasTracking);
+            AddComboboxNoAction<T>(session, "TrackingMode", Localization.GetText("TerminalTrackingModeTitle"), Localization.GetText("TerminalTrackingModeTooltip"), BlockUi.GetMovementMode, BlockUi.RequestMovementMode, BlockUi.ListMovementModes, HasTracking);
 
-            AddComboboxNoAction<T>(session,  "ControlModes", "Control Mode", "Select the aim control mode for the weapon", BlockUi.GetControlMode, BlockUi.RequestControlMode, BlockUi.ListControlModes, TurretOrGuidedAmmo);
+            AddComboboxNoAction<T>(session,  "ControlModes", Localization.GetText("TerminalControlModesTitle"), Localization.GetText("TerminalControlModesTooltip"), BlockUi.GetControlMode, BlockUi.RequestControlMode, BlockUi.ListControlModes, TurretOrGuidedAmmo);
 
-            AddWeaponCameraSliderRange<T>(session, "Camera Channel", "Weapon Camera Channel", "Assign this weapon to a camera channel", BlockUi.GetWeaponCamera, BlockUi.RequestSetBlockCamera, HasTracking, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
+            AddWeaponCameraSliderRange<T>(session, "Camera Channel", Localization.GetText("TerminalCameraChannelTitle"), Localization.GetText("TerminalCameraChannelTooltip"), BlockUi.GetWeaponCamera, BlockUi.RequestSetBlockCamera, HasTracking, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
 
-            AddLeadGroupSliderRange<T>(session, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", BlockUi.GetLeadGroup, BlockUi.RequestSetLeadGroup, TargetLead, BlockUi.GetMinLeadGroup, BlockUi.GetMaxLeadGroup, true);
+            AddLeadGroupSliderRange<T>(session, "Target Group", Localization.GetText("TerminalTargetGroupTitle"), Localization.GetText("TerminalTargetGroupTooltip"), BlockUi.GetLeadGroup, BlockUi.RequestSetLeadGroup, TargetLead, BlockUi.GetMinLeadGroup, BlockUi.GetMaxLeadGroup, true);
 
             Separator<T>(session, "WC_sep4", HasTracking);
         }
@@ -75,20 +75,20 @@ namespace CoreSystems.Control
         internal static void AddDecoyControls<T>(Session session) where T : IMyTerminalBlock
         {
             Separator<T>(session, "WC_decoySep1", Istrue);
-            AddComboboxNoAction<T>(session, "PickSubSystem", "Pick SubSystem", "Pick what subsystem this decoy will imitate", BlockUi.GetDecoySubSystem, BlockUi.RequestDecoySubSystem, BlockUi.ListDecoySubSystems, Istrue);
+            AddComboboxNoAction<T>(session, "PickSubSystem", Localization.GetText("TerminalDecoyPickSubSystemTitle"), Localization.GetText("TerminalDecoyPickSubSystemTooltip"), BlockUi.GetDecoySubSystem, BlockUi.RequestDecoySubSystem, BlockUi.ListDecoySubSystems, Istrue);
         }
 
         internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
         {
             Separator<T>(session,  "WC_cameraSep1", Istrue);
-            AddBlockCameraSliderRange<T>(session, "WC_PickCameraChannel", "Camera Channel", "Assign the camera weapon channel to this camera", BlockUi.GetBlockCamera, BlockUi.RequestBlockCamera, BlockUi.ShowCamera, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
+            AddBlockCameraSliderRange<T>(session, "WC_PickCameraChannel", Localization.GetText("TerminalCameraCameraChannelTitle"), Localization.GetText("TerminalCameraCameraChannelTooltip"), BlockUi.GetBlockCamera, BlockUi.RequestBlockCamera, BlockUi.ShowCamera, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session,  "Debug", "Debug", "Debug On/Off", BlockUi.GetDebug, BlockUi.RequestDebug, true, IsReady);
+            AddOnOffSwitchNoAction<T>(session,  "Debug", Localization.GetText("TerminalDebugTitle"), Localization.GetText("TerminalDebugTooltip"), BlockUi.GetDebug, BlockUi.RequestDebug, true, IsReady);
             Separator<T>(session, "WC_sep4", HasTracking);
-            AddOnOffSwitchNoAction<T>(session,  "Shoot", "Shoot", "Shoot On/Off", BlockUi.GetShoot, BlockUi.RequestSetShoot, true, IsNotBomb);
+            AddOnOffSwitchNoAction<T>(session,  "Shoot", Localization.GetText("TerminalShootTitle"), Localization.GetText("TerminalShootTooltip"), BlockUi.GetShoot, BlockUi.RequestSetShoot, true, IsNotBomb);
 
         }
 
@@ -564,8 +564,8 @@ namespace CoreSystems.Control
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>("WC_" + name);
             c.Title = MyStringId.GetOrCompute(title);
             c.Tooltip = MyStringId.GetOrCompute(tooltip);
-            c.OnText = MyStringId.GetOrCompute("On");
-            c.OffText = MyStringId.GetOrCompute("Off");
+            c.OnText = MyStringId.GetOrCompute(Localization.GetText("TerminalSwitchOn"));
+            c.OffText = MyStringId.GetOrCompute(Localization.GetText("TerminalSwitchOff"));
             c.Getter = getter;
             c.Setter = setter;
             c.Visible = visibleGetter;
