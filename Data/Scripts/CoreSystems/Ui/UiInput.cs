@@ -168,7 +168,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui
 
             if (!s.InMenu)
             {
-                //ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
+                ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
                 ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
                 InfoKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(InfoKey);
                 if (ActionKeyPressed || InfoKeyReleased)

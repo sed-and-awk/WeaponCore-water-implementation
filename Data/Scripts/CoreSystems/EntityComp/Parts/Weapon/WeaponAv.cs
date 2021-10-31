@@ -136,7 +136,7 @@ namespace CoreSystems.Platform
             try
             {
                 var session = Comp.Session;
-                var distance = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+                var distance = Vector3D.DistanceSquared(session.CameraPos, Comp.CoreEntity.PositionComp.WorldAABB.Center);
                 var canPlay = !session.DedicatedServer && 64000000 >= distance; //8km max range, will play regardless of range if it moves PivotPos and is loaded
 
                 if (canPlay)
