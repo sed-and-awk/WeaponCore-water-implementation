@@ -402,6 +402,7 @@ namespace CoreSystems
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
                             var bomb = fat as IMyWarhead;
+                            var upgrade = fat as IMyUpgradeModule;
 
                             if (decoy != null)
                             {
@@ -416,7 +417,8 @@ namespace CoreSystems
                                 continue;
                             }
 
-                            if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
+                            if (fat is IMyProductionBlock || upgrade != null && VanillaUpgradeModuleHashes.Contains(fat.BlockDefinition.Id.SubtypeName))
+                                newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer)
                             {
                                 newTypeMap[Power].Add(fat);
@@ -432,7 +434,7 @@ namespace CoreSystems
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
+                            else if (upgrade != null || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust)
                             {
                                 newTypeMap[Thrust].Add(fat);

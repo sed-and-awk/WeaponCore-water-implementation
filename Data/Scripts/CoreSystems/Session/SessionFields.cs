@@ -21,6 +21,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRage.Voxels;
 using VRageMath;
@@ -400,12 +401,18 @@ namespace CoreSystems
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
-            76561198339035377, // king_of_draconia
+            //76561198339035377, // king_of_draconia
         };
 
         internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
         {
             76561198025274552,
+        };
+
+
+        internal readonly HashSet<string> VanillaUpgradeModuleHashes = new HashSet<string>()
+        {
+            "LargeProductivityModule", "LargeEffectivenessModule", "LargeEnergyModule",
         };
 
         [Flags]
