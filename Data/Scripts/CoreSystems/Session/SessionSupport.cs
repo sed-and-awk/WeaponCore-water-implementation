@@ -1130,7 +1130,7 @@ namespace CoreSystems
                     var part = (system.Value as WeaponSystem);
 
                     Dictionary<string, string> weaponModifer;
-                    if (WeaponValuesMap.TryGetValue(part.Values, out weaponModifer))
+                    if (WeaponValuesMap.TryGetValue(part.Values, out weaponModifer) && weaponModifer != null)
                     {
                         part.WConst = new WeaponConstants(part.Session, part.Values);
                     }
@@ -1140,9 +1140,10 @@ namespace CoreSystems
                         var ammo = part.AmmoTypes[i];
 
                         Dictionary<string, string> ammoModifer;
-                        if (AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer))
+                        if (AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer) && ammoModifer != null)
                         {
                             ammo.AmmoDef.Const = new AmmoConstants(ammo, part.Values, part.Session, part, i);
+                            part.WConst.HasServerOverrides = true;
                         }
                     }
                 }

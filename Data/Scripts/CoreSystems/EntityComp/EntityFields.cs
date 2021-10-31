@@ -87,6 +87,7 @@ namespace CoreSystems.Support
         internal bool FakeMode;
         internal bool CloseCondition;
         internal bool HasCloseConsition;
+        internal bool HasServerOverrides;
 
         internal string CustomIcon;
 
