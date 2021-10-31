@@ -380,9 +380,9 @@ namespace CoreSystems
                         var manualShot = (compManualMode || w.PartState.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
-                        w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
-                        var weaponPrimed = canShoot && (shoot || w.LockOnFireState);
-                        var shotReady = canShoot && (shoot || w.LockOnFireState);
+                        w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
+                        var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
+
                         if (shotReady && ai.CanShoot) {
 
                             if (MpActive && HandlesInput && !ManualShot)
@@ -399,7 +399,7 @@ namespace CoreSystems
                                 w.StopShooting();
 
                             if (w.BarrelSpinning) {
-                                var spinDown = !(weaponPrimed && ai.CanShoot && w.System.Values.HardPoint.Loading.SpinFree);
+                                var spinDown = !(shotReady && ai.CanShoot && w.System.Values.HardPoint.Loading.SpinFree);
                                 w.SpinBarrel(spinDown);
                             }
                         }
