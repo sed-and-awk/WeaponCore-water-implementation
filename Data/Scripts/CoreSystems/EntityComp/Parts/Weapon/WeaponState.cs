@@ -161,7 +161,6 @@ namespace CoreSystems.Platform
 
             Log.Line($"LostPowerIsThisEverUsed");
             CancelReload();
-            //FinishBurst = false;
 
             if (IsShooting)
                 StopShooting();

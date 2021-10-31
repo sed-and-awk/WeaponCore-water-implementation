@@ -186,10 +186,9 @@ namespace CoreSystems.Platform
 
                 return false;
             }
-            ClientStartId = Reload.StartId;
             
-            if (!ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && !ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
+            ClientStartId = Reload.StartId;
+            ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
 
             ProtoWeaponAmmo.CurrentAmmo = 0;
 
@@ -202,8 +201,6 @@ namespace CoreSystems.Platform
             }
 
             ClientReloading = true;
-            //Loading = true;
-            //FinishBurst = false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
@@ -255,15 +252,10 @@ namespace CoreSystems.Platform
 
         internal bool ServerReload()
         {
-            //if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay) 
-            //    return false;
-
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
             var hasAmmo = HasAmmo();
-
-            //FinishBurst = false;
 
             if (!hasAmmo) 
                 return false;

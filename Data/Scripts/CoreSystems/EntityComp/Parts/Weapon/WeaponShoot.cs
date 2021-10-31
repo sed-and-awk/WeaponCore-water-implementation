@@ -106,16 +106,11 @@ namespace CoreSystems.Platform
                                 DequeueShot();
 
                             if (ProtoWeaponAmmo.CurrentAmmo == 0) {
-                                //FinishBurst = false;
                                 ClientLastShotId = Reload.StartId;
                             }
                         }
                         else if (ClientMakeUpShots > 0) {
                             --ClientMakeUpShots;
-                            /*
-                            if (ClientMakeUpShots == 0)
-                                FinishBurst = false;
-                            */
                         }
 
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
@@ -323,7 +318,6 @@ namespace CoreSystems.Platform
             {
 
                 uint delay = 0;
-                //FinishBurst = false;
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
                 {
