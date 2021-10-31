@@ -253,7 +253,8 @@ namespace CoreSystems
                         if (w.AvCapable && Tick20) {
                             var avWasEnabled = w.PlayTurretAv;
                             double distSqr;
-                            Vector3D.DistanceSquared(ref CameraPos, ref w.MyPivotPos, out distSqr);
+                            var pos = w.Comp.CoreEntity.PositionComp.WorldAABB.Center;
+                            Vector3D.DistanceSquared(ref CameraPos, ref pos, out distSqr);
                             w.PlayTurretAv = distSqr < w.System.HardPointAvMaxDistSqr;
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
@@ -382,7 +383,7 @@ namespace CoreSystems
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
-
+                        
                         if (shotReady && ai.CanShoot) {
 
                             if (MpActive && HandlesInput && !ManualShot)
