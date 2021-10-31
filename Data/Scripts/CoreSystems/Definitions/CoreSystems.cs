@@ -162,6 +162,7 @@ namespace CoreSystems.Support
         public readonly bool HasGuidedAmmo;
         public readonly bool SuppressFire;
         public readonly bool NoSubParts;
+        public readonly bool HasSpinPart;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
@@ -213,6 +214,7 @@ namespace CoreSystems.Support
             ElevationPartName = elevationPartName;
             SpinPartName = spinPartName;
             NoSubParts = (muzzlePartName.String == "None" || string.IsNullOrEmpty(muzzlePartName.String)) && (AzimuthPartName.String == "None" || string.IsNullOrEmpty(AzimuthPartName.String)) && (ElevationPartName.String == "None" || string.IsNullOrEmpty(ElevationPartName.String));
+            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && SpinPartName.String != "None";
             Values = values;
             Muzzles = values.Assignments.Muzzles;
             WeaponIdHash = weaponIdHash;
