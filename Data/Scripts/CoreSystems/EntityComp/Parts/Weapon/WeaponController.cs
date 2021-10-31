@@ -338,7 +338,9 @@ namespace CoreSystems.Platform
 
         internal bool SpinBarrel(bool spinDown = false)
         {
+            var translation = SpinPart.Entity.PositionComp.LocalMatrixRef.Translation;
             var matrix = SpinPart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
+            matrix.Translation = translation;
             SpinPart.Entity.PositionComp.SetLocalMatrix(ref matrix);
 
             if (Comp.TypeSpecific == CompTypeSpecific.VanillaFixed)
