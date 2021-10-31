@@ -650,6 +650,7 @@ namespace CoreSystems.Platform
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets || w.System.Values.HardPoint.Ai.LockOnFocus;
             w.Comp.HasDelayToFire = w.Comp.HasDelayToFire || w.System.DelayToFire > 0;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
+            w.BaseComp.HasServerOverrides = w.BaseComp.HasServerOverrides || w.System.WConst.HasServerOverrides;
             if (ui.DamageModifier || ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance)
                 w.BaseComp.UiEnabled = true;
 

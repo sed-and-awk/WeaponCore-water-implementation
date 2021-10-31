@@ -529,11 +529,11 @@ namespace CoreSystems.Support
         internal readonly int ReloadTime;
         internal readonly int RateOfFire;
 
-        internal bool WeaponModsFound;
+        internal bool HasServerOverrides;
 
         internal WeaponConstants(Session session, WeaponDefinition values)
         {
-            LoadModifiers(session, values, out WeaponModsFound);
+            LoadModifiers(session, values, out HasServerOverrides);
             GetModifiableValues(values, out MaxTargetDistance, out MinTargetDistance, out RateOfFire, out ReloadTime, out DeviateShotAngleRads, out AimingToleranceRads, out IdlePower, out HeatSinkRate);
         }
 
@@ -555,25 +555,25 @@ namespace CoreSystems.Support
 
         private void GetModifiableValues(WeaponDefinition weaponDef, out double maxTargetDistance, out float minTargetDistance, out int rateOfFire, out int reloadTime, out float deviateShotAngleRads, out double aimingToleranceRads, out float idlePower, out float heatSinkRate)
         {
-            var givenMaxDist = WeaponModsFound && modifierMap[MaxTargetStr].HasData() ? modifierMap[MaxTargetStr].GetAsFloat : weaponDef.Targeting.MaxTargetDistance;
+            var givenMaxDist = HasServerOverrides && modifierMap[MaxTargetStr].HasData() ? modifierMap[MaxTargetStr].GetAsFloat : weaponDef.Targeting.MaxTargetDistance;
             maxTargetDistance = givenMaxDist > 0 ? givenMaxDist : double.MaxValue;
 
-            minTargetDistance = WeaponModsFound && modifierMap[MinTargetStr].HasData() ? modifierMap[MinTargetStr].GetAsFloat : weaponDef.Targeting.MinTargetDistance;
+            minTargetDistance = HasServerOverrides && modifierMap[MinTargetStr].HasData() ? modifierMap[MinTargetStr].GetAsFloat : weaponDef.Targeting.MinTargetDistance;
 
-            rateOfFire = WeaponModsFound && modifierMap[ROFStr].HasData() ? modifierMap[ROFStr].GetAsInt : weaponDef.HardPoint.Loading.RateOfFire;
+            rateOfFire = HasServerOverrides && modifierMap[ROFStr].HasData() ? modifierMap[ROFStr].GetAsInt : weaponDef.HardPoint.Loading.RateOfFire;
 
-            reloadTime = WeaponModsFound && modifierMap[ReloadStr].HasData() ? modifierMap[ReloadStr].GetAsInt : weaponDef.HardPoint.Loading.ReloadTime;
+            reloadTime = HasServerOverrides && modifierMap[ReloadStr].HasData() ? modifierMap[ReloadStr].GetAsInt : weaponDef.HardPoint.Loading.ReloadTime;
 
-            var givenShotAngle = WeaponModsFound && modifierMap[DeviateStr].HasData() ? modifierMap[DeviateStr].GetAsFloat : weaponDef.HardPoint.DeviateShotAngle;
+            var givenShotAngle = HasServerOverrides && modifierMap[DeviateStr].HasData() ? modifierMap[DeviateStr].GetAsFloat : weaponDef.HardPoint.DeviateShotAngle;
             deviateShotAngleRads = MathHelper.ToRadians(givenShotAngle);
 
-            var givenAimingTolerance = WeaponModsFound && modifierMap[AimTolStr].HasData() ? modifierMap[AimTolStr].GetAsDouble : weaponDef.HardPoint.AimingTolerance;
+            var givenAimingTolerance = HasServerOverrides && modifierMap[AimTolStr].HasData() ? modifierMap[AimTolStr].GetAsDouble : weaponDef.HardPoint.AimingTolerance;
             aimingToleranceRads = MathHelperD.ToRadians(givenAimingTolerance);
 
-            var givenIdlePower = WeaponModsFound && modifierMap[IdlePowerStr].HasData() ? modifierMap[IdlePowerStr].GetAsFloat : weaponDef.HardPoint.HardWare.IdlePower;
+            var givenIdlePower = HasServerOverrides && modifierMap[IdlePowerStr].HasData() ? modifierMap[IdlePowerStr].GetAsFloat : weaponDef.HardPoint.HardWare.IdlePower;
             idlePower = givenIdlePower > 0 ? givenIdlePower : 0.001f;
 
-            heatSinkRate = WeaponModsFound && modifierMap[HeatSinkStr].HasData() ? modifierMap[HeatSinkStr].GetAsFloat : weaponDef.HardPoint.Loading.HeatSinkRate;
+            heatSinkRate = HasServerOverrides && modifierMap[HeatSinkStr].HasData() ? modifierMap[HeatSinkStr].GetAsFloat : weaponDef.HardPoint.Loading.HeatSinkRate;
         }
     }
 }

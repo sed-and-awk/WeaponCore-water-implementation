@@ -202,8 +202,13 @@ namespace CoreSystems.Support
                 var comp = ((Weapon.WeaponComponent)this);
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status) 
-                    .Append($"\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0"))
+                stringBuilder.Append(status);
+
+                if (HasServerOverrides)
+                    stringBuilder.Append("\nWeapon modified by server!\n")
+                        .Append("Report issues to server admins.\n");
+
+                stringBuilder.Append($"\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0"))
                     .Append("\nShotsPerSec: " + comp.ShotsPerSec.ToString("0.000"))
                     .Append("\n")
                     .Append("\nRealDps: " + comp.EffectiveDps.ToString("0.0"))
@@ -219,13 +224,12 @@ namespace CoreSystems.Support
                         .Append($"\nHeat Dissipated: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
                         .Append($"\nCurrent Heat: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
 
+                stringBuilder.Append("\n__________________________________")
+                    .Append("\nCurrent Draw: " + SinkPower.ToString("0.000") + " MW");
+
                 if (comp.HasEnergyWeapon)
-                {
-                    stringBuilder.Append("\n__________________________________")
-                        .Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW")
-                        .Append("\nRequired Power: " + Platform.Structure.ActualPeakPowerCombined.ToString("0.00") + " MJ");
-                }
-                
+                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ActualPeakPowerCombined.ToString("0.00") + " MJ");
+
                 stringBuilder.Append("\n\n==== Weapons ====");
 
                 var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
