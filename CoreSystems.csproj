@@ -211,6 +211,9 @@
     <Compile Include="Data\Scripts\CoreSystems\Support\Api\WaterModAPI.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="Data\Scripts\CoreSystems\Support\Localization.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="Data\Scripts\CoreSystems\Support\VersionControl.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
