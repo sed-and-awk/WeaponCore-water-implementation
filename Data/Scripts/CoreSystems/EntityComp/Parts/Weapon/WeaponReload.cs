@@ -294,16 +294,12 @@ namespace CoreSystems.Platform
             
             if (!ActiveAmmoDef.AmmoDef.Const.MustCharge || ActiveAmmoDef.AmmoDef.Const.IsHybrid) {
 
-
                 var timeSinceShot = LastShootTick > 0 ? System.Session.Tick - LastShootTick : 0;
                 var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var delay = delayTime > 0 && ShotsFired == 0;
-                var hudDelay = ShowBurstDelayAsReload && delay;
 
-                if (System.WConst.ReloadTime > 0 || delay) {
-                    ShowReloadEndTick = (uint)(hudDelay ? System.WConst.ReloadTime + delayTime : System.WConst.ReloadTime);
-                    ReloadEndTick = (uint)(Comp.Session.Tick + (delay ? System.WConst.ReloadTime + delayTime : System.WConst.ReloadTime));
-                }
+                if (System.WConst.ReloadTime > 0 || delay)
+                    ReloadEndTick = (uint)(Comp.Session.Tick + (System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
                 else Reloaded();
             }
 
