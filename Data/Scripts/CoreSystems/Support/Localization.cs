@@ -239,25 +239,24 @@ namespace CoreSystems.Support
             return I18NDictionary.ContainsKey(text);
         }
 
-        internal static string GetText(string text, bool useFallbackLang = true)
+        internal static string GetText(string text, params object[] args)
         {
             string value;
-            if (I18NDictionary.TryGetValue(text, out value))
+            if (!I18NDictionary.TryGetValue(text, out value))
             {
-                return value;
+                if (!FallbackI18NDictionary.TryGetValue(text, out value))
+                {
+                    value = text;
+                }
             }
 
-            if (!useFallbackLang)
-            {
-                return text;
-            }
+            return args.Length == 0 ? value : string.Format(value, args);
+        }
 
-            if (FallbackI18NDictionary.TryGetValue(text, out value))
-            {
-                return value;
-            }
-
-            return text;
+        internal static string GetTextWithoutFallback(string text)
+        {
+            string value;
+            return I18NDictionary.TryGetValue(text, out value) ? value : text;
         }
     }
 }

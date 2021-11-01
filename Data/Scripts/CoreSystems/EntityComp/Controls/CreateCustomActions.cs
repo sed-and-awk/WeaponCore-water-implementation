@@ -429,7 +429,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action0.Name = new StringBuilder(Localization.GetText($"{name} Toggle On/Off", false));
+            action0.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} Toggle On/Off"));
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
             action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action0.Enabled = enabler;
@@ -440,7 +440,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action1.Name = new StringBuilder(Localization.GetText($"{name} On", false));
+            action1.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} On"));
             action1.Action = b => tc.Setter(b, true);
             action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action1.Enabled = enabler;
@@ -451,7 +451,7 @@ namespace CoreSystems.Control
 
             var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action2.Name = new StringBuilder(Localization.GetText($"{name} Off", false));
+            action2.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} Off"));
             action2.Action = b => tc.Setter(b, true);
             action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action2.Enabled = enabler;
@@ -466,7 +466,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action0.Name = new StringBuilder(Localization.GetText($"{name} Toggle On/Off", false));
+            action0.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} Toggle On/Off"));
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
             action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action0.Enabled = enabler;
@@ -477,7 +477,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action1.Name = new StringBuilder(Localization.GetText($"{name} On", false));
+            action1.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} On"));
             action1.Action = b => tc.Setter(b, true);
             action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action1.Enabled = enabler;
@@ -488,7 +488,7 @@ namespace CoreSystems.Control
 
             var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action2.Name = new StringBuilder(Localization.GetText($"{name} Off", false));
+            action2.Name = new StringBuilder(Localization.GetTextWithoutFallback($"{name} Off"));
             action2.Action = b => tc.Setter(b, true);
             action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action2.Enabled = enabler;
@@ -503,7 +503,7 @@ namespace CoreSystems.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder(Localization.GetText($"Increase {name}", false));
+            action0.Name = new StringBuilder(Localization.GetTextWithoutFallback($"Increase {name}"));
             action0.Action = b => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
             action0.Writer = TerminalHelpers.EmptyStringBuilder;
             action0.Enabled = enabler;
@@ -514,7 +514,7 @@ namespace CoreSystems.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Decrease");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder(Localization.GetText($"Decrease {name}", false));
+            action1.Name = new StringBuilder(Localization.GetTextWithoutFallback($"Decrease {name}"));
             action1.Action = b => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action1.Writer = TerminalHelpers.EmptyStringBuilder;
             action1.Enabled = enabler;
