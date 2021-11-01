@@ -375,9 +375,9 @@ namespace CoreSystems.Control
             var on = comp != null && comp.Data.Repo?.Values.State.TerminalAction == TriggerClick;
 
             if (on)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void ShootStateWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -385,9 +385,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.State.TerminalAction == TriggerOn)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void NeutralWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -395,9 +395,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Neutrals)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void ProjectilesWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -405,9 +405,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Projectiles)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void BiologicalsWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -415,9 +415,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Biologicals)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void MeteorsWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -425,9 +425,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Meteors)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void GridsWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -435,9 +435,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Grids)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void FriendlyWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -445,9 +445,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Friendly)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void UnownedWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -455,9 +455,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Unowned)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void FocusTargetsWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -465,9 +465,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.FocusTargets)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void FocusSubSystemWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -475,9 +475,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.FocusSubSystem)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
 
         internal static void MaxSizeWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -566,9 +566,9 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Values.Set.Overrides.Repel)
-                sb.Append("On");
+                sb.Append(Localization.GetText("ActionStateOn"));
             else
-                sb.Append("Off");
+                sb.Append(Localization.GetText("ActionStateOff"));
         }
         #endregion
     }
