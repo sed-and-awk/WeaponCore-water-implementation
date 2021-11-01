@@ -383,7 +383,7 @@ namespace CoreSystems
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
-                        if (validShootStates) Log.Line($"{reloading} {w.Loading} {w.FinishBurst}");
+                        
                         if (shotReady && ai.CanShoot) {
 
                             if (MpActive && HandlesInput && !ManualShot)
