@@ -190,9 +190,9 @@ namespace CoreSystems.Support
 
         internal string GetSystemStatus()
         {
-            if (!Cube.IsFunctional) return "[Fault]";
-            if (!Cube.IsWorking) return "[Offline]";
-            return Ai.AiOwner != 0 ? "[Online]" : "[Rogue Ai] Parts are unowned!!";
+            if (!Cube.IsFunctional) return Localization.GetText("SystemStatusFault");
+            if (!Cube.IsWorking) return Localization.GetText("SystemStatusOffline");
+            return Ai.AiOwner != 0 ? Localization.GetText("SystemStatusOnline") : Localization.GetText("SystemStatusRogueAi");
         }
 
         private void AppendingCustomInfoWeapon(IMyTerminalBlock block, StringBuilder stringBuilder)
@@ -208,29 +208,29 @@ namespace CoreSystems.Support
                     stringBuilder.Append("\nWeapon modified by server!\n")
                         .Append("Report issues to server admins.\n");
 
-                stringBuilder.Append($"\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0"))
-                    .Append("\nShotsPerSec: " + comp.ShotsPerSec.ToString("0.000"))
+                stringBuilder.Append($"\n{Localization.GetText("WeaponInfoConstructDPS")}: " + Ai.EffectiveDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoShotsPerSec")}: " + comp.ShotsPerSec.ToString("0.000"))
                     .Append("\n")
-                    .Append("\nRealDps: " + comp.EffectiveDps.ToString("0.0"))
-                    .Append("\nPeakDps: " + comp.PeakDps.ToString("0.0"))
-                    .Append("\nBaseDps: " + comp.BaseDps.ToString("0.0"))
-                    .Append("\nAreaDps: " + comp.AreaDps.ToString("0.0"))
-                    .Append("\nExplode: " + comp.DetDps.ToString("0.0"))
-                    .Append("\nCurrent: " + comp.CurrentDps.ToString("0.0") +" ("+ (comp.CurrentDps / comp.PeakDps).ToString("P") + ")");
+                    .Append($"\n{Localization.GetText("WeaponInfoRealDps")}: " + comp.EffectiveDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoPeakDps")}: " + comp.PeakDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoBaseDps")}: " + comp.BaseDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoAreaDps")}: " + comp.AreaDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoExplode")}: " + comp.DetDps.ToString("0.0"))
+                    .Append($"\n{Localization.GetText("WeaponInfoCurrent")}: " + comp.CurrentDps.ToString("0.0") +" ("+ (comp.CurrentDps / comp.PeakDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" )
-                        .Append($"\nHeat Generated: {HeatPerSecond:0.0} W ({(HeatPerSecond / MaxHeat) :P}/s)")
-                        .Append($"\nHeat Dissipated: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
-                        .Append($"\nCurrent Heat: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
+                        .Append($"\n{Localization.GetText("WeaponInfoHeatGenerated")}: {HeatPerSecond:0.0} W ({(HeatPerSecond / MaxHeat) :P}/s)")
+                        .Append($"\n{Localization.GetText("WeaponInfoHeatDissipated")}: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
+                        .Append($"\n{Localization.GetText("WeaponInfoCurrentHeat")}: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
 
                 stringBuilder.Append("\n__________________________________")
-                    .Append("\nCurrent Draw: " + SinkPower.ToString("0.000") + " MW");
+                    .Append($"\n{Localization.GetText("WeaponInfoCurrentDraw")}: " + SinkPower.ToString("0.000") + " MW");
 
                 if (comp.HasEnergyWeapon)
-                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ActualPeakPowerCombined.ToString("0.00") + " MJ");
+                    stringBuilder.Append($"\n{Localization.GetText("WeaponInfoRequiredPower")}: " + Platform.Structure.ActualPeakPowerCombined.ToString("0.00") + " MJ");
 
-                stringBuilder.Append("\n\n==== Weapons ====");
+                stringBuilder.Append($"\n\n{Localization.GetText("WeaponInfoDividerLineWeapon")}");
 
                 var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
                 for (int i = 0; i < collection.Count; i++)
@@ -248,11 +248,11 @@ namespace CoreSystems.Support
 
                     else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoRound + ": " + w.ProtoWeaponAmmo.CurrentAmmo;
 
-                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
+                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? $"\n{Localization.GetText("WeaponInfoBurst")}: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + $") - {Localization.GetText("WeaponInfoDelay")}: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
 
                     var endReturn = i + 1 != collection.Count ? "\n" : string.Empty;
 
-                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Loading + "\nLoS: " + !w.PauseShoot + endReturn);
+                    stringBuilder.Append($"\n{Localization.GetText("WeaponInfoName")}: " + w.System.PartName + shots + burst + $"\n{Localization.GetText("WeaponInfoReloading")}: " + w.Loading + $"\n{Localization.GetText("WeaponInfoLoS")}: " + !w.PauseShoot + endReturn);
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
