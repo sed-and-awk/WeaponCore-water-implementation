@@ -123,7 +123,6 @@ namespace CoreSystems.Platform
         internal float ShotEnergyCost;
         internal float LastHeat;
         internal uint ReloadEndTick = uint.MaxValue;
-        internal uint ShowReloadEndTick;
         internal uint CeaseFireDelayTick = uint.MaxValue / 2;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
@@ -191,7 +190,7 @@ namespace CoreSystems.Platform
         internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
         internal bool PauseShoot;
-        internal bool ShowBurstDelayAsReload;
+        internal bool ShowReload;
         internal bool ParentIsSubpart;
         internal bool CheckInventorySystem = true;
         internal bool ShotReady
@@ -352,7 +351,7 @@ namespace CoreSystems.Platform
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
 
             var burstDelay = System.Values.HardPoint.Loading.DelayAfterBurst;
-            ShowBurstDelayAsReload = Comp.Session.HandlesInput && System.Values.HardPoint.Loading.ShotsInBurst > 0 && burstDelay > 30 && burstDelay >= TicksPerShot && burstDelay >= System.WConst.ReloadTime;
+            ShowReload = Comp.Session.HandlesInput && (System.WConst.ReloadTime >= 240 || System.Values.HardPoint.Loading.ShotsInBurst > 0 && burstDelay >= 240);
 
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
             AzimuthInitFwdDir = azimuthPart.PositionComp.LocalMatrixRef.Forward;

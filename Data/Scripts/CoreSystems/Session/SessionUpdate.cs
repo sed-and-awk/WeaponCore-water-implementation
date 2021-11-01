@@ -285,7 +285,7 @@ namespace CoreSystems
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && (w.System.WConst.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ShowReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
+                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && w.ShowReload);
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
@@ -383,7 +383,7 @@ namespace CoreSystems
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
-                        
+                        if (validShootStates) Log.Line($"{reloading} {w.Loading} {w.FinishBurst}");
                         if (shotReady && ai.CanShoot) {
 
                             if (MpActive && HandlesInput && !ManualShot)
