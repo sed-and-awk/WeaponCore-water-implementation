@@ -12,6 +12,16 @@ namespace CoreSystems.Support
                 {
                     MyLanguagesEnum.English, new Dictionary<string, string>
                     {
+                        { "Guidance Toggle On/Off", "Guidance Toggle On/Off" },
+                        { "Guidance On", "Guidance On" },
+                        { "Guidance Off", "Guidance Off" },
+                        { "Increase Weapon Damage", "Increase Weapon Damage" },
+                        { "Decrease Weapon Damage", "Decrease Weapon Damage" },
+                        { "Increase Weapon ROF", "Increase Weapon ROF" },
+                        { "Decrease Weapon ROF", "Decrease Weapon ROF" },
+                        { "Overload Toggle On/Off", "Overload Toggle On/Off" },
+                        { "Overload On", "Overload On" },
+                        { "Overload Off", "Overload Off" },
                         { "TerminalSwitchOn", "On" },
                         { "TerminalSwitchOff", "Off" },
                         { "TerminalGuidanceTitle", "Enable Guidance" },
@@ -101,17 +111,22 @@ namespace CoreSystems.Support
                         { "ActionWC_Decrease_CameraChannel", "Previous Camera Channel" },
                         { "ActionWC_Increase_LeadGroup", "Next Lead Group" },
                         { "ActionWC_Decrease_LeadGroup", "Previous Lead Group" },
-                        { "ActionMask", "Select Mask Type" },
-                        { "ActionWC_Toggle", "Toggle On/Off" },
-                        { "ActionWC_Toggle_On", "On" },
-                        { "ActionWC_Toggle_Off", "Off" },
-                        { "ActionWC_Increase", "Increase" },
-                        { "ActionWC_Decrease", "Decrease" }
+                        { "ActionMask", "Select Mask Type" }
                     }
                 },
                 {
                     MyLanguagesEnum.ChineseChina, new Dictionary<string, string>
                     {
+                        { "Guidance Toggle On/Off", "切换制导 开启/关闭" },
+                        { "Guidance On", "制导 开启" },
+                        { "Guidance Off", "制导 关闭" },
+                        { "Increase Weapon Damage", "增加 武器伤害" },
+                        { "Decrease Weapon Damage", "减少 武器伤害" },
+                        { "Increase Weapon ROF", "增加 武器射速" },
+                        { "Decrease Weapon ROF", "减少 武器射速" },
+                        { "Overload Toggle On/Off", "切换过载 开启/关闭" },
+                        { "Overload On", "过载 开启" },
+                        { "Overload Off", "过载 关闭" },
                         { "TerminalSwitchOn", "开启" },
                         { "TerminalSwitchOff", "关闭" },
                         { "TerminalGuidanceTitle", "启用制导" },
@@ -151,13 +166,13 @@ namespace CoreSystems.Support
                         { "TerminalSubSystemsTitle", "瞄准子系统" },
                         { "TerminalSubSystemsTooltip", "瞄准目标上的特定子系统" },
                         { "TerminalRepelTitle", "击退模式" },
-                        { "TerminalRepelTooltip", "积极关注并击退小型威胁" },
+                        { "TerminalRepelTooltip", "着重击退小型威胁" },
                         { "TerminalPickAmmoTitle", "选择弹药" },
                         { "TerminalPickAmmoTooltip", "选择要使用的弹药类型" },
                         { "TerminalPickSubSystemTitle", "选择子系统" },
                         { "TerminalPickSubSystemTooltip", "选择要集火的子系统" },
                         { "TerminalTrackingModeTitle", "追踪模式" },
-                        { "TerminalTrackingModeTooltip", "移动火控需求" },
+                        { "TerminalTrackingModeTooltip", "移动火控必选" },
                         { "TerminalControlModesTitle", "控制模式" },
                         { "TerminalControlModesTooltip", "选择武器的瞄准控制模式" },
                         { "TerminalCameraChannelTitle", "武器摄像头频道" },
@@ -201,12 +216,7 @@ namespace CoreSystems.Support
                         { "ActionWC_Decrease_CameraChannel", "上一个摄像头频道" },
                         { "ActionWC_Increase_LeadGroup", "下一个目标引导组" },
                         { "ActionWC_Decrease_LeadGroup", "上一个目标引导组" },
-                        { "ActionMask", "选择伪装类型" },
-                        { "ActionWC_Toggle", "切换 开启/关闭" },
-                        { "ActionWC_Toggle_On", "开启" },
-                        { "ActionWC_Toggle_Off", "关闭" },
-                        { "ActionWC_Increase", "增加" },
-                        { "ActionWC_Decrease", "减少" }
+                        { "ActionMask", "选择伪装类型" }
                     }
                 }
             };
@@ -220,12 +230,22 @@ namespace CoreSystems.Support
         private static readonly Dictionary<string, string> I18NDictionary =
             I18NDictionaries.GetValueOrDefault(Language, FallbackI18NDictionary);
 
-        internal static string GetText(string text)
+        internal static bool HasText(string text)
+        {
+            return I18NDictionary.ContainsKey(text);
+        }
+
+        internal static string GetText(string text, bool useFallbackLang = true)
         {
             string value;
             if (I18NDictionary.TryGetValue(text, out value))
             {
                 return value;
+            }
+
+            if (!useFallbackLang)
+            {
+                return text;
             }
 
             if (FallbackI18NDictionary.TryGetValue(text, out value))
