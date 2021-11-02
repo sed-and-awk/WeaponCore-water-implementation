@@ -827,7 +827,7 @@ namespace CoreSystems.Platform
                 }
             }
 
-            var targetPos = Target.Projectile?.Position ?? Target.TargetEntity?.PositionComp.WorldMatrixRef.Translation ?? Vector3D.Zero;
+            var targetPos = Target.Projectile?.Position ?? Target.TargetEntity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
             var distToTargetSqr = Vector3D.DistanceSquared(targetPos, trackingCheckPosition);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {

@@ -125,7 +125,6 @@ namespace CoreSystems
 
                     CompsToStart.ApplyAdditions();
                 }
-                else Log.Line("failed InitComp");
             }
             return comp;
         }
