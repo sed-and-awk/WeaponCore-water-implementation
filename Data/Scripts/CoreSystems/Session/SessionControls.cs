@@ -332,6 +332,7 @@ namespace CoreSystems
             for (int i = validType ? 12 : 0; i < controls.Count; i++) {
 
                 var c = controls[i];
+                if (session.AlteredControls.Contains(c)) continue;
                 if (!visibleControls.Contains(c.Id)) {
                     c.Visible = TerminalHelpers.NotWcBlock;
                     session.AlteredControls.Add(c);
