@@ -352,7 +352,7 @@ namespace CoreSystems.Platform
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 
-                RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
+                //RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
             }
 
             if (_spinUpTick <= Comp.Session.Tick && spinDown)

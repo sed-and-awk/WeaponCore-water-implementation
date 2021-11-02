@@ -396,7 +396,7 @@ namespace CoreSystems
                         }
                         else {
 
-                            if (w.IsShooting)
+                            if (w.IsShooting || w.PreFired)
                                 w.StopShooting();
 
                             if (w.BarrelSpinning) {

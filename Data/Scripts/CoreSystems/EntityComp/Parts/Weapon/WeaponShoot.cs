@@ -353,7 +353,6 @@ namespace CoreSystems.Platform
             EventTriggerStateChanged(EventTriggers.PreFire, false);
             _muzzlesToFire.Clear();
             PreFired = false;
-
             if (AvCapable && System.PreFireSound && PreFiringEmitter.IsPlaying)
                 StopPreFiringSound();
         }
