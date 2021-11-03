@@ -38,6 +38,7 @@ namespace CoreSystems.Platform
         internal readonly MyParticleEffect[] Effects1;
         internal readonly MyParticleEffect[] Effects2;
         internal readonly MyParticleEffect[] HitEffects;
+        internal readonly MySoundPair HardPointSound;
         internal readonly MySoundPair ReloadSound;
         internal readonly MySoundPair PreFiringSound;
         internal readonly MySoundPair FiringSound;
@@ -47,12 +48,14 @@ namespace CoreSystems.Platform
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
+        internal readonly MyEntity3DSoundEmitter HardPointEmitter;
+
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal bool AlternateForward;
         internal readonly bool PrimaryWeaponGroup;
         internal readonly bool AiOnlyWeapon;
-
+        internal readonly bool HasHardPointSound;
 
         private int _nextVirtual;
         private uint _ticksUntilShoot;
@@ -193,6 +196,7 @@ namespace CoreSystems.Platform
         internal bool ShowReload;
         internal bool ParentIsSubpart;
         internal bool CheckInventorySystem = true;
+        internal bool PlayingHardPointSound;
         internal bool ShotReady
         {
             get
@@ -382,9 +386,17 @@ namespace CoreSystems.Platform
                 if (System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingWeapon == null)
                     comp.TrackingWeapon = this;
 
-                if (AvCapable && System.HardPointRotationSound)
-                    comp.Platform.RotationSound.Init(System.Values.HardPoint.Audio.HardPointRotationSound, false);
+                if (AvCapable && System.HardPointRotationSound && (comp.TrackingWeapon == this || !System.Values.HardPoint.Ai.PrimaryTracking))
+                {
+                    HardPointEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null);
+                    HardPointEmitter.CanPlayLoopSounds = true;
+
+                    HardPointEmitter.Entity = Comp.CoreEntity;
+                    HardPointSound = System.RotatePairs.Count > 0 ? System.RotatePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.HardPointRotationSound, false);
+                }
             }
+
+            HasHardPointSound = HardPointSound != null;
         }
 
         private void FuckMyLife()

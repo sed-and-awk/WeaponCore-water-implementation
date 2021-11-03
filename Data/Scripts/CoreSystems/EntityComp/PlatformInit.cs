@@ -14,7 +14,6 @@ namespace CoreSystems.Platform
     public class CorePlatform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
-        internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
         internal List<Weapon> Weapons = new List<Weapon>();
         internal List<SupportSys> Support = new List<SupportSys>();

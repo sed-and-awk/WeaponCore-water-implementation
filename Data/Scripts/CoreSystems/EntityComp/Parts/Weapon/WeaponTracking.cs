@@ -360,11 +360,18 @@ namespace CoreSystems.Platform
 
                     w.ReturingHome = false;
                     locked = false;
+                    
+                    if (w.HasHardPointSound && !w.PlayingHardPointSound)
+                        w.StartHardPointSound();
+
                     w.AimBarrel();
                 }
             }
 
             w.Rotating = !locked;
+
+            if (w.HasHardPointSound && w.PlayingHardPointSound && !w.Rotating)
+                w.StopHardPointSound();
 
             if (baseData.State.Control == ProtoWeaponState.ControlMode.Camera)
                 return isTracking;

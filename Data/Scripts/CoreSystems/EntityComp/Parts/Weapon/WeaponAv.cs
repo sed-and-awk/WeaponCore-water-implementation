@@ -58,7 +58,10 @@ namespace CoreSystems.Platform
             StopPreFiringSound();
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
             if (!power) StopRotateSound();
-            
+
+            if (HasHardPointSound)
+                StopHardPointSound();
+
             StopBarrelAvTick = Comp.Session.Tick;
 
             for (int i = 0; i < Muzzles.Length; i++) {
@@ -333,6 +336,7 @@ namespace CoreSystems.Platform
             if (PreFiringEmitter.Loop)
             {
                 PreFiringEmitter.StopSound(true);
+                PreFiringEmitter.PlaySound(PreFiringSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
             }
             else
                 PreFiringEmitter.StopSound(false);
@@ -346,6 +350,31 @@ namespace CoreSystems.Platform
             FiringEmitter.PlaySound(FiringSound);
         }
 
+        public void StartHardPointSound()
+        {
+            if (HardPointEmitter == null)
+                return;
+            PlayingHardPointSound = true;
+            HardPointEmitter.PlaySound(HardPointSound);
+        }
+
+
+        public void StopHardPointSound(object o = null)
+        {
+            if (HardPointEmitter == null)
+                return;
+
+            PlayingHardPointSound = false;
+
+            if (HardPointEmitter.Loop)
+            {
+                HardPointEmitter.StopSound(true);
+                HardPointEmitter.PlaySound(HardPointSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+            }
+            else
+                HardPointEmitter.StopSound(false);
+        }
+
         public void StopFiringSound(object o = null)
         {
             if (FiringEmitter == null)
@@ -354,7 +383,8 @@ namespace CoreSystems.Platform
             if (FiringEmitter.Loop)
 			{
                 FiringEmitter.StopSound(true);
-			}
+                FiringEmitter.PlaySound(FiringSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+            }
             else
                 FiringEmitter.StopSound(false);
         }
@@ -364,7 +394,13 @@ namespace CoreSystems.Platform
             if (ReloadEmitter == null)
                 return;
 
-            ReloadEmitter.StopSound(true);
+            if (ReloadEmitter.Loop)
+            {
+                ReloadEmitter.StopSound(true);
+                ReloadEmitter.PlaySound(ReloadSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+            }
+            else
+                ReloadEmitter.StopSound(false);
         }
 
         public void StopRotateSound()
@@ -375,7 +411,8 @@ namespace CoreSystems.Platform
             if (RotateEmitter.Loop)
 			{
 				RotateEmitter.StopSound(true);
-			}
+                RotateEmitter.PlaySound(RotateSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+            }
             else
                 RotateEmitter.StopSound(false);
         }
