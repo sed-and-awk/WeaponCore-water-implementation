@@ -14,6 +14,9 @@ namespace CoreSystems.Platform
             LastTrackedTick = Comp.Session.Tick;
             IsHome = false;
 
+            if (HasHardPointSound && PlayTurretAv && !PlayingHardPointSound)
+                StartHardPointSound();
+
             if (AiOnlyWeapon) {
 
                 if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
@@ -110,6 +113,9 @@ namespace CoreSystems.Platform
                 else {
                     IsHome = true;
                     ReturingHome = false;
+
+                    if (HasHardPointSound && PlayingHardPointSound)
+                        StopHardPointSound();
                 }
             }
         }

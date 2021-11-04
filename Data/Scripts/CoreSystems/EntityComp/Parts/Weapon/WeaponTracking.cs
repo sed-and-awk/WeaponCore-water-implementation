@@ -361,9 +361,6 @@ namespace CoreSystems.Platform
                     w.ReturingHome = false;
                     locked = false;
                     
-                    if (w.HasHardPointSound && !w.PlayingHardPointSound)
-                        w.StartHardPointSound();
-
                     w.AimBarrel();
                 }
             }
