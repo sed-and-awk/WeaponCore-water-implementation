@@ -37,6 +37,7 @@ namespace CoreSystems.Support
             else if (IsBlock && FunctionalBlock.Enabled) {
                 FunctionalBlock.Enabled = false;
                 FunctionalBlock.Enabled = true;
+                LastOnOffState = true;
             }
 
             Status = Start.ReInit;

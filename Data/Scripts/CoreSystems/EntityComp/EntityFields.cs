@@ -67,6 +67,7 @@ namespace CoreSystems.Support
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool IsDisabled;
+        internal bool LastOnOffState;
         internal bool HasStrengthSlider;
         internal bool CanOverload;
         internal bool HasTurret;
