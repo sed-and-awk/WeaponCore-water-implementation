@@ -147,7 +147,7 @@ namespace CoreSystems.Support
 
             var system = PartSystems[PartHashes[PrimaryPart]];
             StructureType = StructureTypes.Weapon;
-            EntityType = system.PartType != HardwareDef.HardwareType.HandWeapon ? EnittyTypes.Block : EnittyTypes.Rifle;
+            EntityType = system.PartType == HardwareDef.HardwareType.BlockWeapon ? EnittyTypes.Block : system.PartType == HardwareDef.HardwareType.HandWeapon ? EnittyTypes.Rifle : EnittyTypes.Phantom;
         }
     }
 
