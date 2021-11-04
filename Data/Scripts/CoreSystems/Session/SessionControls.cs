@@ -366,8 +366,9 @@ namespace CoreSystems
 
         private static void OnOffAnimations(CoreComponent comp, bool on)
         {
-            if (comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (comp.Platform.State != CorePlatform.PlatformState.Ready || on == comp.LastOnOffState) return;
 
+            comp.LastOnOffState = on;
             var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
             for (int i = 0; i < collection.Count; i++) {
 
