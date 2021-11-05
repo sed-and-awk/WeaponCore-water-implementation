@@ -299,7 +299,7 @@ namespace CoreSystems.Platform
                 var delay = delayTime > 0 && ShotsFired == 0;
 
                 if (System.WConst.ReloadTime > 0 || delay)
-                    ReloadEndTick = (uint)(Comp.Session.Tick + (System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
+                    ReloadEndTick = (uint)(Comp.Session.Tick + (!delay || System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
                 else Reloaded();
             }
 
