@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -311,17 +312,22 @@ namespace CoreSystems.Platform
                 System.Session.SendState(Comp);
         }
 
+        private bool _badDelay;
         private void BurstMode()
         {
             if (ShotsFired == System.ShotsPerBurst) {
 
-                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
                 uint delay = 0;
-                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
+                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+
+                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) // this is getting yeeted soon.
                 {
                     BurstEventTick = System.Session.Tick + delay;
-                    BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + BurstEventTick : System.Session.Tick + TicksPerShot + BurstEventTick;
+                    BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+
+                    if (!_badDelay)
+                        BadDelay();
                 }
                 else
                 {
@@ -338,6 +344,21 @@ namespace CoreSystems.Platform
             }
             else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
                 FinishBurst = true;
+        }
+
+        private void BadDelay()
+        {
+            _badDelay = true;
+            var message1 = $"This mod uses animation to delay shooting, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
+            var message2 = $"ModPath:{Comp.Structure.ModPath}";
+            Log.Line(message1);
+            Log.Line(message2);
+
+            if (System.Session.HandlesInput)
+            {
+                MyAPIGateway.Utilities.ShowNotification(message1, 10000, "Red");
+                MyAPIGateway.Utilities.ShowNotification(message2, 10000, "Red");
+            }
         }
 
         private void UnSetPreFire()

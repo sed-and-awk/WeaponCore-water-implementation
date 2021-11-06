@@ -307,6 +307,8 @@ namespace CoreSystems.Platform
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
+        private bool _badBurst;
+
         internal void Reloaded(object o = null)
         {
             var input = o as int? ?? 0;
@@ -354,10 +356,29 @@ namespace CoreSystems.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
                 LastLoadedTick = Comp.Session.Tick;
-                ShotsFired = 0;
-                ShootTick = 0;
+
+                if ((ActiveAmmoDef.AmmoDef.Const.BurstMode || ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) && (ShotsFired > 0 || ShootTick >= System.Session.Tick) && !_badBurst)
+                    BadBurst();
+
+                if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0; // we are forcing these to 0 soon
+                //ShootTick = 0; // we are forcing these to 0 soon
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
+            }
+        }
+
+        private void BadBurst()
+        {
+            _badBurst = true;
+            var message1 = $"This mod uses Burst across reloads, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
+            var message2 = $"ModPath:{Comp.Structure.ModPath}";
+            Log.Line(message1);
+            Log.Line(message2);
+
+            if (System.Session.HandlesInput)
+            {
+                MyAPIGateway.Utilities.ShowNotification(message1, 10000, "Red");
+                MyAPIGateway.Utilities.ShowNotification(message2, 10000, "Red");
             }
         }
 
