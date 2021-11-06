@@ -317,12 +317,16 @@ namespace CoreSystems.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out BurstEventTick))
+                uint delay = 0;
+                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
+                {
+                    BurstEventTick = System.Session.Tick + delay;
                     BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + BurstEventTick : System.Session.Tick + TicksPerShot + BurstEventTick;
+                }
                 else
                 {
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + BurstEventTick : System.Session.Tick + TicksPerShot + BurstEventTick;
+                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 }
 
                 StopShooting();
