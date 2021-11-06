@@ -202,8 +202,6 @@ namespace CoreSystems.Platform
 
             ClientReloading = true;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
-
             StartReload();
             return true;
         }
@@ -263,8 +261,6 @@ namespace CoreSystems.Platform
             ++Reload.StartId;
             ++ClientStartId;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
-
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
 
                 var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
@@ -287,6 +283,7 @@ namespace CoreSystems.Platform
         internal void StartReload()
         {
             Loading = true;
+
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
@@ -357,6 +354,8 @@ namespace CoreSystems.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
                 LastLoadedTick = Comp.Session.Tick;
+                ShotsFired = 0;
+                ShootTick = 0;
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
             }

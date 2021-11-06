@@ -149,7 +149,6 @@ namespace CoreSystems.Support
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {
             try {
-
                 var wasFunctional = IsFunctional;
                 IsFunctional = myCubeBlock.IsFunctional;
 

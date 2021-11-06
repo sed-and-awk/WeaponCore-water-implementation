@@ -222,6 +222,10 @@ namespace CoreSystems.Support
 
                 if (!powered)
                 {
+
+                    if (HadPower)
+                        WeaponShootOff();
+
                     GridCurrentPower = 0;
                     GridMaxPower = 0;
                     GridAvailablePower = 0;

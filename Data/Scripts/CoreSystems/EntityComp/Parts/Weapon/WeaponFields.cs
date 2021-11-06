@@ -68,6 +68,8 @@ namespace CoreSystems.Platform
         internal bool LockOnFireState;
         internal bool ScheduleAmmoChange;
         internal bool CriticalReaction;
+        internal uint BurstEventTick = uint.MaxValue;
+        internal uint BurstShootTick;
         internal uint LastMagSeenTick;
         internal uint GravityTick;
         internal uint ShootTick;
@@ -78,7 +80,6 @@ namespace CoreSystems.Platform
         internal uint AzimuthTick;
         internal uint FastTargetResetTick;
         internal float HeatPerc;
-
         internal int BarrelRate;
         internal int ShotsFired;
         internal int LastMuzzle;

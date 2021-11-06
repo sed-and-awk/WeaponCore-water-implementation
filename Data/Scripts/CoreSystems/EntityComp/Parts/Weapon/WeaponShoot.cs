@@ -313,29 +313,24 @@ namespace CoreSystems.Platform
 
         private void BurstMode()
         {
-            if (ShotsFired == System.ShotsPerBurst)
-            {
-                uint delay = 0;
+            if (ShotsFired == System.ShotsPerBurst) {
+
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
-                {
-                    System.Session.FutureEvents.Schedule(o => {
-                        EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                        ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
-                    }, null, delay);
-                }
+
+                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out BurstEventTick))
+                    BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + BurstEventTick : System.Session.Tick + TicksPerShot + BurstEventTick;
                 else
+                {
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + BurstEventTick : System.Session.Tick + TicksPerShot + BurstEventTick;
+                }
 
-
-                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 StopShooting();
 
-                if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
-                {
-                    Target.Reset(System.Session.Tick, Target.States.FiredBurst);
-                    FastTargetResetTick = System.Session.Tick + 1;
-                }
+                if (!System.Values.HardPoint.Loading.GiveUpAfterBurst) return;
+
+                Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+                FastTargetResetTick = System.Session.Tick + 1;
             }
             else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
                 FinishBurst = true;

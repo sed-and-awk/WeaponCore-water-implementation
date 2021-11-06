@@ -188,6 +188,7 @@ namespace CoreSystems
                 for (int i = 0; i < ai.WeaponComps.Count; i++) {
 
                     var wComp = ai.WeaponComps[i];
+
                     if (wComp.Status != Started)
                         wComp.HealthCheck();
 
@@ -258,9 +259,6 @@ namespace CoreSystems
                             w.PlayTurretAv = distSqr < w.System.HardPointAvMaxDistSqr;
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
-
-                        //if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.PartState.Action != TriggerOff) 
-                        //    w.LostPowerIsThisEverUsed();
 
                         ///
                         ///Check Reload
@@ -368,6 +366,15 @@ namespace CoreSystems
 
                         if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && Tick - w.Target.ResetTick > 239 && !comp.UserControlled && w.PartState.Action == TriggerOff)
                             w.ScheduleWeaponHome();
+
+                        ///
+                        /// Trigger Delayed Burst Event
+                        /// 
+
+                        if (w.BurstEventTick == Tick) {
+                            w.EventTriggerStateChanged(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.BurstReload, true);
+                            w.ShootTick = w.BurstShootTick;
+                        }
 
                         ///
                         /// Determine if its time to shoot

@@ -200,8 +200,6 @@ namespace CoreSystems
                     comp.Monitors[i] = null;
                 }
 
-                //IdToCompMap.Remove(comp.MyCube.EntityId);
-
                 if (comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
                     if (comp.Type == CoreComponent.CompType.Weapon) {

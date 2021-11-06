@@ -120,8 +120,6 @@ namespace CoreSystems.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                //if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !ExitCharger)
-                //DrawPower();
                 if (!ActiveAmmoDef.AmmoDef.Const.Reloadable && !Comp.UnlimitedPower && !ExitCharger)
                     ChargeReload();
             }
@@ -142,8 +140,8 @@ namespace CoreSystems.Platform
 
             ResetShotState();
 
-            Log.Line($"StopShooting - reset:{System.Session.IsServer && !Comp.IsWorking && Comp.Data.Repo.Values.State.TerminalAction != CoreComponent.TriggerActions.TriggerOff}");
-            if (System.Session.IsServer && !Comp.IsWorking && Comp.Data.Repo.Values.State.TerminalAction != CoreComponent.TriggerActions.TriggerOff)
+            var resetBlock = System.Session.IsServer && Comp.IsBlock && (!Comp.Cube.IsWorking || !Comp.Ai.HasPower) && Comp.Data.Repo.Values.State.TerminalAction != CoreComponent.TriggerActions.TriggerOff;
+            if (resetBlock)
                 Comp.ResetPlayerControl();
         }
 
@@ -153,8 +151,6 @@ namespace CoreSystems.Platform
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
             FinishBurst = false;
-            ShotsFired = 0;
-            ShootTick = 0;
 
             if (PreFired)
                 UnSetPreFire();
