@@ -337,7 +337,7 @@ namespace CoreSystems.Platform
 
                 StopShooting();
 
-                if (!System.Values.HardPoint.Loading.GiveUpAfterBurst) return;
+                if (!System.Values.HardPoint.Loading.GiveUpAfter) return;
 
                 Target.Reset(System.Session.Tick, Target.States.FiredBurst);
                 FastTargetResetTick = System.Session.Tick + 1;
