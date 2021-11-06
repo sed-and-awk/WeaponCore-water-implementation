@@ -312,7 +312,6 @@ namespace CoreSystems.Platform
                 System.Session.SendState(Comp);
         }
 
-        private bool _badDelay;
         private void BurstMode()
         {
             if (ShotsFired == System.ShotsPerBurst) {
@@ -326,15 +325,15 @@ namespace CoreSystems.Platform
                     BurstEventTick = System.Session.Tick + delay;
                     BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
 
-                    if (!_badDelay)
+                    if (System.Session.BadModBlock.Add(Comp.Id))
                         BadDelay();
                 }
                 else
                 {
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 }
 
+                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 StopShooting();
 
                 if (!System.Values.HardPoint.Loading.GiveUpAfter) return;
@@ -348,7 +347,6 @@ namespace CoreSystems.Platform
 
         private void BadDelay()
         {
-            _badDelay = true;
             var message1 = $"This mod uses animation to delay shooting, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
             var message2 = $"ModPath:{Comp.Structure.ModPath}";
             Log.Line(message1);

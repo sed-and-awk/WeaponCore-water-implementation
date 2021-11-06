@@ -185,6 +185,7 @@ namespace CoreSystems
         internal readonly HashSet<SupportSys> DisplayAffectedArmor = new HashSet<SupportSys>();
         internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
         internal readonly HashSet<IMyPlayer> PlayerControllerMonitor = new HashSet<IMyPlayer>();
+        internal readonly HashSet<MyDefinitionId> BadModBlock = new HashSet<MyDefinitionId>();
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();
