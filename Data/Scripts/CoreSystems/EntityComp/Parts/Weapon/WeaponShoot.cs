@@ -331,9 +331,9 @@ namespace CoreSystems.Platform
                 else
                 {
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 }
 
+                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                 StopShooting();
 
                 if (!System.Values.HardPoint.Loading.GiveUpAfterBurst) return;
