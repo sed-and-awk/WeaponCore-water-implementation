@@ -638,6 +638,7 @@ namespace CoreSystems.Platform
                     w.StopReloadSound();
                     w.StopRotateSound();
                     w.StopShootingAv(false);
+                    w.IsShooting = false;
                 }
             }
 

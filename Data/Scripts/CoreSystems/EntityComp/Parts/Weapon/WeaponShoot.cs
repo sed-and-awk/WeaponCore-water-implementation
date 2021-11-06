@@ -276,8 +276,7 @@ namespace CoreSystems.Platform
                 #endregion
 
                 #region Reload and Animation
-                if (IsShooting)
-                    EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
                 if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
                     BurstMode();
@@ -316,27 +315,21 @@ namespace CoreSystems.Platform
         {
             if (ShotsFired == System.ShotsPerBurst)
             {
-
                 uint delay = 0;
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
                 {
-
                     System.Session.FutureEvents.Schedule(o => {
                         EventTriggerStateChanged(EventTriggers.BurstReload, true);
                         ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
-                        StopShooting();
-
                     }, null, delay);
                 }
                 else
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
 
-                if (IsShooting)
-                {
-                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
-                    StopShooting();
-                }
+
+                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+                StopShooting();
 
                 if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
                 {

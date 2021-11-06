@@ -297,7 +297,6 @@ namespace CoreSystems.Platform
                 var timeSinceShot = LastShootTick > 0 ? System.Session.Tick - LastShootTick : 0;
                 var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var delay = delayTime > 0 && ShotsFired == 0;
-
                 if (System.WConst.ReloadTime > 0 || delay)
                     ReloadEndTick = (uint)(Comp.Session.Tick + (!delay || System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
                 else Reloaded();

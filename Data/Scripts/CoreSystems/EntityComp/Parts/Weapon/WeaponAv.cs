@@ -72,7 +72,6 @@ namespace CoreSystems.Platform
                     System.Session.Av.BeamEffects.Remove(muzzle.UniqueId);
                 }
             }
-            IsShooting = false;
         }
 
 

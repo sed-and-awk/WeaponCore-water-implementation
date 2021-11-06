@@ -130,15 +130,7 @@ namespace CoreSystems.Platform
 
         public void StopShooting(bool power = true)
         {
-            FireCounter = 0;
-            CeaseFireDelayTick = uint.MaxValue / 2;
-            _ticksUntilShoot = 0;
-            FinishBurst = false;
-
-            if (PreFired)
-                UnSetPreFire();
-
-            if (IsShooting && !System.DesignatorWeapon)
+            if ((IsShooting || PreFired) && !System.DesignatorWeapon)
             {
                 EventTriggerStateChanged(EventTriggers.Firing, false);
                 EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
@@ -147,23 +139,27 @@ namespace CoreSystems.Platform
 
             if (System.Session.HandlesInput)
                 StopShootingAv(power);
-            else IsShooting = false;
+
+            ResetShotState();
+
+            Log.Line($"StopShooting - reset:{System.Session.IsServer && !Comp.IsWorking && Comp.Data.Repo.Values.State.TerminalAction != CoreComponent.TriggerActions.TriggerOff}");
+            if (System.Session.IsServer && !Comp.IsWorking && Comp.Data.Repo.Values.State.TerminalAction != CoreComponent.TriggerActions.TriggerOff)
+                Comp.ResetPlayerControl();
         }
 
-        internal void LostPowerIsThisEverUsed()
+        private void ResetShotState()
         {
-            if (System.Session.IsServer)
-            {
-                PartState.WeaponMode(Comp, CoreComponent.TriggerActions.TriggerOff);
-                //w.Ammo.CurrentAmmo = 0;
-                Log.Line($"power off set ammo to 0");
-            }
+            FireCounter = 0;
+            CeaseFireDelayTick = uint.MaxValue / 2;
+            _ticksUntilShoot = 0;
+            FinishBurst = false;
+            ShotsFired = 0;
+            ShootTick = 0;
 
-            Log.Line($"LostPowerIsThisEverUsed");
-            CancelReload();
+            if (PreFired)
+                UnSetPreFire();
 
-            if (IsShooting)
-                StopShooting();
+            IsShooting = false;
         }
 
         internal double GetMaxWeaponRange()
