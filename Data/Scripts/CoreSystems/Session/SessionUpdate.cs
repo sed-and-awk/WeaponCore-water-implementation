@@ -387,17 +387,21 @@ namespace CoreSystems
                         var validShootStates = paintedTarget || w.PartState.Action == TriggerOn || w.PartState.Action == TriggerOnce || w.AiShooting && w.PartState.Action == TriggerOff;
                         var manualShot = (compManualMode || w.PartState.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
-                        var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
+                        var finish = w.FinishBurst || w.FinishMag;
+                        var shoot = (validShootStates || manualShot || finish || delayedFire);
                         w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
                         
                         if (shotReady && ai.CanShoot) {
 
                             if (MpActive && HandlesInput && !ManualShot)
-                                ManualShot = !validShootStates && !w.FinishBurst && !delayedFire;
+                                ManualShot = !validShootStates && !finish && !delayedFire;
 
-                            if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
+                            if (w.System.DelayCeaseFire && (validShootStates || manualShot || finish))
                                 w.CeaseFireDelayTick = Tick;
+
+                            if (w.System.AlwaysFireFullMag)
+                                w.FinishMag = true;
 
                             ShootingWeapons.Add(w);
                         }

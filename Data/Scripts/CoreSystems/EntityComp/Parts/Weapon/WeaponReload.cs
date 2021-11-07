@@ -283,6 +283,13 @@ namespace CoreSystems.Platform
         internal void StartReload()
         {
             Loading = true;
+            FinishMag = false;
+
+            if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && System.Values.HardPoint.Loading.GiveUpAfter)
+            {
+                Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+                FastTargetResetTick = System.Session.Tick + 1;
+            }
 
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 

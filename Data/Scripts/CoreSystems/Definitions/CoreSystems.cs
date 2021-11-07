@@ -153,6 +153,7 @@ namespace CoreSystems.Support
         public readonly bool DesignatorWeapon;
         public readonly bool DelayCeaseFire;
         public readonly bool AlwaysFireFullBurst;
+        public readonly bool AlwaysFireFullMag;
         public readonly bool WeaponReloadSound;
         public readonly bool NoAmmoSound;
         public readonly bool HardPointRotationSound;
@@ -229,7 +230,8 @@ namespace CoreSystems.Support
             StayCharged = values.HardPoint.Loading.StayCharged || WConst.ReloadTime == 0;
             MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
             ClosestFirst = values.Targeting.ClosestFirst;
-            AlwaysFireFullBurst = Values.HardPoint.Loading.FireFullBurst;
+            AlwaysFireFullBurst = values.HardPoint.Loading.ShotsInBurst > 0 && Values.HardPoint.Loading.FireFull;
+            AlwaysFireFullMag = values.HardPoint.Loading.ShotsInBurst == 0 && Values.HardPoint.Loading.FireFull;
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
