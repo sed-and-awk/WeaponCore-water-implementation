@@ -58,17 +58,6 @@ namespace CoreSystems.Platform
 
                 if (!IsShooting) StartShooting();
 
-                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) {
-                    ShotsFired = 1;
-                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
-                }
-                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst) {
-                    ShotsFired = 0;
-                    ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
-                }
-
                 if (Comp.Ai.VelocityUpdateTick != tick) {
                     Comp.Ai.GridVel = Comp.Ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Comp.Ai.IsStatic = Comp.Ai.TopEntity.Physics?.IsStatic ?? false;
@@ -279,6 +268,13 @@ namespace CoreSystems.Platform
                 #region Reload and Animation
                 EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
+                if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst)
+                {
+                    var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                    ShotsFired = 0;
+                    ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
+                }
+
                 if (System.AlwaysFireFull || ActiveAmmoDef.AmmoDef.Const.BurstMode)
                     FinishMode();
 
@@ -314,6 +310,11 @@ namespace CoreSystems.Platform
 
         private void FinishMode()
         {
+            if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) { // detect when the "first" burst cycle has ended and reset it to shot == 1 so that it can repeat multiple times within a reload window
+                ShotsFired = 1;
+                EventTriggerStateChanged(EventTriggers.BurstReload, false);
+            }
+
             var outOfShots = ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0;
             var burstReset = ActiveAmmoDef.AmmoDef.Const.BurstMode && ShotsFired == System.ShotsPerBurst;
             var genericReset = !ActiveAmmoDef.AmmoDef.Const.BurstMode && outOfShots;

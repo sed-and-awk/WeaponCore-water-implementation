@@ -248,7 +248,7 @@ namespace CoreSystems.Support
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
-            CheckForBadAnimations();
+           // CheckForBadAnimations();
 
             ApproximatePeakPower = WConst.IdlePower;
 

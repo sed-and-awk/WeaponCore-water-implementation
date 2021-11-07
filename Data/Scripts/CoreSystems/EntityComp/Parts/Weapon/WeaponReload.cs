@@ -362,13 +362,11 @@ namespace CoreSystems.Platform
                 LastLoadedTick = Comp.Session.Tick;
 
 
+                //if ((ActiveAmmoDef.AmmoDef.Const.BurstMode || ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) && (ShotsFired > 0 || ShootTick > System.Session.Tick) && System.Session.BadModBlock.Add(Comp.Id))
+                //    BadBurst();
 
-                if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0; // we are forcing these to 0 soon
-
-                if ((ActiveAmmoDef.AmmoDef.Const.BurstMode || ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) && (ShotsFired > 0 || ShootTick > System.Session.Tick) && System.Session.BadModBlock.Add(Comp.Id))
-                    BadBurst();
-
-                //ShootTick = 0; // we are forcing these to 0 soon
+                ShotsFired = 0; // we are forcing these to 0 soon
+                ShootTick = 0; // we are forcing these to 0 soon
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
             }
@@ -376,7 +374,7 @@ namespace CoreSystems.Platform
 
         private void BadBurst()
         {
-            var message1 = $"This mod uses Burst across reloads, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
+            var message1 = $"This mod uses Burst across reloads, ShotsFired:{ShotsFired} - ExtraDelay:{ShootTick - ShootTick}, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
             var message2 = $"ModPath:{Comp.Structure.ModPath}";
             Log.Line(message1);
             Log.Line(message2);
