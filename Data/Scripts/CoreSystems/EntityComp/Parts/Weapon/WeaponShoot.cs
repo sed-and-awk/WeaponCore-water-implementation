@@ -267,6 +267,16 @@ namespace CoreSystems.Platform
 
                 #region Reload and Animation
                 EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                _muzzlesToFire.Clear();
+                _nextVirtual = _nextVirtual + 1 < System.Values.HardPoint.Loading.BarrelsPerShot ? _nextVirtual + 1 : 0;
+
+                if (s.IsServer && selfDamage > 0)
+                {
+                    if (Comp.IsBlock)
+                        ((IMyDestroyableObject)Comp.Cube.SlimBlock).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.CoreEntity.EntityId);
+                    else
+                        ((IMyDestroyableObject)Comp.TopEntity as IMyCharacter).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.CoreEntity.EntityId);
+                }
 
                 if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst)
                 {
@@ -278,35 +288,11 @@ namespace CoreSystems.Platform
                 if (System.AlwaysFireFull || ActiveAmmoDef.AmmoDef.Const.BurstMode)
                     FinishMode();
 
-                _muzzlesToFire.Clear();
-
-                if (s.IsServer && selfDamage > 0)
-                {
-                    if (Comp.IsBlock)
-                        ((IMyDestroyableObject)Comp.Cube.SlimBlock).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.CoreEntity.EntityId);
-                    else
-                        ((IMyDestroyableObject)Comp.TopEntity as IMyCharacter).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.CoreEntity.EntityId);
-                }
-
                 #endregion
-                _nextVirtual = _nextVirtual + 1 < System.Values.HardPoint.Loading.BarrelsPerShot ? _nextVirtual + 1 : 0;
             }
             catch (Exception e) { Log.Line($"Error in shoot: {e}", null, true); }
         }
 
-        private void OverHeat()
-        {
-            if (!System.Session.IsClient && Comp.Data.Repo.Values.Set.Overload > 1) {
-                var dmg = .02f * Comp.MaxIntegrity;
-                Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.TopEntity.EntityId);
-            }
-            EventTriggerStateChanged(EventTriggers.Overheated, true);
-
-            var wasOver = PartState.Overheated;
-            PartState.Overheated = true;
-            if (System.Session.MpActive && System.Session.IsServer && !wasOver)
-                System.Session.SendState(Comp);
-        }
 
         private void FinishMode()
         {
@@ -336,6 +322,22 @@ namespace CoreSystems.Platform
             Target.Reset(System.Session.Tick, Target.States.FiredBurst);
             FastTargetResetTick = System.Session.Tick + 1;
         }
+
+        private void OverHeat()
+        {
+            if (!System.Session.IsClient && Comp.Data.Repo.Values.Set.Overload > 1)
+            {
+                var dmg = .02f * Comp.MaxIntegrity;
+                Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.TopEntity.EntityId);
+            }
+            EventTriggerStateChanged(EventTriggers.Overheated, true);
+
+            var wasOver = PartState.Overheated;
+            PartState.Overheated = true;
+            if (System.Session.MpActive && System.Session.IsServer && !wasOver)
+                System.Session.SendState(Comp);
+        }
+
         private void UnSetPreFire()
         {
             EventTriggerStateChanged(EventTriggers.PreFire, false);
