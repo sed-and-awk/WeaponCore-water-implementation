@@ -248,11 +248,6 @@ namespace CoreSystems.Support
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
-            uint delay;
-            if (PartAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay))
-                if (delay > DelayToFire)
-                    DelayToFire = (int)delay;
-
             CheckForBadAnimations();
 
             ApproximatePeakPower = WConst.IdlePower;
@@ -284,16 +279,16 @@ namespace CoreSystems.Support
             uint delay;
             if (PartAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay) && delay > DelayToFire)
             {
-                var message1 = $"This mod uses animation PreFire delay instead of DelayToFire, this will break multiplayer... please report to mod author -- Weapon:{PartName}";
+                var message1 = $"This mod uses animation PreFire delay ({delay}) instead of DelayToFire ({DelayToFire}), this will break multiplayer... please report to mod author -- Weapon:{PartName}";
                 var message2 = $"ModPath:{Values.ModPath}";
                 Log.Line(message1);
                 Log.Line(message2);
             }
 
 
-            if (PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) && delay > Values.HardPoint.Loading.DelayAfterBurst)
+            if (Values.HardPoint.Loading.ShotsInBurst > 0 && PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) && delay > Values.HardPoint.Loading.DelayAfterBurst)
             {
-                var message1 = $"This mod uses animation to delay shooting instead of DelayAfterBurst, this will break multiplayer... please report to mod author -- Weapon:{PartName}";
+                var message1 = $"This mod uses animation to delay ({delay}) shooting instead of DelayAfterBurst ({Values.HardPoint.Loading.DelayAfterBurst}), this will break multiplayer... please report to mod author -- Weapon:{PartName}";
                 var message2 = $"ModPath:{Values.ModPath}";
                 Log.Line(message1);
                 Log.Line(message2);
