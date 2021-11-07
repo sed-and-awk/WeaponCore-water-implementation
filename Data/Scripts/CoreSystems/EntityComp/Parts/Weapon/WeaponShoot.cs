@@ -27,8 +27,8 @@ namespace CoreSystems.Platform
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
                         StartPreFiringSound();
 
-                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge && ActiveAmmoDef.AmmoDef.Const.Reloadable || System.AlwaysFireFullBurst)
-                        FinishBurst = true;
+                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge && ActiveAmmoDef.AmmoDef.Const.Reloadable || System.AlwaysFireFull)
+                        FinishShots = true;
 
                     if (!PreFired)
                         SetPreFire();
@@ -279,8 +279,8 @@ namespace CoreSystems.Platform
                 #region Reload and Animation
                 EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
-                    BurstMode();
+                if (System.AlwaysFireFull || ActiveAmmoDef.AmmoDef.Const.BurstMode)
+                    FinishMode();
 
                 _muzzlesToFire.Clear();
 
@@ -312,53 +312,29 @@ namespace CoreSystems.Platform
                 System.Session.SendState(Comp);
         }
 
-        private void BurstMode()
+        private void FinishMode()
         {
-            if (ShotsFired == System.ShotsPerBurst) {
+            var outOfShots = ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0;
+            var burstReset = ActiveAmmoDef.AmmoDef.Const.BurstMode && ShotsFired == System.ShotsPerBurst;
+            var genericReset = !ActiveAmmoDef.AmmoDef.Const.BurstMode && outOfShots;
 
+            if (burstReset) {
 
-                uint delay = 0;
+                EventTriggerStateChanged(EventTriggers.BurstReload, true);
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                ShootTick = System.Values.HardPoint.Loading.DelayAfterBurst > TicksPerShot ? System.Session.Tick + burstDelay : System.Session.Tick + TicksPerShot;
+            }
+            else if (System.AlwaysFireFull)
+                FinishShots = true;
 
-                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) // this is getting yeeted soon.
-                {
-                    BurstEventTick = System.Session.Tick + delay;
-                    BurstShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
-
-                    if (System.Session.BadModBlock.Add(Comp.Id))
-                        BadDelay();
-                }
-                else
-                {
-                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                }
-
-                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+            if (burstReset || genericReset)
                 StopShooting();
+            
+            if (!System.Session.IsServer || !System.Values.HardPoint.Loading.GiveUpAfter) return;
 
-                if (!System.Values.HardPoint.Loading.GiveUpAfter) return;
-
-                Target.Reset(System.Session.Tick, Target.States.FiredBurst);
-                FastTargetResetTick = System.Session.Tick + 1;
-            }
-            else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
-                FinishBurst = true;
+            Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+            FastTargetResetTick = System.Session.Tick + 1;
         }
-
-        private void BadDelay()
-        {
-            var message1 = $"This mod uses animation to delay shooting, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
-            var message2 = $"ModPath:{Comp.Structure.ModPath}";
-            Log.Line(message1);
-            Log.Line(message2);
-
-            if (System.Session.HandlesInput)
-            {
-                MyAPIGateway.Utilities.ShowNotification(message1, 10000, "Red");
-                MyAPIGateway.Utilities.ShowNotification(message2, 10000, "Red");
-            }
-        }
-
         private void UnSetPreFire()
         {
             EventTriggerStateChanged(EventTriggers.PreFire, false);

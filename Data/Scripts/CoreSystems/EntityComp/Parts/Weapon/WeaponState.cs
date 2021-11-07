@@ -150,7 +150,7 @@ namespace CoreSystems.Platform
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
-            FinishBurst = false;
+            FinishShots = false;
 
             if (PreFired)
                 UnSetPreFire();

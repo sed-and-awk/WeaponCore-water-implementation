@@ -152,8 +152,7 @@ namespace CoreSystems.Support
         public readonly bool TrackNeutrals;
         public readonly bool DesignatorWeapon;
         public readonly bool DelayCeaseFire;
-        public readonly bool AlwaysFireFullBurst;
-        public readonly bool AlwaysFireFullMag;
+        public readonly bool AlwaysFireFull;
         public readonly bool WeaponReloadSound;
         public readonly bool NoAmmoSound;
         public readonly bool HardPointRotationSound;
@@ -230,8 +229,7 @@ namespace CoreSystems.Support
             StayCharged = values.HardPoint.Loading.StayCharged || WConst.ReloadTime == 0;
             MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
             ClosestFirst = values.Targeting.ClosestFirst;
-            AlwaysFireFullBurst = values.HardPoint.Loading.ShotsInBurst > 0 && Values.HardPoint.Loading.FireFull;
-            AlwaysFireFullMag = values.HardPoint.Loading.ShotsInBurst == 0 && Values.HardPoint.Loading.FireFull;
+            AlwaysFireFull = values.HardPoint.Loading.FireFull;
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
@@ -254,6 +252,8 @@ namespace CoreSystems.Support
             if (PartAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay))
                 if (delay > DelayToFire)
                     DelayToFire = (int)delay;
+
+            CheckForBadAnimations();
 
             ApproximatePeakPower = WConst.IdlePower;
 
@@ -279,6 +279,26 @@ namespace CoreSystems.Support
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound != FiringSoundState.None;
         }
 
+        private void CheckForBadAnimations()
+        {
+            uint delay;
+            if (PartAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay) && delay > DelayToFire)
+            {
+                var message1 = $"This mod uses animation PreFire delay instead of DelayToFire, this will break multiplayer... please report to mod author -- Weapon:{PartName}";
+                var message2 = $"ModPath:{Values.ModPath}";
+                Log.Line(message1);
+                Log.Line(message2);
+            }
+
+
+            if (PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) && delay > Values.HardPoint.Loading.DelayAfterBurst)
+            {
+                var message1 = $"This mod uses animation to delay shooting instead of DelayAfterBurst, this will break multiplayer... please report to mod author -- Weapon:{PartName}";
+                var message2 = $"ModPath:{Values.ModPath}";
+                Log.Line(message1);
+                Log.Line(message2);
+            }
+        }
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
         {
             degRof = Values.HardPoint.Loading.DegradeRof;

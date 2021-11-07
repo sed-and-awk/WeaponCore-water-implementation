@@ -283,7 +283,6 @@ namespace CoreSystems.Platform
         internal void StartReload()
         {
             Loading = true;
-            FinishMag = false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && System.Values.HardPoint.Loading.GiveUpAfter)
             {

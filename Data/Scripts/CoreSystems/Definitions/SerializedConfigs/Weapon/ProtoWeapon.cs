@@ -91,7 +91,7 @@ namespace CoreSystems
                 {
 
                     var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
-                    var notShotBlocked = !w.PreFired && !w.Loading && !w.FinishBurst && !w.IsShooting;
+                    var notShotBlocked = !w.PreFired && !w.Loading && !w.FinishShots && !w.IsShooting;
                     if (!notShotBlocked && !ammoSpent)
                     {
 

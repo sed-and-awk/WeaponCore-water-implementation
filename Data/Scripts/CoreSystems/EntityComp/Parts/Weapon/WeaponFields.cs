@@ -64,13 +64,10 @@ namespace CoreSystems.Platform
 
         internal bool HeatLoopRunning;
         internal bool PreFired;
-        internal bool FinishBurst;
-        internal bool FinishMag;
+        internal bool FinishShots;
         internal bool LockOnFireState;
         internal bool ScheduleAmmoChange;
         internal bool CriticalReaction;
-        internal uint BurstEventTick = uint.MaxValue;
-        internal uint BurstShootTick;
         internal uint LastMagSeenTick;
         internal uint GravityTick;
         internal uint ShootTick;
