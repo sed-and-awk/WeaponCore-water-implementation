@@ -50,11 +50,9 @@ Modder documentation is currently in progress, and viewable on the [Wiki](https:
 
 # Thanks and Credits
 
-Special thanks to CriegWarfare (Blitz2190) for his amazing work on the heat/power subsystem, weapon turret control and animations, cockpit controls, and multiplayer support!
+Thanks to Ash for server override enhancements and quality of life work on v2. Thanks to CriegwareFare for his work on the block animations, heat mechanic and assisting with weapon reloading hud! Thanks to [NukeGuard](https://github.com/nukeguard) for the awesome GUI/HUD design and textures. Thanks to Derek for general bug fixing and weapon area placement limit feature.
 
-Thanks to [NukeGuard](https://github.com/nukeguard) for the awesome GUI textures. 
-
-And last but not least, a special thanks to the math wizard himself, [WhipLash141](https://github.com/Whiplash141) for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems in this mod.
+Special thanks to the math wizard himself [WhipLash141](https://github.com/Whiplash141) for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems is this mod.
 
 # Patreon
 
