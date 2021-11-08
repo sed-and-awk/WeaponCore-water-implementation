@@ -385,10 +385,10 @@ namespace CoreSystems.Support
                 var info = weapon.Dummies[muzzle.MuzzleId].Info;
                 var somethingEnded = avEffect.EndTick != 0 && avEffect.EndTick <= Session.Tick || !weapon.PlayTurretAv || info.Entity == null || info.Entity.MarkedForClose || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
-                var effectStale = effectExists && (!effect.Loop || effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
+                var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(false);
+                        effect.Stop(false);
                         weapon.Effects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
@@ -413,13 +413,23 @@ namespace CoreSystems.Support
                 matrix.Translation = info.LocalPosition + particles.Offset;
 
                 if (!effectExists && ticksAgo <= 0) {
+                    MyParticleEffect newEffect;
+                    if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out newEffect)) {
 
-                    if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.Effects1[muzzle.MuzzleId])) {
-
-                        effect = weapon.Effects1[muzzle.MuzzleId];
                         //effect.UserColorMultiplier = particles.Color;
-                        effect.UserRadiusMultiplier = particles.Extras.Scale;
-                        muzzle.Av1Looping = effect.Loop;
+                        newEffect.UserRadiusMultiplier = particles.Extras.Scale;
+                        if (newEffect.Loop)
+                        {
+                            weapon.Effects1[muzzle.MuzzleId] = newEffect;
+                            muzzle.Av1Looping = true;
+                        }
+                        else
+                        {
+                            muzzle.Av1Looping = false;
+                            muzzle.LastAv1Tick = 0;
+                            Effects1.RemoveAtFast(i);
+                            AvEffectPool.Return(avEffect);
+                        }
                     }
                 }
                 else if (effectExists) {
@@ -446,12 +456,12 @@ namespace CoreSystems.Support
                 var info = weapon.Dummies[muzzle.MuzzleId].Info;
                 var somethingEnded = av.EndTick != 0 && av.EndTick <= Session.Tick || !weapon.PlayTurretAv || info.Entity == null || info.Entity.MarkedForClose || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                 
-                var effectStale = effectExists && (!effect.Loop || effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
+                var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
 
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                 {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(false);
+                        effect.Stop(false);
                         weapon.Effects2[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av2Looping = false;
@@ -475,12 +485,23 @@ namespace CoreSystems.Support
                 matrix.Translation = info.LocalPosition + particles.Offset;
 
                 if (!effectExists && ticksAgo <= 0)  {
-
-                    if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.Effects2[muzzle.MuzzleId]))  {
-                        effect = weapon.Effects2[muzzle.MuzzleId];
+                    MyParticleEffect newEffect;
+                    if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out newEffect))  {
+                        
                         //effect.UserColorMultiplier = particles.Color;
-                        effect.UserRadiusMultiplier = particles.Extras.Scale;
-                        muzzle.Av2Looping = effect.Loop;
+                        newEffect.UserRadiusMultiplier = particles.Extras.Scale;
+                        if (newEffect.Loop)
+                        {
+                            weapon.Effects2[muzzle.MuzzleId] = newEffect;
+                            muzzle.Av2Looping = true;
+                        }
+                        else
+                        {
+                            muzzle.Av2Looping = false;
+                            muzzle.LastAv2Tick = 0;
+                            Effects2.RemoveAtFast(i);
+                            AvEffectPool.Return(av);
+                        }
                     }
                 }
                 else if (effectExists)  {
