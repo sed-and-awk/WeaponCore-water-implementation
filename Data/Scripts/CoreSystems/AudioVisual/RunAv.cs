@@ -380,15 +380,15 @@ namespace CoreSystems.Support
 
                 var effectExists = effect != null;
                 if (effectExists && avEffect.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
-                    avEffect.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
+                    avEffect.EndTick = weapon.StopBarrelAvTick;
 
                 var info = weapon.Dummies[muzzle.MuzzleId].Info;
                 var somethingEnded = avEffect.EndTick != 0 && avEffect.EndTick <= Session.Tick || !weapon.PlayTurretAv || info.Entity == null || info.Entity.MarkedForClose || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
-                var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax) || !effectExists && ticksAgo > 0;
+                var effectStale = effectExists && (!effect.Loop || effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(bAv.Extras.Restart);
+                        if (effect.Loop) effect.Stop(false);
                         weapon.Effects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
@@ -419,13 +419,8 @@ namespace CoreSystems.Support
                         effect = weapon.Effects1[muzzle.MuzzleId];
                         //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
-                        muzzle.Av1Looping = effect.Loop || effect.DurationMax <= 0;
+                        muzzle.Av1Looping = effect.Loop;
                     }
-                }
-                else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped) {
-                    effect.WorldMatrix = matrix;
-                    //effect.SetTranslation(ref pos);
-                    effect.Play();
                 }
                 else if (effectExists) {
                     effect.WorldMatrix = matrix;
@@ -446,17 +441,17 @@ namespace CoreSystems.Support
                 var effect = weapon.Effects2[muzzle.MuzzleId];
                 var effectExists = effect != null;
                 if (effectExists && av.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
-                    av.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
+                    av.EndTick = weapon.StopBarrelAvTick;
                 
                 var info = weapon.Dummies[muzzle.MuzzleId].Info;
                 var somethingEnded = av.EndTick != 0 && av.EndTick <= Session.Tick || !weapon.PlayTurretAv || info.Entity == null || info.Entity.MarkedForClose || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                 
-                var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax) || !effectExists && ticksAgo > 0;
+                var effectStale = effectExists && (!effect.Loop || effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
 
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                 {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(bAv.Extras.Restart);
+                        if (effect.Loop) effect.Stop(false);
                         weapon.Effects2[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av2Looping = false;
@@ -485,14 +480,8 @@ namespace CoreSystems.Support
                         effect = weapon.Effects2[muzzle.MuzzleId];
                         //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
-                        muzzle.Av2Looping = effect.Loop || effect.DurationMax <= 0;
+                        muzzle.Av2Looping = effect.Loop;
                     }
-                }
-                else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped)  {
-
-                    effect.WorldMatrix = matrix;
-                    //effect.SetTranslation(ref pos);
-                    effect.Play();
                 }
                 else if (effectExists)  {
 
