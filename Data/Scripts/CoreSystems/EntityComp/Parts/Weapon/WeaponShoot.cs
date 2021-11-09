@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -283,6 +282,9 @@ namespace CoreSystems.Platform
                     var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                     ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
+
+                    if (System.Values.HardPoint.Loading.GiveUpAfter)
+                        GiveUpTarget();
                 }
 
                 if (System.AlwaysFireFull || ActiveAmmoDef.AmmoDef.Const.BurstMode)
@@ -310,17 +312,24 @@ namespace CoreSystems.Platform
                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 ShootTick = System.Values.HardPoint.Loading.DelayAfterBurst > TicksPerShot ? System.Session.Tick + burstDelay : System.Session.Tick + TicksPerShot;
+
+                 if (System.Values.HardPoint.Loading.GiveUpAfter)
+                     GiveUpTarget();
             }
             else if (System.AlwaysFireFull)
                 FinishShots = true;
 
             if (burstReset || genericReset)
                 StopShooting();
-            
-            if (!System.Session.IsServer || !System.Values.HardPoint.Loading.GiveUpAfter) return;
+        }
 
-            Target.Reset(System.Session.Tick, Target.States.FiredBurst);
-            FastTargetResetTick = System.Session.Tick + 1;
+        private void GiveUpTarget()
+        {
+            if (System.Session.IsServer)
+            {
+                Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+                FastTargetResetTick = System.Session.Tick + 1;
+            }
         }
 
         private void OverHeat()

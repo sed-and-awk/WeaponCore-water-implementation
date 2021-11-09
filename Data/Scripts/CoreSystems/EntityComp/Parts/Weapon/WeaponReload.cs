@@ -284,11 +284,8 @@ namespace CoreSystems.Platform
         {
             Loading = true;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && System.Values.HardPoint.Loading.GiveUpAfter)
-            {
-                Target.Reset(System.Session.Tick, Target.States.FiredBurst);
-                FastTargetResetTick = System.Session.Tick + 1;
-            }
+            if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && !ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.Values.HardPoint.Loading.GiveUpAfter)
+                GiveUpTarget();
 
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 
@@ -362,27 +359,10 @@ namespace CoreSystems.Platform
                 LastLoadedTick = Comp.Session.Tick;
 
 
-                //if ((ActiveAmmoDef.AmmoDef.Const.BurstMode || ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) && (ShotsFired > 0 || ShootTick > System.Session.Tick) && System.Session.BadModBlock.Add(Comp.Id))
-                //    BadBurst();
-
                 ShotsFired = 0; // we are forcing these to 0 soon
                 ShootTick = 0; // we are forcing these to 0 soon
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
-            }
-        }
-
-        private void BadBurst()
-        {
-            var message1 = $"This mod uses Burst across reloads, ShotsFired:{ShotsFired} - ExtraDelay:{ShootTick - ShootTick}, this will break multiplayer... please report to mod author -- Block:{Comp.SubtypeName} - Weapon:{System.PartName}";
-            var message2 = $"ModPath:{Comp.Structure.ModPath}";
-            Log.Line(message1);
-            Log.Line(message2);
-
-            if (System.Session.HandlesInput)
-            {
-                MyAPIGateway.Utilities.ShowNotification(message1, 10000, "Red");
-                MyAPIGateway.Utilities.ShowNotification(message2, 10000, "Red");
             }
         }
 
