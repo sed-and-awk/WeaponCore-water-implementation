@@ -91,6 +91,7 @@ namespace CoreSystems.Support
         internal IMyGridTerminalSystem TerminalSystem;
         internal IMyTerminalBlock LastTerminal;
         internal MyEntity MyShield;
+        internal IMyTerminalBlock ShieldBlock;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;

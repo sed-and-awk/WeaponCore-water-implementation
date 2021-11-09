@@ -339,7 +339,10 @@ namespace CoreSystems.Platform
             Comp.HeatPerSecond -= heatDif;
 
             if (InCharger)
+            {
                 NewPowerNeeds = true;
+                ProtoWeaponAmmo.CurrentCharge = 0;
+            }
         }
 
         internal bool SpinBarrel(bool spinDown = false)

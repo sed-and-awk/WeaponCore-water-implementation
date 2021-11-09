@@ -4,6 +4,7 @@ using CoreSystems.Platform;
 using CoreSystems.Projectiles;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using VRage;
 using VRageMath;
 using static CoreSystems.WeaponRandomGenerator;
@@ -216,6 +217,11 @@ namespace CoreSystems.Support
                     {
                         GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId, GridEntity);
                         GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId, GridEntity);
+                        if (Session.ShieldApiLoaded && ShieldBlock != null)
+                        {
+                            var shieldPower = Session.SApi.GetPowerUsed(ShieldBlock);
+                            GridCurrentPower -= shieldPower;
+                        }
                         powered = true;
                     }
                 }

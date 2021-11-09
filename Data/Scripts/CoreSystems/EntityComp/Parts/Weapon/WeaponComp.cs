@@ -228,7 +228,9 @@ namespace CoreSystems.Platform
             internal static void SetRange(Weapon.WeaponComponent comp)
             {
                 foreach (var w in comp.Collection)
+                {
                     w.UpdateWeaponRange();
+                }
             }
 
             internal static void SetRof(Weapon.WeaponComponent comp)

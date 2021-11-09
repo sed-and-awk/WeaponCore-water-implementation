@@ -192,8 +192,9 @@ namespace CoreSystems.Support
                 if (shieldGrid != null) {
 
                     if (shield.Id == TopEntity.EntityId || AiType == AiTypes.Grid && GridEntity.IsSameConstructAs(shieldGrid))  {
-                        ShieldFortified = Session.SApi.IsFortified(shield.ShieldBlock as IMyTerminalBlock);
+                        ShieldBlock = shield.ShieldBlock as IMyTerminalBlock;
                         MyShield = shield.ShieldEnt;
+                        ShieldFortified = Session.SApi.IsFortified(ShieldBlock);
                     }
                     else {
                         TargetInfo info;
