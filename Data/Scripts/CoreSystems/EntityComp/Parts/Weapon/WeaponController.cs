@@ -341,7 +341,6 @@ namespace CoreSystems.Platform
             if (InCharger)
             {
                 NewPowerNeeds = true;
-                ProtoWeaponAmmo.CurrentCharge = 0;
             }
         }
 

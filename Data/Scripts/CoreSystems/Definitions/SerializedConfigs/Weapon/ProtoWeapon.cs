@@ -21,6 +21,7 @@ namespace CoreSystems
             //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
             //Values.PartState.PlayerId = -1;
             Values.State.TrackingReticle = false;
+            Values.Set.DpsModifier = 1;
             Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
 
             if (Values.State.Control == ProtoWeaponState.ControlMode.Ui)

@@ -641,7 +641,7 @@ namespace CoreSystems.Platform
         {
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;
-            w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || ui.DamageModifier;
+            //w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || ui.DamageModifier; // this has exploits
             w.Comp.HasRofSlider = w.Comp.HasRofSlider || ui.RateOfFire;
             w.BaseComp.CanOverload = w.BaseComp.CanOverload || ui.EnableOverload ;
             w.BaseComp.HasTurret = w.BaseComp.HasTurret || w.System.Values.HardPoint.Ai.TurretAttached;
@@ -652,7 +652,7 @@ namespace CoreSystems.Platform
             w.Comp.HasDelayToFire = w.Comp.HasDelayToFire || w.System.DelayToFire > 0;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
             w.BaseComp.HasServerOverrides = w.BaseComp.HasServerOverrides || w.System.WConst.HasServerOverrides;
-            if (ui.DamageModifier || ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance)
+            if (ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance) // removed ui.DamageModifier explit
                 w.BaseComp.UiEnabled = true;
 
             if (w.System.HasAmmoSelection)
