@@ -388,7 +388,7 @@ namespace CoreSystems.Support
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped) || !effectExists && ticksAgo > 0;
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
-                        effect.Stop(false);
+                        effect.Stop(bAv.Extras.Restart);
                         weapon.Effects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
@@ -461,7 +461,7 @@ namespace CoreSystems.Support
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                 {
                     if (effectExists) {
-                        effect.Stop(false);
+                        effect.Stop(bAv.Extras.Restart);
                         weapon.Effects2[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av2Looping = false;

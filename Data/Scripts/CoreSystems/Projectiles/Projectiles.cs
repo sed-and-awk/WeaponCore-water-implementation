@@ -126,9 +126,6 @@ namespace CoreSystems.Projectiles
                     }
                     p.Asleep = false;
                 }
-                var oldPos = p.Position;
-                var oldVel = p.Velocity;
-                var oldDir = p.Info.Direction;
                 switch (p.State) {
                     case ProjectileState.Destroy:
                         p.DestroyProjectile();
@@ -169,9 +166,6 @@ namespace CoreSystems.Projectiles
                         }
                     }
 
-                    var oldPos2 = p.Position;
-                    var oldVel2 = p.Velocity;
-                    var oldDir2 = p.Info.Direction;
 
                     if (p.DeltaVelocityPerTick > 0 && !p.Info.EwarAreaPulse) {
 
@@ -205,13 +199,6 @@ namespace CoreSystems.Projectiles
 
                             p.Velocity = newVel;
                         }
-                    }
-
-                    if (double.IsNaN(p.Velocity.X) || double.IsNaN(p.Velocity.Y) || double.IsNaN(p.Velocity.Z))
-                    {
-                        Log.Line($"Projectile NaN - age:{p.Info.Age} - State:{p.State} - ammo:{p.Info.AmmoDef.AmmoRound} - Gravity:{p.Gravity}({p.Info.AmmoDef.Const.GravityMultiplier}) - Position:{p.Position}({oldPos}-{oldPos2}) - Velocity:{p.Velocity}({oldVel}-{oldVel2}) - Direction:{p.Info.Direction}({oldDir}-{oldDir2}) - Accel:{p.AccelVelocity} - maxSpeed:{p.MaxSpeed} - start:{p.StartSpeed} - desired:{p.DesiredSpeed}");
-                        p.State = ProjectileState.Depleted;
-                        continue;
                     }
 
                     if (p.State == ProjectileState.OneAndDone) {

@@ -20,6 +20,7 @@ namespace CoreSystems.Support
         internal int ConstructPartCap;
         internal int PrimaryPart;
         internal string ModPath;
+        internal ulong ModId;
         internal Session Session;
         internal StructureTypes StructureType;
         internal EnittyTypes EntityType;
@@ -54,6 +55,10 @@ namespace CoreSystems.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             ModPath = modPath;
+            MyObjectBuilder_Checkpoint.ModItem modItem;
+            if (Session.ModInfo.TryGetValue(modPath, out modItem))
+                ModId = modItem.PublishedFileId;
+
             var partHashes = new MyStringHash[numOfParts];
             var muzzleHashes = new MyStringHash[numOfParts];
             var partId = 0;
@@ -160,6 +165,11 @@ namespace CoreSystems.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             ModPath = modPath;
+            
+            MyObjectBuilder_Checkpoint.ModItem modItem;
+            if (Session.ModInfo.TryGetValue(modPath, out modItem))
+                ModId = modItem.PublishedFileId;
+
             var partHashes = new MyStringHash[numOfParts];
             var partId = 0;
             PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
@@ -220,6 +230,11 @@ namespace CoreSystems.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             ModPath = modPath;
+
+            MyObjectBuilder_Checkpoint.ModItem modItem;
+            if (Session.ModInfo.TryGetValue(modPath, out modItem))
+                ModId = modItem.PublishedFileId;
+
             var partHashes = new MyStringHash[numOfParts];
             var partId = 0;
             PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);

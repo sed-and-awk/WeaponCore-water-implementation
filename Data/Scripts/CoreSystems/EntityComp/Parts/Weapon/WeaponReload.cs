@@ -358,9 +358,13 @@ namespace CoreSystems.Platform
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
                 LastLoadedTick = Comp.Session.Tick;
 
+                if (Comp.Structure.ModId != 2530716039) {
+                    ShotsFired = 0; 
+                    ShootTick = 0; 
+                }
+                else if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
+                    ShotsFired = 0;
 
-                ShotsFired = 0; // we are forcing these to 0 soon
-                ShootTick = 0; // we are forcing these to 0 soon
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
             }

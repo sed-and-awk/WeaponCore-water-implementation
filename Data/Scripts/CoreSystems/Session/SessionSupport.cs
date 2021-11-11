@@ -729,6 +729,11 @@ namespace CoreSystems
             var validId = false;
             foreach (var mod in Session.Mods)
             {
+                var modPath = mod.GetPath();
+                if (!string.IsNullOrEmpty(modPath))
+                    ModInfo.TryAdd(mod.GetPath(), mod);
+
+
                 if (mod.PublishedFileId == 1918681825 || mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055)
                     validId = true;
 

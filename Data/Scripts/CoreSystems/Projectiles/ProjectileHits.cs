@@ -604,7 +604,11 @@ namespace CoreSystems.Projectiles
         internal bool GenerateHitInfo(Projectile p)
         {
             var count = p.Info.HitList.Count;
-            if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, p.Info));
+            if (count > 1)
+            {
+                try { p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, p.Info)); } // Unable to sort because the IComparer.Compare() method returns inconsistent results
+                catch (Exception ex) { Log.Line($"p.Info.HitList.Sort failed: {ex} - weapon:{p.Info.System.PartName} - ammo:{p.Info.AmmoDef.AmmoRound} - hitCount:{p.Info.HitList.Count}", null, true); } 
+            }
             else GetEntityCompareDist(p.Info.HitList[0], null, p.Info);
             var pulseTrigger = false;
             

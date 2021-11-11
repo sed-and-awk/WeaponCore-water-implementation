@@ -382,11 +382,14 @@ namespace CoreSystems
 
                                             if (weaponCsDef.WeaponAmmoDatas[0] == null)
                                             {
-                                                Log.Line($"WeaponAmmoData is null, check the ProtoWeaponAmmo definition for {subTypeMap.Key}");
+                                                Log.Line($"WeaponAmmoData is null, check the block sbc/type for {subTypeMap.Key}");
                                             }
-                                            weaponCsDef.WeaponAmmoDatas[0].RateOfFire = partDef.HardPoint.Loading.RateOfFire;
+                                            else
+                                            {
+                                                weaponCsDef.WeaponAmmoDatas[0].RateOfFire = partDef.HardPoint.Loading.RateOfFire;
+                                                weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = partDef.HardPoint.Loading.ShotsInBurst;
+                                            }
 
-                                            weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = partDef.HardPoint.Loading.ShotsInBurst;
                                         }
                                         else if (def is MyConveyorSorterDefinition)
                                         {

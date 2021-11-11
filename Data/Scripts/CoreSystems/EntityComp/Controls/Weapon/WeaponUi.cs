@@ -157,7 +157,11 @@ namespace CoreSystems
             var maxTrajectory = 0f;
             for (int i = 0; i < comp.Collection.Count; i++)
             {
-                var curMax = comp.Collection[i].GetMaxWeaponRange();
+                var w = comp.Collection[i];
+                if (w.ActiveAmmoDef == null)
+                    return 0;
+
+                var curMax = w.GetMaxWeaponRange();
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }
