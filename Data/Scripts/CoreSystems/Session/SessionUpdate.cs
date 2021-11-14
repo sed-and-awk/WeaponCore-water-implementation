@@ -283,7 +283,7 @@ namespace CoreSystems
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && w.ShowReload);
+                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && w.ShowReload || w.System.LockOnFocus);
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
