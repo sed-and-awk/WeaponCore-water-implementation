@@ -229,7 +229,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValueWeapon;
-                var name = weapon.System.PartName + ": ";
+				var needsLock = weapon.System.LockOnFocus ? "Lockon to fire" : "";
+                var name = weapon.System.PartName + ": " + needsLock;
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
