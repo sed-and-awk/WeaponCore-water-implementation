@@ -23,7 +23,7 @@ namespace CoreSystems
         {
             None,
             Locked,
-            ExclusiveLock,
+            //ExclusiveLock,
         }
 
         [ProtoMember(1)] public uint Revision;

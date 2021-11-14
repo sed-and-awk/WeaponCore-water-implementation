@@ -368,22 +368,18 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     hudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
 
                     var color = Color.White;
+                    var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+                    
                     switch (lockMode)
                     {
                         case FocusData.LockModes.None:
                             color = Color.White;
                             break;
                         case FocusData.LockModes.Locked:
-                            color = s.Count < 60 ? Color.White : new Color(255, 255, 255, 64);
+                            color = s.Count < 60 ? Color.White : new Color(0, 50, 0, hudOpacity);
                             break;
-                        case FocusData.LockModes.ExclusiveLock:
-                            color = s.SCount < 30 ? Color.White : new Color(255, 255, 255, 64);
-                            break;
-
                     }
 
-                    var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
-                    color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
                     for (int j = 0; j < 11; j++)
                     {
