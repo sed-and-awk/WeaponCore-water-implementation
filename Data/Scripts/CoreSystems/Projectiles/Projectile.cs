@@ -54,6 +54,8 @@ namespace CoreSystems.Projectiles
         internal double MaxTrajectorySqr;
         internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
+        internal float DesiredDepth;
+        internal float Depth;
         internal int ChaseAge;
         internal int FieldTime;
         internal int EndStep;
@@ -81,6 +83,7 @@ namespace CoreSystems.Projectiles
         internal bool AtMaxRange;
         internal bool EarlyEnd;
         internal bool FeelsGravity;
+        internal bool Bouyant;
         internal bool LineOrNotModel;
         internal bool EntitiesNear;
         internal bool FakeGravityNear;

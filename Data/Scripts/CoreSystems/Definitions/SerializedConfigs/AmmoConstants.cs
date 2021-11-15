@@ -161,6 +161,7 @@ namespace CoreSystems.Support
         public readonly bool IsTurretSelectable;
         public readonly bool CanZombie;
         public readonly bool FeelsGravity;
+        public readonly bool Bouyant;
         public readonly bool MaxTrajectoryGrows;
         public readonly bool HasShotFade;
         public readonly bool CustomExplosionSound;
