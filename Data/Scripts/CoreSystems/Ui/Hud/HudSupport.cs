@@ -113,7 +113,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
             if (list.Count > WeaponLimit) //limit to top 50 based on heat
                 list.RemoveRange(WeaponLimit, list.Count - WeaponLimit);
-            else if (list.Count <= 1)
+            else if (list.Count <= StackThreshold)
             {
                 for (int i = 0; i < list.Count; i++)
                 {
