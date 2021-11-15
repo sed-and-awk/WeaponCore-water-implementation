@@ -229,7 +229,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValueWeapon;
-				var needsLock = weapon.System.LockOnFocus ? "Lock to fire" : "";
+                var currLock = _session.TrackingAi.Construct.Data.Repo.FocusData.Locked[0].ToString();
+                var needsLock = weapon.System.LockOnFocus && currLock == "None" ? "Lock to fire" : "";
                 var name = weapon.System.PartName + ": " + needsLock;
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
