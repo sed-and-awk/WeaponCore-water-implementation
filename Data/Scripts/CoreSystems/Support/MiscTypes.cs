@@ -111,20 +111,26 @@ namespace CoreSystems.Support
                     w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
                     w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
                     w.Target.SoftProjetileReset = false;
+                    Log.Line($"soft projectile reset");
                 }
 
                 if (!w.Target.HasTarget)
                 {
+                    Log.Line($"reacquire: {w.Target.ProjectileEndTick - w.System.Session.Tick}");
                     Ai.TargetType targetType;
                     Ai.AcquireProjectile(w, out targetType);
 
                     if (targetType == Ai.TargetType.None)
                     {
                         if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                        {
+                            Log.Line($"no target seen1");
                             w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+                        }
 
                         if (w.Target.CurrentState != States.NoTargetsSeen)
                         {
+                            Log.Line($"no target seen2");
                             w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle && w.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Painter);
                         }
                     }

@@ -365,7 +365,7 @@ namespace CoreSystems
                 else if (noTarget && target.IsProjectile)
                 {
                     target.SoftProjetileReset = true;
-                    target.ProjectileEndTick = w.System.Session.Tick + 60;
+                    target.ProjectileEndTick = w.System.Session.Tick + 120;
                 }
                 else
                 {
