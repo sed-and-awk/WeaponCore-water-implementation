@@ -104,13 +104,30 @@ namespace CoreSystems.Support
         internal void ClientUpdate(Weapon w, ProtoWeaponTransferTarget tData)
         {
 
-            if (w.Target.IsProjectile && w.System.Session.Tick < w.Target.ProjectileEndTick)
+            if (w.System.Session.Tick < w.Target.ProjectileEndTick)
             {
                 if (w.Target.SoftProjetileReset)
                 {
                     w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
                     w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
                     w.Target.SoftProjetileReset = false;
+                }
+
+                if (!w.Target.HasTarget)
+                {
+                    Ai.TargetType targetType;
+                    Ai.AcquireProjectile(w, out targetType);
+
+                    if (targetType == Ai.TargetType.None)
+                    {
+                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+
+                        if (w.Target.CurrentState != States.NoTargetsSeen)
+                        {
+                            w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle && w.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Painter);
+                        }
+                    }
                 }
 
                 return;
@@ -220,7 +237,6 @@ namespace CoreSystems.Support
             OrigDistance = 0;
             TopEntityId = 0;
             TargetId = 0;
-            ProjectileEndTick = 0;
             ResetTick = expiredTick;
             SoftProjetileReset = false;
             if (expire)
