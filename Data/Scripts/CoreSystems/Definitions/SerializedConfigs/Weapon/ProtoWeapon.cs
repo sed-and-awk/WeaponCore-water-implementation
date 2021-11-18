@@ -352,7 +352,28 @@ namespace CoreSystems
                 w.TargetData.WeaponRandom.Sync(WeaponRandom);
 
                 var target = w.Target;
-                target.IsProjectile = EntityId == -1;
+
+                var newProjectile = EntityId == -1;
+                var noTarget = EntityId == 0;
+
+                if (newProjectile)
+                {
+                    target.ProjectileEndTick = 0;
+                    target.SoftProjetileReset = false;
+                    target.IsProjectile = true;
+                }
+                else if (noTarget && target.IsProjectile)
+                {
+                    target.SoftProjetileReset = true;
+                    target.ProjectileEndTick = w.System.Session.Tick + 60;
+                }
+                else
+                {
+                    target.ProjectileEndTick = 0;
+                    target.SoftProjetileReset = false;
+                    target.IsProjectile = false;
+                }
+
                 target.IsFakeTarget = EntityId == -2;
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;

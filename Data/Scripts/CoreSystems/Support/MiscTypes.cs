@@ -16,6 +16,7 @@ namespace CoreSystems.Support
         internal States CurrentState = States.NotSet;
         internal bool HasTarget;
         internal bool IsAligned;
+        internal bool SoftProjetileReset;
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetChanged;
@@ -36,6 +37,7 @@ namespace CoreSystems.Support
         internal int BlockPrevDeckLen;
         internal uint ExpiredTick;
         internal uint ResetTick;
+        internal uint ProjectileEndTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
         internal double HitShortDist;
@@ -101,6 +103,19 @@ namespace CoreSystems.Support
 
         internal void ClientUpdate(Weapon w, ProtoWeaponTransferTarget tData)
         {
+
+            if (w.Target.IsProjectile && w.System.Session.Tick < w.Target.ProjectileEndTick)
+            {
+                if (w.Target.SoftProjetileReset)
+                {
+                    w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
+                    w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
+                    w.Target.SoftProjetileReset = false;
+                }
+
+                return;
+            }
+
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
             {
@@ -130,8 +145,13 @@ namespace CoreSystems.Support
                         }
                     }
                 }
-                w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
-                w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
+
+                if (w.System.Session.Tick != w.Target.ProjectileEndTick)
+                {
+                    w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
+                    w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
+                }
+
                 ClientDirty = false;
             }
         }
@@ -200,7 +220,9 @@ namespace CoreSystems.Support
             OrigDistance = 0;
             TopEntityId = 0;
             TargetId = 0;
+            ProjectileEndTick = 0;
             ResetTick = expiredTick;
+            SoftProjetileReset = false;
             if (expire)
             {
                 StateChange(false, reason);
