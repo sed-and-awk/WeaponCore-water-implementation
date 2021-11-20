@@ -40,7 +40,7 @@ namespace CoreSystems
                 var wa = Ammos[i];
                 var we = comp.Collection[i];
                 wa.AmmoCycleId = comp.DefaultAmmoId;
-                
+
                 if (comp.DefaultReloads != 0)
                     we.ProtoWeaponAmmo.CurrentMags = comp.DefaultReloads;
                 
@@ -55,6 +55,7 @@ namespace CoreSystems
                 }
 
                 wr.StartId = 0;
+                wr.WaitForClient = false;
             }
             ResetCompBaseRevisions();
         }

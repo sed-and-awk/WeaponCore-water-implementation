@@ -303,7 +303,12 @@ namespace CoreSystems.Platform
             }
 
             if (System.Session.MpActive && System.Session.IsServer)
+            {
+                if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && Comp.Data.Repo.Values.State.PlayerId > 0)
+                    Reload.WaitForClient = !System.Session.IsHost;
+
                 System.Session.SendWeaponReload(this);
+            }
 
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return;
@@ -344,12 +349,7 @@ namespace CoreSystems.Platform
                     ++Reload.EndId;
                     ClientEndId = Reload.EndId;
                     if (System.Session.MpActive)
-                    {
-                        if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo)
-                            Reload.WaitForClient = !System.Session.IsHost;
-                        
                         System.Session.SendWeaponReload(this);
-                    }
 
                     if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         --ProtoWeaponAmmo.CurrentMags;
@@ -359,7 +359,7 @@ namespace CoreSystems.Platform
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
 
-                    if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo)
+                    if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && System.Session.PlayerId == Comp.Data.Repo.Values.State.PlayerId)
                         System.Session.SendClientReady(this);
                 }
 

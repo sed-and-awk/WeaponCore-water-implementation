@@ -306,7 +306,7 @@ namespace CoreSystems
                 }
                 case PacketType.ClientReady:
                 {
-                    ServerClientReady(packetObj);
+                        ServerClientReady(packetObj);
                     break;
                 }
                 case PacketType.RequestShootUpdate: {

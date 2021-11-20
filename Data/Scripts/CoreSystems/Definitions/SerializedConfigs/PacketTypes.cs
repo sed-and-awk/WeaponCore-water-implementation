@@ -486,12 +486,12 @@ namespace CoreSystems
     [ProtoContract]
     public class ClientReadyPacket : Packet
     {
-        [ProtoMember(1), DefaultValue(-1)] internal int WeaponId = -1;
+        [ProtoMember(1)] internal int WeaponId;
 
         public override void CleanUp()
         {
             base.CleanUp();
-            WeaponId = -1;
+            WeaponId = 0;
         }
     }
 
