@@ -510,10 +510,12 @@ namespace CoreSystems
             else Log.Line("SendTargetChange should never be called on Client");
         }
 
-        internal void SendWeaponReload(Weapon w)
+        internal void SendWeaponReload(Weapon w, bool resetWait = false)
         {
             if (IsServer)
             {
+                if (resetWait)
+                    w.Reload.WaitForClient = false;
 
                 if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values))
                 {

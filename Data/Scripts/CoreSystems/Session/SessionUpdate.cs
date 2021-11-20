@@ -280,6 +280,8 @@ namespace CoreSystems
                         else if (w.Loading && w.ReloadEndTick == Tick)
                             w.Reloaded(1);
 
+                        if (DedicatedServer && w.Reload.WaitForClient && !w.Loading && (wComp.Data.Repo.Values.State.PlayerId <= 0 || Tick - w.LastLoadedTick > 60))
+                            SendWeaponReload(w, true);
 
                         ///
                         /// Update Weapon Hud Info
@@ -373,13 +375,6 @@ namespace CoreSystems
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        
-                        if (DedicatedServer && w.Reload.WaitForClient && !w.Loading && (wComp.Data.Repo.Values.State.PlayerId <= 0 || Tick - w.LastLoadedTick > 60))
-                        {
-                            w.Reload.WaitForClient = false;
-                            SendWeaponReload(w);
-                            Log.Line($"WaitForClient hit timer, force reset: {w.System.PartName} - pId:{wComp.Data.Repo.Values.State.PlayerId}");
-                        }
 
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.Reload.WaitForClient);
                         var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon;
