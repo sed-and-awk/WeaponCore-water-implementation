@@ -304,6 +304,11 @@ namespace CoreSystems
                     ServerRequestMouseStates(packetObj);
                     break;
                 }
+                case PacketType.ClientReady:
+                {
+                    ServerClientReady(packetObj);
+                    break;
+                }
                 case PacketType.RequestShootUpdate: {
                     ServerRequestShootUpdate(packetObj);
                     break;

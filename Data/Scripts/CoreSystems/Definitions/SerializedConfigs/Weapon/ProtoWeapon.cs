@@ -194,6 +194,7 @@ namespace CoreSystems
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
         [ProtoMember(4)] public int MagsLoaded = 1;
+        [ProtoMember(5)] public bool WaitForClient; //don't save
 
         public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {
@@ -203,6 +204,7 @@ namespace CoreSystems
                 StartId = sync.StartId;
                 EndId = sync.EndId;
                 MagsLoaded = sync.MagsLoaded;
+                WaitForClient = sync.WaitForClient;
 
                 w.ClientReload(true);
             }

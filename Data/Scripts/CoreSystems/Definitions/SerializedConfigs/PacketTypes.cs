@@ -10,18 +10,14 @@ namespace CoreSystems
     public enum PacketType
     {
         Invalid,
-
         WeaponComp,
         WeaponState,
         WeaponReload,
         WeaponAmmo,
-
         UpgradeComp,
         UpgradeState,
-
         SupportComp,
         SupportState,
-
         AiData,
         Construct,
         ConstructFoci,
@@ -59,6 +55,7 @@ namespace CoreSystems
         QueueShot,
         PlayerState,
         EwaredBlocks,
+        ClientReady,
     }
 
     #region packets
@@ -93,6 +90,7 @@ namespace CoreSystems
     [ProtoInclude(32, typeof(SupportCompPacket))]
     [ProtoInclude(33, typeof(SupportStatePacket))]
     [ProtoInclude(34, typeof(EwaredBlocksPacket))]
+    [ProtoInclude(35, typeof(ClientReadyPacket))]
 
     public class Packet
     {
@@ -482,6 +480,18 @@ namespace CoreSystems
         {
             base.CleanUp();
             Data = new PlayerMouseData[0];
+        }
+    }
+
+    [ProtoContract]
+    public class ClientReadyPacket : Packet
+    {
+        [ProtoMember(1), DefaultValue(-1)] internal int WeaponId = -1;
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            WeaponId = -1;
         }
     }
 

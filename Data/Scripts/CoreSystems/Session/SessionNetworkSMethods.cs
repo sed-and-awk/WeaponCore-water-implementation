@@ -413,6 +413,27 @@ namespace CoreSystems
             return true;
         }
 
+        private bool ServerClientReady(PacketObj data)
+        {
+            var packet = data.Packet;
+            var readyPacket = (ClientReadyPacket)packet;
+
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready), Msg("WeaponId", readyPacket.WeaponId >= 0));
+
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var weapon = collection[readyPacket.WeaponId];
+
+            weapon.Reload.WaitForClient = false;
+            SendWeaponReload(weapon);
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
         private bool ServerRequestReport(PacketObj data)
         {
             var packet = data.Packet;

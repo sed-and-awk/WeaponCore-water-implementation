@@ -344,7 +344,12 @@ namespace CoreSystems.Platform
                     ++Reload.EndId;
                     ClientEndId = Reload.EndId;
                     if (System.Session.MpActive)
+                    {
+                        if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo)
+                            Reload.WaitForClient = !System.Session.IsHost;
+                        
                         System.Session.SendWeaponReload(this);
+                    }
 
                     if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         --ProtoWeaponAmmo.CurrentMags;
@@ -353,6 +358,9 @@ namespace CoreSystems.Platform
                     ClientReloading = false;
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
+
+                    if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo)
+                        System.Session.SendClientReady(this);
                 }
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);

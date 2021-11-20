@@ -372,7 +372,7 @@ namespace CoreSystems
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.Reload.WaitForClient && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
                         var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon;
                         var paintedTarget = comp.PainterMode && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = paintedTarget || w.PartState.Action == TriggerOn || w.PartState.Action == TriggerOnce || w.AiShooting && w.PartState.Action == TriggerOff;

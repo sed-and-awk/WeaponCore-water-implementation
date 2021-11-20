@@ -817,6 +817,21 @@ namespace CoreSystems
             else Log.Line("SendMouseUpdate should never be called on Dedicated");
         }
 
+        internal void SendClientReady(Weapon w)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new ClientReadyPacket
+                {
+                    EntityId = w.Comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ClientReady,
+                    WeaponId = w.PartId
+                });
+            }
+            else Log.Line("SendClientReady on anything but client");
+        }
+
         internal void SendActiveControlUpdate(Ai ai, MyEntity entity, bool active)
         {
             if (IsClient)
