@@ -65,7 +65,7 @@ namespace CoreSystems
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.UpdateLeafs();
                 }
-                else Log.Line($"ClientConstructGroups Version failure - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
+                else Log.Line($"ClientConstructGroups Version failure - Revision:{rootConstruct.Data.Repo.FocusData.Revision}({cgPacket.Data.FocusData.Revision}) - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
 
                 data.Report.PacketValid = true;
             }

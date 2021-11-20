@@ -275,7 +275,6 @@ namespace CoreSystems
                 if (EntityAIs.TryGetValue(badBlock.CubeGrid, out gridAi) && gridAi.CompBase.TryGetValue(badBlock, out comp))
                 {
                     _uninitializedBlocks.RemoveAtFast(i);
-                    Log.Line($"quick remove");
                     continue;
                 }
 
