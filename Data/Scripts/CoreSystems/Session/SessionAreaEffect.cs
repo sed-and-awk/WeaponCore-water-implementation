@@ -168,7 +168,6 @@ namespace CoreSystems
             {
                 var cubeBlock = block.FatBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
-
                 IMyFunctionalBlock funcBlock = null;
                 if (fieldType != DotField)
                 {
@@ -295,7 +294,7 @@ namespace CoreSystems
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    var healthPool = v.Value.AmmoDef.Const.Health;
+                    var healthPool = v.Value.AmmoDef.Const.Health > 0 ? v.Value.AmmoDef.Const.Health : float.MaxValue;
                     ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, v.Value.System.WeaponIdHash, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);

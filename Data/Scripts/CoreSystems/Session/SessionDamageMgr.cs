@@ -117,7 +117,6 @@ namespace CoreSystems
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var heal = damageType == ShieldDef.ShieldType.Heal;
-            var damageScales = info.AmmoDef.DamageScales;
             var energy = info.AmmoDef.Const.EnergyShieldDmg;
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !info.ShieldBypassed;
