@@ -49,6 +49,8 @@ namespace CoreSystems.Support
         internal int Age;
         internal int FireCounter;
         internal int AiVersion;
+        internal int ProjectileClientCounter;
+        internal int CurrentSeed;
         internal ulong UniqueMuzzleId;
         internal ulong Id;
         internal double DistanceTraveled;
@@ -164,6 +166,8 @@ namespace CoreSystems.Support
             TracerLength = 0;
             FireCounter = 0;
             AiVersion = 0;
+            ProjectileClientCounter = 0;
+            CurrentSeed = 0;
             UniqueMuzzleId = 0;
             ClosestDistSqrToTarget = double.MinValue; 
             ShieldResistMod = 1f;
@@ -418,7 +422,7 @@ namespace CoreSystems.Support
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
-                frag.Random = p.Info.Random;
+                frag.Random = new XorShiftRandomStruct((ulong)(p.Info.CurrentSeed + ++p.Info.ProjectileClientCounter));
                 frag.IsFiringPlayer = p.Info.IsFiringPlayer;
                 frag.ClientSent = p.Info.ClientSent;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
@@ -431,7 +435,6 @@ namespace CoreSystems.Support
                 posValue *= 0.5f;
                 var randomFloat1 = (float)(frag.Random.NextDouble() * posValue);
                 var randomFloat2 = (float)(frag.Random.NextDouble() * MathHelper.TwoPi);
-                //frag.WeaponRng.TurretCurrentCounter += 2;
                 var mutli = p.Info.AmmoDef.Fragment.Reverse ? -1 : 1;
 
                 var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(

@@ -44,7 +44,9 @@ namespace CoreSystems.Projectiles
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.Const.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Data.Repo.Values.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
-                p.Info.Random = new XorShiftRandomStruct((ulong)(w.TargetData.WeaponRandom.CurrentSeed + ++w.TargetData.WeaponRandom.ClientProjectileCurrentCounter));
+                p.Info.ProjectileClientCounter = ++w.TargetData.WeaponRandom.ClientProjectileCurrentCounter;
+                p.Info.CurrentSeed = w.TargetData.WeaponRandom.CurrentSeed;
+                p.Info.Random = new XorShiftRandomStruct((ulong)(p.Info.CurrentSeed + p.Info.ProjectileClientCounter));
                 p.Info.LockOnFireState = w.LockOnFireState;
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
 

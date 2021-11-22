@@ -33,12 +33,9 @@ namespace CoreSystems.Support
         /// </param>
         public XorShiftRandomStruct(ulong seed)
         {
-            var tmpSeed = seed;
             _x = seed << 3; _y = seed >> 3;
             _buffer = 0;
             _bufferMask = 0;
-
-            Log.Line($"seed init: seed:{tmpSeed} - x:{_x} - y:{_y}");
         }
 
         /// <summary>
