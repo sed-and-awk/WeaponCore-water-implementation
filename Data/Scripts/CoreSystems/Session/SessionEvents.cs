@@ -263,7 +263,6 @@ namespace CoreSystems
                 if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
                 {
                     gridMap.MyCubeBocks.Add(myCubeBlock);
-                    gridMap.MyCubeBocks.ApplyAdditions();
                     DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
                 else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
@@ -279,7 +278,7 @@ namespace CoreSystems
                 GridMap gridMap;
                 if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
                 {
-                    gridMap.MyCubeBocks.Remove(myCubeBlock, true);
+                    gridMap.MyCubeBocks.Remove(myCubeBlock);
                     DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
                 else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");

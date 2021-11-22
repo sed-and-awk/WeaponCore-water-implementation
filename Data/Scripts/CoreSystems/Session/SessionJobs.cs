@@ -22,6 +22,7 @@ namespace CoreSystems
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
+        public uint LastSortTick;
         public int MostBlocks;
         public uint PowerCheckTick;
         public bool SuspectedDrone;
@@ -32,6 +33,7 @@ namespace CoreSystems
             Targeting = null;
             FakeController.SlimBlock = null;
             MyCubeBocks.ClearImmediate();
+            LastSortTick = 0;
             MostBlocks = 0;
             PowerCheckTick = 0;
             SuspectedDrone = false;
@@ -372,6 +374,12 @@ namespace CoreSystems
                 if (GridToInfoMap.TryGetValue(grid, out gridMap))
                 {
                     var allFat = gridMap.MyCubeBocks;
+                    allFat.ApplyChanges();
+                    if (gridMap.LastSortTick == 0 || Tick - gridMap.LastSortTick > 600)
+                    {
+                        gridMap.LastSortTick = Tick + 1;
+                        allFat.Sort(CubeComparer);
+                    }
                     var terminals = 0;
                     var tStatus = gridMap.Targeting == null || gridMap.Targeting.AllowScanning;
                     var thrusters = 0;

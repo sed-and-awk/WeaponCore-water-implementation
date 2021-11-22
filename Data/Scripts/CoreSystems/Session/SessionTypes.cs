@@ -65,6 +65,14 @@ namespace CoreSystems
             internal uint HitTick;
         }
 
+        internal class CubeCompare : IComparer<MyCubeBlock>
+        {
+            public int Compare(MyCubeBlock x, MyCubeBlock y)
+            {
+                return x.EntityId.CompareTo(y.EntityId);
+            }
+        }
+
         internal class ProblemReport
         {
             internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();

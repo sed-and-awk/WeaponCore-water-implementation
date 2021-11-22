@@ -221,6 +221,7 @@ namespace CoreSystems
         ///
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
+        internal readonly CubeCompare CubeComparer = new CubeCompare();
         internal readonly FutureEvents FutureEvents = new FutureEvents();
         internal readonly BoundingFrustumD CameraFrustrum = new BoundingFrustumD();
         internal readonly Guid CompDataGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
