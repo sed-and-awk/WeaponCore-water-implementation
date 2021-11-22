@@ -745,8 +745,12 @@ namespace CoreSystems
                 else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement") || mod.Name.StartsWith("WCVanilla") || mod.FriendlyName.StartsWith("WCVanilla"))
                     ReplaceVanilla = true;
                 else if (mod.PublishedFileId == 2189703321) {
+                    DebugMod = true;
                     if (mod.Name != ModContext.ModId)
-                        SuppressWc = true;
+                    {
+                        //SuppressWc = true;
+                        Log.Line($"mod supress: {mod.Name} != {ModContext.ModId}");
+                    }
                 }
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;

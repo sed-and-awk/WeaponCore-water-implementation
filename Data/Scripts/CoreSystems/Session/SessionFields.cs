@@ -399,10 +399,10 @@ namespace CoreSystems
         internal bool CameraDetected;
         internal bool LeadGroupActive;
         internal bool ArmorCoreActive;
-
+        internal bool DebugMod;
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
-            //76561198339035377, // king_of_draconia
+            76561198339035377, // king_of_draconia for harassing modders and users of mods.
         };
 
         internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()

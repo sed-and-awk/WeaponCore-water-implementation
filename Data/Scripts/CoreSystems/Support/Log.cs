@@ -39,7 +39,7 @@ namespace CoreSystems.Support
                 var checkInTime = Session.Tick - CheckTick > 119;
                 var threshold = 180;
 
-                if (!Suppress && checkInTime && Messages > threshold || !Suppress && Messages > threshold * 3)
+                if (!Session.DebugMod && (!Suppress && checkInTime && Messages > threshold || !Suppress && Messages > threshold * 3))
                     return Pause();
 
                 if (Suppress && StartTick >= Session.Tick)

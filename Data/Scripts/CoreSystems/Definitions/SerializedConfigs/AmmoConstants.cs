@@ -174,7 +174,7 @@ namespace CoreSystems.Support
         public readonly bool EnergyAreaDmg;
         public readonly bool EnergyDetDmg;
         public readonly bool EnergyShieldDmg;
-
+        public readonly bool SlowFireFixedWeapon;
         public readonly float FallOffDistance;
         public readonly float EnergyCost;
         public readonly float ChargSize;
@@ -328,7 +328,8 @@ namespace CoreSystems.Support
 
             var clientPredictedAmmoDisabled = AmmoModsFound && _modifierMap[ClientPredAmmoStr].HasData() && _modifierMap[ClientPredAmmoStr].GetAsBool;
             ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120 && !clientPredictedAmmoDisabled;
-            
+            SlowFireFixedWeapon = system.TurretMovement == WeaponSystem.TurretType.Fixed && RealShotsPerMin <= 120;
+
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;

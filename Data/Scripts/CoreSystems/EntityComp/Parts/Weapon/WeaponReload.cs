@@ -304,7 +304,7 @@ namespace CoreSystems.Platform
 
             if (System.Session.MpActive && System.Session.IsServer)
             {
-                if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && Comp.Data.Repo.Values.State.PlayerId > 0)
+                if (ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && Comp.Data.Repo.Values.State.PlayerId > 0)
                     Reload.WaitForClient = !System.Session.IsHost;
 
                 System.Session.SendWeaponReload(this);
@@ -359,7 +359,7 @@ namespace CoreSystems.Platform
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
 
-                    if (ActiveAmmoDef.AmmoDef.Const.ClientPredictedAmmo && System.Session.PlayerId == Comp.Data.Repo.Values.State.PlayerId)
+                    if (ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && System.Session.PlayerId == Comp.Data.Repo.Values.State.PlayerId)
                         System.Session.SendClientReady(this);
                 }
 
