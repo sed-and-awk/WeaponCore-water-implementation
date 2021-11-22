@@ -288,14 +288,14 @@ namespace CoreSystems.Support
 
             MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            
+
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
             FallOffDistance = AmmoModsFound && _modifierMap[FallOffDistanceStr].HasData() ? _modifierMap[FallOffDistanceStr].GetAsFloat : ammo.AmmoDef.DamageScales.FallOff.Distance;
 
             ArmorCoreActive = session.ArmorCoreActive;
-            
+
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
@@ -435,16 +435,13 @@ namespace CoreSystems.Support
 
             if (pattern.Enable)
             {
-
-                for (int i = 0; i < wDef.Ammos.Length; i++)
+                for (int j = 0; j < ammo.AmmoDef.Pattern.Patterns.Length; j++)
                 {
+                    var aPattern = ammo.AmmoDef.Pattern.Patterns[j];
 
-                    var ammoDef = wDef.Ammos[i];
-                    for (int j = 0; j < ammo.AmmoDef.Pattern.Patterns.Length; j++)
+                    for (int i = 0; i < wDef.Ammos.Length; i++)
                     {
-
-                        var aPattern = ammo.AmmoDef.Pattern.Patterns[j];
-
+                        var ammoDef = wDef.Ammos[i];
                         if (aPattern.Equals(ammoDef.AmmoRound))
                         {
                             ammoPattern[indexPos++] = ammoDef;
@@ -823,7 +820,7 @@ namespace CoreSystems.Support
                 var reloadTime = system.WConst.ReloadTime > 0 ? system.WConst.ReloadTime : 1;
                 chargeSize = requiredPowerPerTick * reloadTime;
                 var chargeCeil = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
-                
+
                 energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeCeil;
                 return;
             }
@@ -917,7 +914,7 @@ namespace CoreSystems.Support
             energyShieldDmg = AmmoModsFound && _modifierMap[EnergyShieldDmgStr].HasData() ? _modifierMap[EnergyShieldDmgStr].GetAsBool : ammoDef.DamageScales.DamageType.Shield != DamageTypes.Damage.Kinetic;
 
             var givenShieldModifier = AmmoModsFound && _modifierMap[ShieldModStr].HasData() ? _modifierMap[ShieldModStr].GetAsDouble : ammoDef.DamageScales.Shields.Modifier;
-            shieldModifier = givenShieldModifier < 0 ? 1 : givenShieldModifier; 
+            shieldModifier = givenShieldModifier < 0 ? 1 : givenShieldModifier;
         }
 
     }
