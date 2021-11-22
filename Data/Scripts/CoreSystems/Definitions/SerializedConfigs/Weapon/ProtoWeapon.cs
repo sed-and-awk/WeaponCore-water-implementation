@@ -97,10 +97,10 @@ namespace CoreSystems
                     if (!notShotBlocked && !ammoSpent)
                     {
 
-                        //Log.Line($"Syncing AmmoValues: - currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - LastShootTick:{w.System.Session.Tick - w.LastShootTick} - IsShooting:{w.IsShooting} - finish:{w.FinishBurst} - start:{w.ClientStartId}({w.Reload.StartId})[{w.ClientLastShotId}] - end:{w.ClientEndId}({w.Reload.EndId})");
-                        CurrentAmmo = sync.CurrentAmmo;
+                        var clientCheck = w.ActiveAmmoDef != null && w.ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && w.System.Session.PlayerId == w.Comp.Data.Repo.Values.State.PlayerId;
+                        if (!clientCheck) 
+                            CurrentAmmo = sync.CurrentAmmo;
                     }
-                    //else Log.Line($"spent:{ammoSpent} - notBlocked:{notShotBlocked} - syncAmmo:{sync.CurrentAmmo} - endIdMatch:{w.Reload.EndId == w.ClientEndId}() - startIdMatch:{w.Reload.StartId == w.ClientStartId}");
                 }
 
                 CurrentCharge = sync.CurrentCharge;

@@ -181,7 +181,8 @@ namespace CoreSystems.Platform
                     }
                 }
                 
-                if (Loading && ClientMakeUpShots < 1 && ReloadEndTick < uint.MaxValue - 1)
+
+                if (Loading && ClientMakeUpShots < 1 && ReloadEndTick < uint.MaxValue - 1 && Reload.EndId > ClientEndId)
                     Reloaded(1);
 
                 return false;
@@ -189,7 +190,6 @@ namespace CoreSystems.Platform
             
             ClientStartId = Reload.StartId;
             ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
-
             ProtoWeaponAmmo.CurrentAmmo = 0;
 
             if (!Comp.Session.IsCreative) {
