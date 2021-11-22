@@ -119,8 +119,6 @@ namespace CoreSystems
 
             if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.IsShooting)
                 return false;
-            //if (Tick180)
-                //Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]] - CurrentAmmo:{w.ProtoWeaponAmmo.CurrentAmmo} == MaxAmmo:{w.ActiveAmmoDef.AmmoDef.Const.MagazineSize} - ReloadTime:{w.System.ReloadTime} - StayCharged:{w.StayCharged}");
 
             var complete = IsServer && w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge * comp.Data.Repo.Values.Set.DpsModifier || IsClient && w.Reload.EndId > w.ClientEndId || w.ExitCharger;
             var weaponFailure = !ai.HasPower || !comp.IsWorking;

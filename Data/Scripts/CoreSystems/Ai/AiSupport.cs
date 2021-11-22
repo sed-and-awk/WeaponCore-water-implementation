@@ -138,7 +138,7 @@ namespace CoreSystems.Support
             }
         }
         
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng)
         {
             var count = cardsToSort - firstCard;
             if (prevDeckLen < count) {
@@ -146,15 +146,9 @@ namespace CoreSystems.Support
                 prevDeckLen = count;
             }
 
-            Random rnd;
-            if (type == RandomType.Acquire) {
-                rnd = rng.AcquireRandom;
-                rng.AcquireCurrentCounter += count;
-            }
-            else {
-                rnd = rng.ClientProjectileRandom;
-                rng.ClientProjectileCurrentCounter += count;
-            }
+            var rnd = rng.AcquireRandom;
+            rng.AcquireCurrentCounter += count;
+
 
             for (int i = 0; i < count; i++) {
 
@@ -165,6 +159,24 @@ namespace CoreSystems.Support
             return deck;
         }
 
+
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, ref XorShiftRandomStruct rng)
+        {
+            var count = cardsToSort - firstCard;
+            if (prevDeckLen < count)
+            {
+                deck = new int[count];
+                prevDeckLen = count;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var j = i < cardsToShuffle ? rng.Range(0, i + 1) : i;
+                deck[i] = deck[j];
+                deck[j] = firstCard + i;
+            }
+            return deck;
+        }
 
         internal void ComputeAccelSphere()
         {

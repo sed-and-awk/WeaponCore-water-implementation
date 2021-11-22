@@ -277,7 +277,7 @@ namespace CoreSystems
                                     w.ClientReload();
                             }
                         }
-                        else if (w.Loading && w.ReloadEndTick == Tick)
+                        else if (w.Loading && (IsServer && w.ReloadEndTick == Tick || IsClient && w.Reload.EndId > w.ClientEndId))
                             w.Reloaded(1);
 
                         if (DedicatedServer && w.Reload.WaitForClient && !w.Loading && (wComp.Data.Repo.Values.State.PlayerId <= 0 || Tick - w.LastLoadedTick > 60))

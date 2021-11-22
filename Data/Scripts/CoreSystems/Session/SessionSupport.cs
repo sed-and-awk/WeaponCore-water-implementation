@@ -733,7 +733,6 @@ namespace CoreSystems
                 if (!string.IsNullOrEmpty(modPath))
                     ModInfo.TryAdd(mod.GetPath(), mod);
 
-
                 if (mod.PublishedFileId == 1918681825 || mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055)
                     validId = true;
 
@@ -744,21 +743,28 @@ namespace CoreSystems
                     ReplaceVanilla = true;
                 else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement") || mod.Name.StartsWith("WCVanilla") || mod.FriendlyName.StartsWith("WCVanilla"))
                     ReplaceVanilla = true;
-                else if (mod.PublishedFileId == 2189703321) {
+                else if (mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055) 
                     DebugMod = true;
-                    if (mod.Name != ModContext.ModId)
-                    {
-                        //SuppressWc = true;
-                        Log.Line($"mod supress: {mod.Name} != {ModContext.ModId}");
-                    }
-                }
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;
                 else if ((mod.Name == "WeaponCore" || mod.Name == "CoreSystems") && ModContext.ModId != mod.Name)
                     SuppressWc = true;
             }
+
             if (!validId && Session.SessionSettings.OnlineMode != MyOnlineModeEnum.OFFLINE)
                 SuppressWc = true;
+
+            if (DebugMod)
+            {
+                foreach (var mod in Session.Mods)
+                {
+                    if (mod.Name == ModContext.ModId && mod.PublishedFileId == 1918681825)
+                    {
+                        SuppressWc = true;
+                        break;
+                    }
+                }
+            }
         }
 
         public string ModPath()

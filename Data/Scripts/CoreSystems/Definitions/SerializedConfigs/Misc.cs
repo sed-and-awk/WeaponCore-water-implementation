@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CoreSystems.Support;
 using ProtoBuf;
 
 namespace CoreSystems
@@ -86,7 +87,6 @@ namespace CoreSystems
         public void Sync(WeaponRandomGenerator syncFrom)
         {
             CurrentSeed = syncFrom.CurrentSeed;
-
             TurretCurrentCounter = syncFrom.TurretCurrentCounter;
             ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
             AcquireTmpCounter = syncFrom.AcquireCurrentCounter;

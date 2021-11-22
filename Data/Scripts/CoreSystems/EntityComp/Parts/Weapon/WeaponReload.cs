@@ -190,6 +190,7 @@ namespace CoreSystems.Platform
             
             ClientStartId = Reload.StartId;
             ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
+
             ProtoWeaponAmmo.CurrentAmmo = 0;
 
             if (!Comp.Session.IsCreative) {
@@ -343,7 +344,6 @@ namespace CoreSystems.Platform
                 }
 
                 ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
                 if (System.Session.IsServer) {
 
                     ++Reload.EndId;

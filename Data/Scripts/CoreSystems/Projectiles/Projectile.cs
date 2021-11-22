@@ -172,8 +172,7 @@ namespace CoreSystems.Projectiles
             {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
-                SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
-                Info.WeaponRng.ClientProjectileCurrentCounter++;
+                SmartSlot = Info.Random.Range(0, 10);
             }
             else
             {
@@ -209,8 +208,7 @@ namespace CoreSystems.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.SpeedVariance.Start;
                 var max = Info.AmmoDef.Trajectory.SpeedVariance.End;
-                var speedVariance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
-                Info.WeaponRng.ClientProjectileCurrentCounter++;
+                var speedVariance = (float)Info.Random.NextDouble() * (max - min) + min;
                 DesiredSpeed = targetSpeed + speedVariance;
             }
             else DesiredSpeed = targetSpeed;
@@ -220,9 +218,8 @@ namespace CoreSystems.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
                 var max = Info.AmmoDef.Trajectory.RangeVariance.End;
-                variance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
+                variance = (float)Info.Random.NextDouble() * (max - min) + min;
                 Info.MaxTrajectory -= variance;
-                Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
 
             if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (AccelDir * Info.MaxTrajectory);
@@ -333,21 +330,6 @@ namespace CoreSystems.Projectiles
         #endregion
 
         #region Run
-        internal void CouldHitPlanet(List<IHitInfo> hitInfos)
-        {
-            for (int i = 0; i < hitInfos.Count; i++)
-            {
-                var hit = hitInfos[i];
-                var voxel = hit.HitEntity as MyVoxelBase;
-                if (voxel?.RootVoxel is MyPlanet)
-                {
-                    LinePlanetCheck = true;
-                    break;
-                }
-            }
-            hitInfos.Clear();
-        }
-
         internal void CheckForNearVoxel(uint steps)
         {
             var possiblePos = BoundingBoxD.CreateFromSphere(new BoundingSphereD(Position, ((MaxSpeed) * (steps + 1) * StepConst) + Info.AmmoDef.Const.CollisionSize));
@@ -575,8 +557,7 @@ namespace CoreSystems.Projectiles
                 {
                     if ((Info.Age % offsetTime == 0))
                     {
-                        double angle = Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi;
-                        Info.WeaponRng.ClientProjectileCurrentCounter += 1;
+                        double angle = Info.Random.NextDouble() * MathHelper.TwoPi;
                         var up = Vector3D.CalculatePerpendicularVector(Info.Direction);
                         var right = Vector3D.Cross(Info.Direction, up);
                         OffsetDir = Math.Sin(angle) * up + Math.Cos(angle) * right;
@@ -661,7 +642,7 @@ namespace CoreSystems.Projectiles
                         if (eWarSphere.Intersects(new BoundingSphereD(netted.Position, netted.Info.AmmoDef.Const.CollisionSize)))
                         {
                             if (netted.Info.Ai.AiType == Ai.AiTypes.Grid && Info.Target.CoreCube != null && netted.Info.Target.CoreCube.CubeGrid.IsSameConstructAs(Info.Target.CoreCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
-                            if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                            if (Info.Random.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                             {
                                 Info.BaseEwarPool -= (float)netted.Info.AmmoDef.Const.HealthHitModifier;
                                 if (Info.BaseEwarPool <= 0 && Info.BaseHealthPool-- > 0)
@@ -672,52 +653,49 @@ namespace CoreSystems.Projectiles
                                     Seekers.Add(netted);
                                 }
                             }
-
-                            Info.WeaponRng.ClientProjectileCurrentCounter++;
                         }
                     }
                     EwaredProjectiles.Clear();
                     return;
                 case AreaEffectType.PushField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.Random.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                     {
                         Info.EwarActive = true;
                     }
                     break;
             }
-            Info.WeaponRng.ClientProjectileCurrentCounter++;
         }
 
 
@@ -851,10 +829,8 @@ namespace CoreSystems.Projectiles
 
         internal void OffSetTarget(bool roam = false)
         {
-            var randAzimuth = (Info.WeaponRng.TurretRandom.NextDouble() * 1) * 2 * Math.PI;
-            var randElevation = ((Info.WeaponRng.TurretRandom.NextDouble() * 1) * 2 - 1) * 0.5 * Math.PI;
-
-            Info.WeaponRng.TurretCurrentCounter += 2;
+            var randAzimuth = (Info.Random.NextDouble() * 1) * 2 * Math.PI;
+            var randElevation = ((Info.Random.NextDouble() * 1) * 2 - 1) * 0.5 * Math.PI;
 
             var offsetAmount = roam ? 100 : Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;

@@ -98,7 +98,7 @@ namespace CoreSystems.Platform
         internal LineD MyAimTestLine;
         internal LineD MyShootAlignmentLine;
         internal LineD AzimuthFwdLine;
-
+        internal XorShiftRandomStruct XorRnd;
 
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;

@@ -56,6 +56,7 @@ namespace CoreSystems
 
                 wr.StartId = 0;
                 wr.WaitForClient = false;
+                wr.ClientProjectileCurrentCounter = 0;
             }
             ResetCompBaseRevisions();
         }
@@ -151,7 +152,7 @@ namespace CoreSystems
 
         }
 
-        public void UpdateCompPacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(Weapon.WeaponComponent comp, bool clean = false, bool resetRnd = false)
         {
             ++Revision;
             ++State.Revision;
@@ -168,6 +169,9 @@ namespace CoreSystems
                 var t = Targets[i];
                 var wr = Reloads[i];
 
+                if (!resetRnd)
+                    wr.ClientProjectileCurrentCounter = t.WeaponRandom.ClientProjectileCurrentCounter;
+
                 if (clean)
                 {
                     if (comp.Session.PrunedPacketsToClient.TryGetValue(t, out info))
@@ -183,7 +187,9 @@ namespace CoreSystems
                 }
                 ++wr.Revision;
                 ++t.Revision;
-                t.WeaponRandom.ReInitRandom();
+                
+                if (resetRnd)
+                    t.WeaponRandom.ReInitRandom();
             }
         }
     }
@@ -196,6 +202,7 @@ namespace CoreSystems
         [ProtoMember(3)] public int EndId; //save
         [ProtoMember(4)] public int MagsLoaded = 1;
         [ProtoMember(5)] public bool WaitForClient; //don't save
+        [ProtoMember(6)] public int ClientProjectileCurrentCounter; //don't save
 
         public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {
@@ -206,7 +213,7 @@ namespace CoreSystems
                 EndId = sync.EndId;
                 MagsLoaded = sync.MagsLoaded;
                 WaitForClient = sync.WaitForClient;
-
+                w.TargetData.WeaponRandom.ClientProjectileCurrentCounter = ClientProjectileCurrentCounter = sync.ClientProjectileCurrentCounter;
                 w.ClientReload(true);
             }
         }

@@ -44,7 +44,7 @@ namespace CoreSystems.Projectiles
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.Const.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Data.Repo.Values.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
-                p.Info.WeaponRng = w.TargetData.WeaponRandom;
+                p.Info.Random = new XorShiftRandomStruct((ulong)(w.TargetData.WeaponRandom.CurrentSeed + ++w.TargetData.WeaponRandom.ClientProjectileCurrentCounter));
                 p.Info.LockOnFireState = w.LockOnFireState;
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
 
@@ -120,11 +120,6 @@ namespace CoreSystems.Projectiles
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
                         p.Info.Monitors[j].Invoke(w.Comp.Cube.EntityId, w.PartId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
-
-                /*
-                if (p.Info.ClientSent)
-                    Log.Line($"client sent GeProjectiles: {p.Info.Id} - {p.Info.Target.Entity != null} - {p.Info.MaxTrajectory} - {p.Info.Origin} - {p.Info.Direction} - {p.Velocity}");
-                */
             }
             NewProjectiles.Clear();
         }

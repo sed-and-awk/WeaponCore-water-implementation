@@ -245,7 +245,7 @@ namespace CoreSystems
             {
 
                 const PacketType type = PacketType.WeaponComp;
-                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true, true);
 
                 PacketInfo oldInfo;
                 WeaponCompPacket iPacket;
@@ -476,7 +476,7 @@ namespace CoreSystems
                 {
 
                     const PacketType type = PacketType.TargetChange;
-                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
                     var collection = comp.TypeSpecific != CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
                     var w = collection[partId];

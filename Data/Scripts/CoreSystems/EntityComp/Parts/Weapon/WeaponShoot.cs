@@ -77,8 +77,6 @@ namespace CoreSystems.Platform
 
                     #region Update ProtoWeaponAmmo state
                     var skipMuzzle = s.IsClient && ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && PartState.Action == TriggerActions.TriggerOnce;
-                    if (skipMuzzle)
-                        Log.Line($"skip muzzle due to client makeup shot");
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
 
                         if (ProtoWeaponAmmo.CurrentAmmo == 0) {
@@ -101,7 +99,6 @@ namespace CoreSystems.Platform
                             }
                         }
                         else if (ClientMakeUpShots > 0) {
-                            Log.Line($"Shooting Client Makeup Shot: {ClientMakeUpShots}");
                             --ClientMakeUpShots;
                         }
 
@@ -310,13 +307,7 @@ namespace CoreSystems.Platform
             var burstReset = ActiveAmmoDef.AmmoDef.Const.BurstMode && ShotsFired == System.ShotsPerBurst;
             var genericReset = !ActiveAmmoDef.AmmoDef.Const.BurstMode && outOfShots;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots != 0)
-                Log.Line($"outOfShots but has client makeup shots");
-
             if (burstReset) {
-
-                if (ClientMakeUpShots != 0)
-                    Log.Line($"resetting burst when client makeup shots exist");
 
                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
