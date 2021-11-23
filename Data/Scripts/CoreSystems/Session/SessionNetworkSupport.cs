@@ -243,7 +243,8 @@ namespace CoreSystems
         {
             if (IsServer)
             {
-
+                if (DebugMod)
+                    Log.Line($"SendComp");
                 const PacketType type = PacketType.WeaponComp;
                 comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true, true);
 

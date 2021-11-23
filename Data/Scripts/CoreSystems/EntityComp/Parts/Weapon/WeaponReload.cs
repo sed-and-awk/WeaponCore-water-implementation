@@ -310,7 +310,8 @@ namespace CoreSystems.Platform
 
                 System.Session.SendWeaponReload(this);
             }
-
+            if (System.Session.DebugMod)
+                Log.Line($"StartReload: StartId:{Reload.StartId} - EndId:{Reload.EndId} - ClientMakeUpShots:{ClientMakeUpShots}");
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return;
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
@@ -342,6 +343,9 @@ namespace CoreSystems.Platform
                     ReloadEndTick = uint.MaxValue - 1;
                     return;
                 }
+
+                if (System.Session.DebugMod)
+                    Log.Line($"Reloaded: StartId:{Reload.StartId} - EndId:{Reload.EndId} - ClientMakeUpShots:{ClientMakeUpShots} - CurrentAmmo:{ProtoWeaponAmmo.CurrentAmmo}");
 
                 ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 if (System.Session.IsServer) {

@@ -135,6 +135,8 @@ namespace CoreSystems
         {
             if (sync.Revision > Revision)
             {
+                if (comp.Session.DebugMod)
+                    Log.Line($"ReceiveComp");
 
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);

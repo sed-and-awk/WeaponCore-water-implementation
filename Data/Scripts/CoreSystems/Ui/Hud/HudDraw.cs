@@ -237,7 +237,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var showReloadIcon = (weapon.Loading || _session.Tick - weapon.LastLoadedTick < 60);
+                var showReloadIcon = (weapon.Loading || weapon.Reload.WaitForClient || _session.Tick - weapon.LastLoadedTick < 60);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();

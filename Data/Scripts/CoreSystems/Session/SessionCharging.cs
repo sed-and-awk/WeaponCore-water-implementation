@@ -36,9 +36,6 @@ namespace CoreSystems
                 var group1Budget = group1Count > 0 ? g1MixedPower / group1Count : float.MaxValue;
                 var group2Budget = group2Count > 0 ? g2MixedPower / group2Count : float.MaxValue;
 
-                //if (Tick180)
-                    //Log.Line($"[charging] [fullPower:{powerFree} - [avail:{gridAvail}({g0Power}) - desired:{charger.TotalDesired}]] - g0:{group0Budget}({group0Count}) - g1:{group1Budget}({group1Count}) - g2:{group2Budget}({group2Count})");
-
                 for (int i = group0Count - 1; i >= 0; i--)
                 {
                     var part = charger.ChargeGroup0[i];
@@ -114,23 +111,24 @@ namespace CoreSystems
                     w.AdjustPower(assignedPower, ai);
             }
 
-
             w.ProtoWeaponAmmo.CurrentCharge = MathHelper.Clamp(w.ProtoWeaponAmmo.CurrentCharge + w.AssignedPower, 0, w.MaxCharge);
 
             if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.IsShooting)
                 return false;
 
-            var complete = IsServer && w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge * comp.Data.Repo.Values.Set.DpsModifier || IsClient && w.Reload.EndId > w.ClientEndId || w.ExitCharger;
+            var allCharged = w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge * comp.Data.Repo.Values.Set.DpsModifier;
+            var clientAllDone = IsClient && w.Reload.EndId > w.ClientEndId;
+            var clientCharged = IsClient && allCharged;
+            var complete = allCharged || clientAllDone || w.ExitCharger;
             var weaponFailure = !ai.HasPower || !comp.IsWorking;
             var invalidStates = ai != comp.Ai || comp.Ai.MarkedForClose || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || comp.Platform.State != CorePlatform.PlatformState.Ready;
             
             if (complete || weaponFailure || invalidStates) {
                 var serverFullyLoaded = IsServer && w.ProtoWeaponAmmo.CurrentAmmo == w.Reload.MagsLoaded * w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-                var clientReadyToLoad = IsClient && w.Reload.EndId > w.ClientEndId;
-                var fullyCharged = serverFullyLoaded || w.Reload.EndId >= w.ClientEndId;
+                var fullyCharged = serverFullyLoaded || IsClient && allCharged;
 
-                if (complete && (IsServer && !serverFullyLoaded || clientReadyToLoad) && w.Loading)
-                    w.Reloaded(IsClient ? 2 : 0);
+                if (complete && (IsServer && !serverFullyLoaded || clientCharged) && w.Loading)
+                    w.Reloaded(IsClient && clientAllDone ? 2 : 0);
 
                 if (!complete || fullyCharged) {
                     w.StopPowerDraw(weaponFailure || invalidStates, ai);
