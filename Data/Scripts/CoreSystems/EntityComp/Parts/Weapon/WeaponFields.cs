@@ -213,6 +213,7 @@ namespace CoreSystems.Platform
             }
         }
 
+        internal bool ReloadReady => ReloadEndTick < uint.MaxValue - 1 && System.Session.Tick >= ReloadEndTick;
         internal Dummy GetScope => Scope ?? Dummies[MiddleMuzzleIndex];
 
         internal struct AmmoLoad

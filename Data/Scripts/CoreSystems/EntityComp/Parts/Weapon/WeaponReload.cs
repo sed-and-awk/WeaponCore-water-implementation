@@ -299,7 +299,9 @@ namespace CoreSystems.Platform
                 var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var delay = delayTime > 0 && ShotsFired == 0;
                 if (System.WConst.ReloadTime > 0 || delay)
+                {
                     ReloadEndTick = (uint)(Comp.Session.Tick + (!delay || System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
+                }
                 else Reloaded();
             }
 
@@ -310,8 +312,6 @@ namespace CoreSystems.Platform
 
                 System.Session.SendWeaponReload(this);
             }
-            if (System.Session.DebugMod)
-                Log.Line($"StartReload: StartId:{Reload.StartId} - EndId:{Reload.EndId} - ClientMakeUpShots:{ClientMakeUpShots}");
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return;
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);

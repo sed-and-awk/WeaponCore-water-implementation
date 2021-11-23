@@ -265,6 +265,7 @@ namespace CoreSystems
                         ///Check Reload
                         ///                        
 
+
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Loading) { // does this need StayCharged?
 
                             if (IsServer && (w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.CheckInventorySystem))
@@ -277,7 +278,7 @@ namespace CoreSystems
                                     w.ClientReload();
                             }
                         }
-                        else if (w.Loading && (IsServer && w.ReloadEndTick == Tick || IsClient && w.Reload.EndId > w.ClientEndId))
+                        else if (w.Loading && (IsServer && w.ReloadReady || IsClient && w.Reload.EndId > w.ClientEndId))
                             w.Reloaded(1);
 
                         if (DedicatedServer && w.Reload.WaitForClient && !w.Loading && (wComp.Data.Repo.Values.State.PlayerId <= 0 || Tick - w.LastLoadedTick > 60))
