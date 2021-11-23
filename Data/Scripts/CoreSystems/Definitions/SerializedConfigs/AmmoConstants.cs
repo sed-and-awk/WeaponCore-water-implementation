@@ -328,7 +328,7 @@ namespace CoreSystems.Support
 
             var clientPredictedAmmoDisabled = AmmoModsFound && _modifierMap[ClientPredAmmoStr].HasData() && _modifierMap[ClientPredAmmoStr].GetAsBool;
             ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120 && !clientPredictedAmmoDisabled;
-            SlowFireFixedWeapon = system.TurretMovement == WeaponSystem.TurretType.Fixed && RealShotsPerMin <= 120;
+            SlowFireFixedWeapon = system.TurretMovement == WeaponSystem.TurretType.Fixed && (RealShotsPerMin <= 120 || Reloadable && system.WConst.ReloadTime >= 600);
 
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
