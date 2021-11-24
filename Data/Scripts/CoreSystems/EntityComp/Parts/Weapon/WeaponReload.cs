@@ -94,6 +94,9 @@ namespace CoreSystems.Platform
 
         internal void ChangeAmmo(int newAmmoId)
         {
+            if (Loading || Reload.WaitForClient || !Comp.IsWorking || IsShooting)
+                return;
+
             if (System.Session.IsServer)
             {
                 ProposedAmmoId = newAmmoId;
@@ -376,7 +379,6 @@ namespace CoreSystems.Platform
 
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
-                ProjectileCounter = 0;
             }
         }
 
@@ -397,7 +399,6 @@ namespace CoreSystems.Platform
             LastLoadedTick = Comp.Session.Tick;
             Loading = false;
             ReloadEndTick = uint.MaxValue;
-            ProjectileCounter = 0;
         }
     }
 }
