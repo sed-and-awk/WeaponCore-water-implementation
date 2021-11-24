@@ -360,6 +360,9 @@ namespace CoreSystems
                 var newProjectile = EntityId == -1;
                 var noTarget = EntityId == 0;
 
+                if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !noTarget)
+                    w.ProjectileCounter = 0;
+
                 if (newProjectile)
                 {
                     target.ProjectileEndTick = 0;
@@ -377,6 +380,8 @@ namespace CoreSystems
                     target.SoftProjetileReset = false;
                     target.IsProjectile = false;
                 }
+
+
 
                 target.IsFakeTarget = EntityId == -2;
                 target.TargetPos = TargetPos;

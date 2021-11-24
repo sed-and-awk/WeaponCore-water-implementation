@@ -90,15 +90,19 @@ namespace CoreSystems.Support
             IsTargetStorage = main;
         }
 
-        internal void PushTargetToClient(Weapon weapon)
+        internal void PushTargetToClient(Weapon w)
         {
-            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
+            if (!w.System.Session.MpActive || w.System.Session.IsClient)
                 return;
 
-            weapon.TargetData.TargetPos = TargetPos;
-            weapon.TargetData.PartId = weapon.PartId;
-            weapon.TargetData.EntityId = weapon.Target.TargetId;
-            weapon.System.Session.SendTargetChange(weapon.Comp, weapon.PartId);
+            w.TargetData.TargetPos = TargetPos;
+            w.TargetData.PartId = w.PartId;
+            w.TargetData.EntityId = w.Target.TargetId;
+            
+            if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.Target.TargetId != 0)
+                w.ProjectileCounter = 0;
+
+            w.System.Session.SendTargetChange(w.Comp, w.PartId);
         }
 
         internal void ClientUpdate(Weapon w, ProtoWeaponTransferTarget tData)
