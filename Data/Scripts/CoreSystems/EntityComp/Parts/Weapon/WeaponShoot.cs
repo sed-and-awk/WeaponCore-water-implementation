@@ -152,6 +152,8 @@ namespace CoreSystems.Platform
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                             var rnd1 = rnd.TurretRandom.NextDouble();
                             var rnd2 = rnd.TurretRandom.NextDouble();
+                            if (System.Session.DebugMod)
+                                Log.Line($"Shoot: {rnd2}");
                             var randomFloat1 = (float)(rnd1 * (System.WConst.DeviateShotAngleRads + System.WConst.DeviateShotAngleRads) - System.WConst.DeviateShotAngleRads);
                             var randomFloat2 = (float)(rnd2 * MathHelper.TwoPi);
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2), MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2), MyMath.FastCos(randomFloat1)), dirMatrix);

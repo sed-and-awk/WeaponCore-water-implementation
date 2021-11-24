@@ -90,7 +90,6 @@ namespace CoreSystems
 
         internal void ReInitRandom()
         {
-            ClientProjectileCurrentCounter = 0;
             CurrentSeed = TurretRandom.Range(1, int.MaxValue);
             TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
             AcquireRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
