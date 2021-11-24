@@ -137,28 +137,6 @@ namespace CoreSystems.Support
                     break;
             }
         }
-        
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng)
-        {
-            var count = cardsToSort - firstCard;
-            if (prevDeckLen < count) {
-                deck = new int[count];
-                prevDeckLen = count;
-            }
-
-            var rnd = rng.AcquireRandom;
-            rng.AcquireCurrentCounter += count;
-
-
-            for (int i = 0; i < count; i++) {
-
-                var j = i < cardsToShuffle ? rnd.Next(i + 1) : i;
-                deck[i] = deck[j];
-                deck[j] = firstCard + i;
-            }
-            return deck;
-        }
-
 
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, ref XorShiftRandomStruct rng)
         {

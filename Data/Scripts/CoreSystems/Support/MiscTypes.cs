@@ -109,8 +109,7 @@ namespace CoreSystems.Support
                 var first = w.Target.SoftProjetileReset;
                 if (first)
                 {
-                    w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
-                    w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
+                    w.TargetData.WeaponRandom.AcquireRandom = new XorShiftRandomStruct((ulong)w.TargetData.WeaponRandom.CurrentSeed);
                     w.Target.SoftProjetileReset = false;
                 }
 
@@ -163,10 +162,7 @@ namespace CoreSystems.Support
                 }
 
                 if (w.System.Session.Tick != w.Target.ProjectileEndTick)
-                {
-                    w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
-                    w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
-                }
+                    w.TargetData.WeaponRandom.AcquireRandom = new XorShiftRandomStruct((ulong)w.TargetData.WeaponRandom.CurrentSeed);
 
                 ClientDirty = false;
             }

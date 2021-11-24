@@ -103,7 +103,7 @@ namespace CoreSystems.Platform
                         }
 
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
-                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
+                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Range(0f, 1f) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
                                 SpawnEjection();
                         }
                     }
@@ -154,7 +154,6 @@ namespace CoreSystems.Platform
                             var rnd2 = rnd.TurretRandom.NextDouble();
                             var randomFloat1 = (float)(rnd1 * (System.WConst.DeviateShotAngleRads + System.WConst.DeviateShotAngleRads) - System.WConst.DeviateShotAngleRads);
                             var randomFloat2 = (float)(rnd2 * MathHelper.TwoPi);
-                            rnd.TurretCurrentCounter += 2;
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2), MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2), MyMath.FastCos(randomFloat1)), dirMatrix);
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
@@ -168,14 +167,11 @@ namespace CoreSystems.Platform
                             if (pattern.Random) {
 
                                 if (pattern.TriggerChance >= rnd.TurretRandom.NextDouble() || pattern.TriggerChance >= 1) {
-                                    patternIndex = rnd.TurretRandom.Next(pattern.RandomMin, pattern.RandomMax);
-                                    rnd.TurretCurrentCounter += 2;
+                                    patternIndex = rnd.TurretRandom.Range(pattern.RandomMin, pattern.RandomMax);
                                 }
-                                else
-                                    rnd.TurretCurrentCounter++;
 
                                 for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt; w++) {
-                                    var y = rnd.TurretRandom.Next(w + 1);
+                                    var y = rnd.TurretRandom.Range(0, w + 1);
                                     AmmoShufflePattern[w] = AmmoShufflePattern[y];
                                     AmmoShufflePattern[y] = w;
                                 }

@@ -157,7 +157,7 @@ namespace CoreSystems
                                     p.ClientReload();
                             }
                         }
-                        else if (p.Loading && p.ReloadEndTick == Tick)
+                        else if (p.Loading && Tick >= p.ReloadEndTick)
                             p.Reloaded(1);
 
                         var reloading = p.ActiveAmmoDef.AmmoDef.Const.Reloadable && p.ClientMakeUpShots == 0 && (p.Loading || p.ProtoWeaponAmmo.CurrentAmmo == 0);
@@ -278,7 +278,7 @@ namespace CoreSystems
                                     w.ClientReload();
                             }
                         }
-                        else if (w.Loading && (IsServer && w.ReloadReady || IsClient && w.Reload.EndId > w.ClientEndId))
+                        else if (w.Loading && (IsServer && Tick >= w.ReloadEndTick || IsClient && w.Reload.EndId > w.ClientEndId))
                             w.Reloaded(1);
 
                         if (DedicatedServer && w.Reload.WaitForClient && !w.Loading && (wComp.Data.Repo.Values.State.PlayerId <= 0 || Tick - w.LastLoadedTick > 60))

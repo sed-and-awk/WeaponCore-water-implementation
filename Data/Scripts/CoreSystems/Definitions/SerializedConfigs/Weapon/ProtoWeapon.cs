@@ -397,10 +397,9 @@ namespace CoreSystems
 
             var rand = WeaponRandom;
             rand.CurrentSeed = w.UniqueId;
-            rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
 
-            rand.TurretRandom = new Random(rand.CurrentSeed);
-            rand.AcquireRandom = new Random(rand.CurrentSeed);
+            rand.TurretRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
+            rand.AcquireRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
         }
 
         public void PartRefreshClient(Weapon w)
@@ -409,19 +408,8 @@ namespace CoreSystems
             {
                 var rand = WeaponRandom;
 
-                rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-                rand.TurretRandom = new Random(rand.CurrentSeed);
-                rand.AcquireRandom = new Random(rand.CurrentSeed);
-
-                for (int j = 0; j < rand.TurretCurrentCounter; j++)
-                    rand.TurretRandom.Next();
-
-                for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
-                    rand.ClientProjectileRandom.Next();
-
-                for (int j = 0; j < rand.AcquireCurrentCounter; j++)
-                    rand.AcquireRandom.Next();
-
+                rand.TurretRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
+                rand.AcquireRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
                 return;
             }
             catch (Exception e) { Log.Line("Client Weapon Values Failed To load re-initing... how?", null, true); }

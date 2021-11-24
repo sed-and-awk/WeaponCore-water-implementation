@@ -182,7 +182,7 @@ namespace CoreSystems.Platform
                 }
                 
 
-                if (Loading && ClientMakeUpShots < 1 && ReloadEndTick < uint.MaxValue - 1 && Reload.EndId > ClientEndId)
+                if (Loading && ClientMakeUpShots < 1 && LoadingWait && Reload.EndId > ClientEndId)
                     Reloaded(1);
 
                 return false;
@@ -335,7 +335,7 @@ namespace CoreSystems.Platform
                     ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                     EstimatedCharge = MaxCharge;
 
-                    if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick < uint.MaxValue - 1)
+                    if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && LoadingWait)
                         return;
                 }
                 else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue)
@@ -343,9 +343,6 @@ namespace CoreSystems.Platform
                     ReloadEndTick = uint.MaxValue - 1;
                     return;
                 }
-
-                if (System.Session.DebugMod)
-                    Log.Line($"Reloaded: StartId:{Reload.StartId} - EndId:{Reload.EndId} - ClientMakeUpShots:{ClientMakeUpShots} - CurrentAmmo:{ProtoWeaponAmmo.CurrentAmmo}");
 
                 ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 if (System.Session.IsServer) {

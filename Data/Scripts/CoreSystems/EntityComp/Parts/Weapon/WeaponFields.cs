@@ -203,17 +203,11 @@ namespace CoreSystems.Platform
                 var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0 || Reload.WaitForClient);
                 var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot;
-
-                /*
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
-                var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
-                */
                 return shotReady;
             }
         }
 
-        internal bool ReloadReady => ReloadEndTick < uint.MaxValue - 1 && System.Session.Tick >= ReloadEndTick;
+        internal bool LoadingWait => ReloadEndTick < uint.MaxValue - 1;
         internal Dummy GetScope => Scope ?? Dummies[MiddleMuzzleIndex];
 
         internal struct AmmoLoad

@@ -173,6 +173,8 @@ namespace CoreSystems.Projectiles
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
                 SmartSlot = Info.Random.Range(0, 10);
+                if (Info.System.Session.DebugMod)
+                    Log.Line($"SmartSlot: {SmartSlot}");
             }
             else
             {
