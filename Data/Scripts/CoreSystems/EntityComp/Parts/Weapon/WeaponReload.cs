@@ -376,6 +376,7 @@ namespace CoreSystems.Platform
 
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
+                ProjectileCounter = 0;
             }
         }
 
@@ -396,6 +397,7 @@ namespace CoreSystems.Platform
             LastLoadedTick = Comp.Session.Tick;
             Loading = false;
             ReloadEndTick = uint.MaxValue;
+            ProjectileCounter = 0;
         }
     }
 }

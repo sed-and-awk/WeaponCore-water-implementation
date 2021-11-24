@@ -61,7 +61,7 @@ namespace CoreSystems
     public class WeaponRandomGenerator
     {
         //[ProtoMember(1)] public int TurretCurrentCounter;
-        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
+        //[ProtoMember(2)] public int ClientProjectileCurrentCounter;
         //[ProtoMember(3)] public int AcquireCurrentCounter;
         [ProtoMember(4)] public int CurrentSeed;
         public XorShiftRandomStruct TurretRandom;
@@ -84,7 +84,6 @@ namespace CoreSystems
         public void Sync(WeaponRandomGenerator syncFrom)
         {
             CurrentSeed = syncFrom.CurrentSeed;
-            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
             TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }
 

@@ -38,7 +38,6 @@ namespace CoreSystems.Support
         internal Vector3D PrevProjectilePos;
         internal Vector3D PrevTargetPos;
         internal Hit Hit;
-        //internal WeaponRandomGenerator WeaponRng;
         internal XorShiftRandomStruct Random;
         internal FakeTargets DummyTargets;
         internal List<Action<long, int, ulong, long, Vector3D, bool>> Monitors;
@@ -49,8 +48,6 @@ namespace CoreSystems.Support
         internal int Age;
         internal int FireCounter;
         internal int AiVersion;
-        internal int ProjectileClientCounter;
-        internal int CurrentSeed;
         internal ulong UniqueMuzzleId;
         internal ulong Id;
         internal double DistanceTraveled;
@@ -166,8 +163,6 @@ namespace CoreSystems.Support
             TracerLength = 0;
             FireCounter = 0;
             AiVersion = 0;
-            ProjectileClientCounter = 0;
-            CurrentSeed = 0;
             UniqueMuzzleId = 0;
             ClosestDistSqrToTarget = double.MinValue; 
             ShieldResistMod = 1f;
@@ -422,7 +417,7 @@ namespace CoreSystems.Support
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
-                frag.Random = new XorShiftRandomStruct((ulong)(p.Info.CurrentSeed + ++p.Info.ProjectileClientCounter));
+                frag.Random = new XorShiftRandomStruct(p.Info.Random.NextUInt64());
                 frag.IsFiringPlayer = p.Info.IsFiringPlayer;
                 frag.ClientSent = p.Info.ClientSent;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
