@@ -313,6 +313,8 @@ namespace CoreSystems
                     {"RootAiId", () => GetAi()?.Construct.RootAi?.TopEntity.EntityId.ToString() ?? string.Empty },
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
+                    {"AiIsPowered", () => GetAi()?.HasPower.ToString() ?? string.Empty },
+                    {"AiInit", () => GetAi()?.AiInit.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.InventoryMonitor.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
