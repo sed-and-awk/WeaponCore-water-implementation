@@ -194,7 +194,8 @@ namespace CoreSystems
             ModelMaps.Clear();
 
             PlayerEntityIdInRange.Clear();
-            DirtyGridInfos.Clear();
+            using (_dityGridLock.Acquire())
+                DirtyGridInfos.Clear();
 
             DsUtil.Purge();
             DsUtil2.Purge();

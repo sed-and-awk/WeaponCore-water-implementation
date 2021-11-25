@@ -208,11 +208,14 @@ namespace CoreSystems
 
         internal void CheckDirtyGridInfos()
         {
-            if (!NewGrids.IsEmpty)
-                AddGridToMap();
-
-            if ((!GameLoaded || Tick20) && DirtyGridInfos.Count > 0)
+            if ((!GameLoaded || Tick20))
             {
+                using (_dityGridLock.Acquire())
+                {
+                    if (DirtyGridInfos.Count <= 0)
+                        return;
+                }
+
                 if (GridTask.valid && GridTask.Exceptions != null)
                     TaskHasErrors(ref GridTask, "GridTask");
                 if (!GameLoaded) UpdateGrids();
@@ -354,8 +357,12 @@ namespace CoreSystems
             DeferedUpBlockTypeCleanUp();
 
             DirtyGridsTmp.Clear();
-            DirtyGridsTmp.AddRange(DirtyGridInfos);
-            DirtyGridInfos.Clear();
+            using (_dityGridLock.Acquire())
+            {
+                DirtyGridsTmp.AddRange(DirtyGridInfos);
+                DirtyGridInfos.Clear();
+            }
+
             for (int i = 0; i < DirtyGridsTmp.Count; i++)
             {
                 var grid = DirtyGridsTmp[i];

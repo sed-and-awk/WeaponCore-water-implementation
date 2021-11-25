@@ -20,6 +20,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Library.Threading;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -100,7 +101,7 @@ namespace CoreSystems
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
-        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> DirtyGridInfos = new HashSet<MyCubeGrid>();
 
         internal readonly MyConcurrentHashSet<Weapon> PartToPullConsumable = new MyConcurrentHashSet<Weapon>();
 
@@ -110,7 +111,6 @@ namespace CoreSystems
         internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
         internal readonly CachingHashSet<AiCharger> ChargingParts = new CachingHashSet<AiCharger>();
 
-        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
         internal readonly ConcurrentQueue<IMyAutomaticRifleGun> DelayedHandWeaponsSpawn = new ConcurrentQueue<IMyAutomaticRifleGun>();
@@ -246,7 +246,7 @@ namespace CoreSystems
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
         private readonly EwaredBlocksPacket _cachedEwarPacket = new EwaredBlocksPacket();
-
+        private SpinLockRef _dityGridLock = new SpinLockRef();
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
