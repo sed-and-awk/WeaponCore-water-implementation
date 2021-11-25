@@ -16,9 +16,12 @@ namespace CoreSystems.Support
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene) {
 
+                    LastAddToScene = Session.Tick;
                     if (Platform.State == CorePlatform.PlatformState.Fresh)
                         PlatformInit();
                 }
+                else 
+                    Log.Line($"Tried to add comp but it was not in scene");
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}", null, true); }
         }

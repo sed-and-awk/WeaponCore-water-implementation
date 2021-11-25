@@ -60,12 +60,8 @@ namespace CoreSystems
             if (EntityToMasterAi.TryGetValue(myGrid, out ai)) {
                 var rootConstruct = ai.Construct.RootAi.Construct;
 
-                if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision) {
-
-                    rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
-                    rootConstruct.UpdateLeafs();
-                }
-                else Log.Line($"ClientConstructGroups Version failure - Revision:{rootConstruct.Data.Repo.FocusData.Revision}({cgPacket.Data.FocusData.Revision}) - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
+                rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
+                rootConstruct.UpdateLeafs();
 
                 data.Report.PacketValid = true;
             }

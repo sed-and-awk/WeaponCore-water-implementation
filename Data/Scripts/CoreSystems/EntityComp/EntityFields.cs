@@ -47,6 +47,8 @@ namespace CoreSystems.Support
         internal MyEntity InventoryEntity;
         internal uint IsWorkingChangedTick;
         internal uint NextLazyUpdateStart;
+        internal uint LastAddToScene;
+        internal uint LastRemoveFromScene;
         internal int PartTracking;
         internal double MaxDetectDistance = double.MinValue;
         internal double MaxDetectDistanceSqr = double.MinValue;
