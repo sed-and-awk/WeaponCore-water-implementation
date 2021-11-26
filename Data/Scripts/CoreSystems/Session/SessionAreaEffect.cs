@@ -99,7 +99,7 @@ namespace CoreSystems
                     else if (forceDef.Position == Force.TargetCenter) forcePosition = info.Ai.GridEntity.PositionComp.WorldAABB.Center;
                     else forcePosition = info.Ai.GridEntity.Physics.CenterOfMassWorld;
 
-                    hitDir = forceTo - forceFrom;
+                    hitDir = forceFrom - forceTo;
                     Vector3D.Normalize(ref hitDir, out normHitDir);
 
                     if (info.AmmoDef.Const.AreaEffect != TractorField)
