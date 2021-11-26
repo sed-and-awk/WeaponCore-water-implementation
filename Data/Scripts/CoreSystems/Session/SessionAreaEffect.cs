@@ -74,7 +74,6 @@ namespace CoreSystems
                 hitDir = forceTo - forceFrom;
 
                 Vector3D.Normalize(ref hitDir, out normHitDir);
-                var massMod = !forceDef.DisableRelativeMass ? hitEnt.Entity.Physics.Mass : 1;
 
                 double force;
                 if (info.AmmoDef.Const.AreaEffect != TractorField)
@@ -87,8 +86,10 @@ namespace CoreSystems
                     var distFromFocalPoint = forceDef.TractorRange - hitEnt.HitDist ?? info.ProjectileDisplacement;
                     var positive = distFromFocalPoint > 0;
                     normHitDir = positive ? normHitDir : -normHitDir;
-                    force = positive ? SUtils.Lerp(distFromFocalPoint, forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage) : SUtils.Lerp(Math.Abs(distFromFocalPoint), forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage);
+                    force = positive ?MathHelper.Lerp(distFromFocalPoint, forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage) : MathHelper.Lerp(Math.Abs(distFromFocalPoint), forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage);
                 }
+                var massMod = !forceDef.DisableRelativeMass ? hitEnt.Entity.Physics.Mass : 1;
+
                 hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (force * massMod), forcePosition, Vector3.Zero);
                 if (forceDef.ShooterFeelsForce && info.Ai?.GridEntity != null)
                 {

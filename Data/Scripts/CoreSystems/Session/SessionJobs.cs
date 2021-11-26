@@ -394,6 +394,7 @@ namespace CoreSystems
                     var powerProducers = 0;
                     var warHead = 0;
                     var working = 0;
+                    var functional = 0;
                     for (int j = 0; j < allFat.Count; j++)
                     {
                         var fat = allFat[j];
@@ -403,9 +404,11 @@ namespace CoreSystems
                         {
 
                             if (fat.MarkedForClose) continue;
-                            if (fat.IsWorking && ++working == 1)
-                            {
+                            if (fat.IsWorking)
+                                ++working;
 
+                            if (++functional == 1)
+                            {
                                 var oldCube = (gridMap.FakeController.SlimBlock as IMySlimBlock)?.FatBlock as MyCubeBlock;
                                 if (oldCube == null || oldCube.MarkedForClose || oldCube.CubeGrid != grid)
                                 {
@@ -413,7 +416,6 @@ namespace CoreSystems
                                     GridDistributors[grid] = gridMap;
                                 }
                             }
-
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
                             var bomb = fat as IMyWarhead;

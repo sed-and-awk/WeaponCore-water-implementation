@@ -215,6 +215,7 @@ namespace CoreSystems.Support
                         powered = true;
                     }
                 }
+                else Log.Line($"5");
 
                 if (!powered)
                 {
