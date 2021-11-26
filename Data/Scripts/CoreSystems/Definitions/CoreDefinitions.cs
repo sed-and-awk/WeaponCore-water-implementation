@@ -833,6 +833,7 @@ namespace CoreSystems.Support
                     DotField,
                     PushField,
                     PullField,
+                    TractorField,
                 }
 
                 [ProtoMember(1)] internal double AreaEffectRadius;
@@ -889,6 +890,8 @@ namespace CoreSystems.Support
                         [ProtoMember(1)] internal Force ForceFrom;
                         [ProtoMember(2)] internal Force ForceTo;
                         [ProtoMember(3)] internal Force Position;
+                        [ProtoMember(4)] internal bool RelativeMass;
+                        [ProtoMember(5)] internal double TractorRange;
                     }
                 }
 
