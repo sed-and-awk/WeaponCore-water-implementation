@@ -43,37 +43,38 @@ namespace CoreSystems
             if (hitEnt.Entity.Physics == null || !hitEnt.Entity.Physics.Enabled || hitEnt.Entity.Physics.IsStatic || !hitEnt.HitPos.HasValue)
                 return;
 
-            var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
-
-            Vector3D forceFrom = Vector3D.Zero;
-            Vector3D forceTo = Vector3D.Zero;
-            Vector3D forcePosition = Vector3D.Zero;
-
-            if (forceDef.ForceFrom == Force.ProjectileLastPosition) forceFrom = hitEnt.Intersection.From;
-            else if (forceDef.ForceFrom == Force.ProjectileOrigin) forceFrom = info.Origin;
-            else if (forceDef.ForceFrom == Force.HitPosition) forceFrom = hitEnt.HitPos.Value;
-            else if (forceDef.ForceFrom == Force.TargetCenter) forceFrom = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.ForceFrom == Force.TargetCenterOfMass) forceFrom = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            if (forceDef.ForceTo == Force.ProjectileLastPosition) forceTo = hitEnt.Intersection.From;
-            else if (forceDef.ForceTo == Force.ProjectileOrigin) forceTo = info.Origin;
-            else if (forceDef.ForceTo == Force.HitPosition) forceTo = hitEnt.HitPos.Value;
-            else if (forceDef.ForceTo == Force.TargetCenter) forceTo = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.ForceTo == Force.TargetCenterOfMass) forceTo = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            if (forceDef.Position == Force.ProjectileLastPosition) forcePosition = hitEnt.Intersection.From;
-            else if (forceDef.Position == Force.ProjectileOrigin) forcePosition = info.Origin;
-            else if (forceDef.Position == Force.HitPosition) forcePosition = hitEnt.HitPos.Value;
-            else if (forceDef.Position == Force.TargetCenter) forcePosition = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.Position == Force.TargetCenterOfMass) forcePosition = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            var hitDir = forceTo - forceFrom;
-
-            Vector3D normHitDir;
-            Vector3D.Normalize(ref hitDir, out normHitDir);
-
             if (info.System.Session.IsServer)
             {
+                var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
+
+                Vector3D forceFrom = Vector3D.Zero;
+                Vector3D forceTo = Vector3D.Zero;
+                Vector3D forcePosition = Vector3D.Zero;
+                Vector3D normHitDir;
+                Vector3D hitDir;
+
+                if (forceDef.ForceFrom == Force.ProjectileLastPosition) forceFrom = hitEnt.Intersection.From;
+                else if (forceDef.ForceFrom == Force.ProjectileOrigin) forceFrom = info.Origin;
+                else if (forceDef.ForceFrom == Force.HitPosition) forceFrom = hitEnt.HitPos.Value;
+                else if (forceDef.ForceFrom == Force.TargetCenter) forceFrom = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.ForceFrom == Force.TargetCenterOfMass) forceFrom = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                if (forceDef.ForceTo == Force.ProjectileLastPosition) forceTo = hitEnt.Intersection.From;
+                else if (forceDef.ForceTo == Force.ProjectileOrigin) forceTo = info.Origin;
+                else if (forceDef.ForceTo == Force.HitPosition) forceTo = hitEnt.HitPos.Value;
+                else if (forceDef.ForceTo == Force.TargetCenter) forceTo = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.ForceTo == Force.TargetCenterOfMass) forceTo = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                if (forceDef.Position == Force.ProjectileLastPosition) forcePosition = hitEnt.Intersection.From;
+                else if (forceDef.Position == Force.ProjectileOrigin) forcePosition = info.Origin;
+                else if (forceDef.Position == Force.HitPosition) forcePosition = hitEnt.HitPos.Value;
+                else if (forceDef.Position == Force.TargetCenter) forcePosition = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.Position == Force.TargetCenterOfMass) forcePosition = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                hitDir = forceTo - forceFrom;
+
+                Vector3D.Normalize(ref hitDir, out normHitDir);
+
                 double force;
                 if (info.AmmoDef.Const.AreaEffect != TractorField)
                 {
@@ -88,8 +89,30 @@ namespace CoreSystems
                     force = positive ? SUtils.InverseLerp(distFromFocalPoint, forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage) : SUtils.Lerp(Math.Abs(distFromFocalPoint), forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage);
 
                 }
-                var massMod = forceDef.RelativeMass ? hitEnt.Entity.Physics.Mass : 1;
+                var massMod = !forceDef.DisableRelativeMass ? hitEnt.Entity.Physics.Mass : 1;
                 hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (force * massMod), forcePosition, Vector3.Zero);
+
+                if (forceDef.ShooterFeelsForce && info.Ai?.GridEntity != null)
+                {
+
+                    if (forceDef.Position == Force.HitPosition) forcePosition = info.Origin;
+                    else if (forceDef.Position == Force.TargetCenter) forcePosition = info.Ai.GridEntity.PositionComp.WorldAABB.Center;
+                    else forcePosition = info.Ai.GridEntity.Physics.CenterOfMassWorld;
+
+                    hitDir = forceTo - forceFrom;
+                    Vector3D.Normalize(ref hitDir, out normHitDir);
+
+                    if (info.AmmoDef.Const.AreaEffect != TractorField)
+                        normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
+                    else {
+                        var distFromFocalPoint = forceDef.TractorRange - info.ProjectileDisplacement;
+                        var positive = distFromFocalPoint > 0;
+                        normHitDir = positive ? normHitDir : -normHitDir;
+
+                    }
+
+                    info.Ai.GridEntity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -normHitDir * (force * massMod), forcePosition, Vector3.Zero);
+                }
             }
 
             if (depletable)

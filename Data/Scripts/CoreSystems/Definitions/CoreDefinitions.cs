@@ -890,8 +890,9 @@ namespace CoreSystems.Support
                         [ProtoMember(1)] internal Force ForceFrom;
                         [ProtoMember(2)] internal Force ForceTo;
                         [ProtoMember(3)] internal Force Position;
-                        [ProtoMember(4)] internal bool RelativeMass;
+                        [ProtoMember(4)] internal bool DisableRelativeMass;
                         [ProtoMember(5)] internal double TractorRange;
+                        [ProtoMember(6)] internal bool ShooterFeelsForce;
                     }
                 }
 
