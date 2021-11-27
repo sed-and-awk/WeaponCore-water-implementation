@@ -352,7 +352,7 @@ namespace CoreSystems.Platform
                     {
                         Comp.AnimationsModifyCoreParts = true;
                         if (!System.Session.DedicatedServer && System.Session.PerformanceWarning.Add(Comp.SubTypeId))
-                            Log.Line($"Animation modifies core subparts, performance impact");
+                            Log.Line($"{Comp.SubtypeName} - {System.PartName} - Animation modifies core subparts, performance impact");
                     }
 
                     comp.AllAnimations.Add(pa);

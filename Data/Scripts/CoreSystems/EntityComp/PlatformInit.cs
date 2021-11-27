@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
+using VRageRender;
 using static CoreSystems.Support.CoreComponent.Start;
 using static CoreSystems.Support.CoreComponent.CompTypeSpecific;
 using static CoreSystems.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -105,7 +106,7 @@ namespace CoreSystems.Platform
 
             var initState = GetParts();
 
-            Comp.NeedsWorldMatrix = Comp.TypeSpecific == VanillaTurret || Comp.HasAim || Comp.AnimationsModifyCoreParts || Comp.NeedsWorldMatrix || Comp.Entity.NeedsWorldMatrix;
+            Comp.NeedsWorldMatrix = Comp.TypeSpecific == VanillaTurret || Comp.HasAim || Comp.AnimationsModifyCoreParts || Comp.Entity.NeedsWorldMatrix;
             return initState;
         }
 
@@ -190,28 +191,43 @@ namespace CoreSystems.Platform
                 }
 
 
-
                 var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
                 if (Comp.TypeSpecific != Phantom) Weapons.Add(weapon);
                 else Phantoms.Add(weapon);
-
-                if (azimuthPart != Comp.Entity)
-                {
-                    azimuthPart.Render.NeedsDrawFromParent = true;
-                    azimuthPart.NeedsWorldMatrix = false;
-                }
-
-                if (elevationPart != Comp.Entity)
-                {
-                    elevationPart.Render.NeedsDrawFromParent = true;
-                    elevationPart.NeedsWorldMatrix = false;
-                }
+                
+                SetWorldMatrix(azimuthPart, elevationPart);
 
                 CompileTurret(weapon);
             }
             return State;
         }
 
+        private void SetWorldMatrix(MyEntity azimuthPart, MyEntity elevationPart)
+        {
+            if (azimuthPart != null && azimuthPart != Comp.Entity)
+            {
+
+                if (elevationPart == null || elevationPart.Hierarchy.Children.Count <= 1)
+                {
+                    azimuthPart.Render.NeedsDrawFromParent = true;
+                    azimuthPart.NeedsWorldMatrix = false;
+                }
+                else
+                    azimuthPart.NeedsWorldMatrix = true;
+            }
+
+            if (elevationPart != null && elevationPart != Comp.Entity)
+            {
+
+                if (elevationPart.Hierarchy.Children.Count <= 1)
+                {
+                    elevationPart.Render.NeedsDrawFromParent = true;
+                    elevationPart.NeedsWorldMatrix = false;
+                }
+                else
+                    elevationPart.NeedsWorldMatrix = true;
+            }
+        }
         private PlatformState UpgradeParts()
         {
             foreach (var i in _orderToCreate)
@@ -486,6 +502,7 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
                         weapon.AzimuthPart.Entity.Render.NeedsDrawFromParent = true;
+
                     }
 
                     MyEntity elevationPartEntity;
@@ -494,6 +511,9 @@ namespace CoreSystems.Platform
                         weapon.ElevationPart.Entity = elevationPartEntity;
                         weapon.ElevationPart.Entity.Render.NeedsDrawFromParent = true;
                     }
+
+                    //SetWorldMatrix(azimuthPartEntity, elevationPartEntity);
+
 
                     if (weapon.System.HasBarrelRotation) {
 
