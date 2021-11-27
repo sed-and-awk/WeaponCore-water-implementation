@@ -348,7 +348,7 @@ namespace CoreSystems.Platform
                 foreach (var pa in set.Value)
                 {
                     var modifiesCore = pa.Part == azimuthPart || pa.Part == elevationPart || pa.Part == spinPart || pa.Part == entity;
-                    if (modifiesCore || true)
+                    if (modifiesCore)
                     {
                         Comp.AnimationsModifyCoreParts = true;
                         if (!System.Session.DedicatedServer && System.Session.PerformanceWarning.Add(Comp.SubTypeId))
