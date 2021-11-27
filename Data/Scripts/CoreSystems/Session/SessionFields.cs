@@ -401,6 +401,7 @@ namespace CoreSystems
         internal bool LeadGroupActive;
         internal bool ArmorCoreActive;
         internal bool DebugMod;
+        internal bool AntiSmartActive;
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
             76561198339035377, // king_of_draconia for harassing modders and users of mods.

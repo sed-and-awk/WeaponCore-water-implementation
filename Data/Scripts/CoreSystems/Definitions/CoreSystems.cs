@@ -133,6 +133,7 @@ namespace CoreSystems.Support
         public readonly int BarrelSpinRate;
         public readonly int ShotsPerBurst;
 
+        public readonly bool HasAntiSmart;
         public readonly bool HasAmmoSelection;
         public readonly bool HasEjector;
         public readonly bool HasScope;
@@ -260,6 +261,9 @@ namespace CoreSystems.Support
                 ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
                 if (ammo.AmmoDef.Const.GuidedAmmoDetected)
                     HasGuidedAmmo = true;
+
+                if (ammo.AmmoDef.Const.AreaEffect == AmmoDef.AreaDamageDef.AreaEffectType.AntiSmart)
+                    HasAntiSmart = true;
 
                 if (ammo.AmmoDef.Const.IsTurretSelectable)
                     ++ammoSelections;

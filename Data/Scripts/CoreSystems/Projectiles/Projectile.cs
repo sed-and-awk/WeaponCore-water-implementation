@@ -152,7 +152,7 @@ namespace CoreSystems.Projectiles
 
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
             DynamicGuidance = Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && Info.AmmoDef.Trajectory.Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
-            if (DynamicGuidance) DynTrees.RegisterProjectile(this);
+            if (DynamicGuidance && Info.System.Session.AntiSmartActive) DynTrees.RegisterProjectile(this);
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
@@ -915,7 +915,7 @@ namespace CoreSystems.Projectiles
                 }
                 VrPros.Clear();
             }
-            if (DynamicGuidance)
+            if (DynamicGuidance && Info.System.Session.AntiSmartActive)
                 DynTrees.UnregisterProjectile(this);
 
             PruningProxyId = -1;

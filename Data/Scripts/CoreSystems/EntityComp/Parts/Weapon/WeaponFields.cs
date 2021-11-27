@@ -405,6 +405,9 @@ namespace CoreSystems.Platform
             }
 
             HasHardPointSound = HardPointSound != null;
+
+            if (System.HasAntiSmart)
+                System.Session.AntiSmartActive = true;
         }
 
         private void FuckMyLife()

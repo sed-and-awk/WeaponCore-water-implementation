@@ -206,26 +206,12 @@ namespace CoreSystems.Platform
         {
             if (azimuthPart != null && azimuthPart != Comp.Entity)
             {
-
-                if (elevationPart == null || elevationPart.Hierarchy.Children.Count <= 1)
-                {
-                    azimuthPart.Render.NeedsDrawFromParent = true;
-                    azimuthPart.NeedsWorldMatrix = false;
-                }
-                else
-                    azimuthPart.NeedsWorldMatrix = true;
+                azimuthPart.NeedsWorldMatrix = true;
             }
 
             if (elevationPart != null && elevationPart != Comp.Entity)
             {
-
-                if (elevationPart.Hierarchy.Children.Count <= 1)
-                {
-                    elevationPart.Render.NeedsDrawFromParent = true;
-                    elevationPart.NeedsWorldMatrix = false;
-                }
-                else
-                    elevationPart.NeedsWorldMatrix = true;
+                elevationPart.NeedsWorldMatrix = true;
             }
         }
         private PlatformState UpgradeParts()
