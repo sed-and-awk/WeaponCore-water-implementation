@@ -230,16 +230,6 @@ namespace CoreSystems.Platform
             Comp = comp;
             System = system;
             Init(comp, system, partId);
-            
-            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
-            foreach (var set in AnimationsSet) {
-                foreach (var pa in set.Value) {
-                    comp.AllAnimations.Add(pa);
-                    AnimationLookup.Add(pa.AnimationId, pa);
-                }
-            }
-
-            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
 
             MyStringHash subtype;
             if (comp.Session.VanillaIds.TryGetValue(comp.Id, out subtype)) {
@@ -348,6 +338,26 @@ namespace CoreSystems.Platform
             SpinPart = new PartInfo {Entity = spinPart};
             MuzzlePart = new PartInfo { Entity = entity };
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
+
+            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
+            foreach (var set in AnimationsSet)
+            {
+                foreach (var pa in set.Value)
+                {
+                    var modifiesCore = pa.Part == azimuthPart || pa.Part == elevationPart || pa.Part == spinPart || pa.Part == entity;
+                    if (modifiesCore)
+                    {
+                        Comp.AnimationsModifyCoreParts = true;
+                        if (!System.Session.DedicatedServer)
+                            Log.Line($"Animation modifies core subparts, performance impact");
+                    }
+
+                    comp.AllAnimations.Add(pa);
+                    AnimationLookup.Add(pa.AnimationId, pa);
+                }
+            }
+
+            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts);
 
             var burstDelay = System.Values.HardPoint.Loading.DelayAfterBurst;
             ShowReload = Comp.Session.HandlesInput && (System.WConst.ReloadTime >= 240 || System.Values.HardPoint.Loading.ShotsInBurst > 0 && burstDelay >= 240);

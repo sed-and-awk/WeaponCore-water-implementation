@@ -410,6 +410,9 @@ namespace CoreSystems
 
                         if (comp.Debug && !DedicatedServer)
                             WeaponDebug(w);
+
+                        if (w.PosChangedTick != w.Comp.Session.Tick && w.Comp.WorldMatrixEnabled) 
+                            w.EnableWorldMatrix(false);
                     }
                 }
                 

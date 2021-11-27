@@ -509,6 +509,7 @@ namespace CoreSystems.Platform
         {
             if (PosChangedTick != System.Session.Tick)
                 UpdatePivotPos();
+
             var info = GetScope.Info;
 
             var checkLevel = Comp.Ai.IsStatic ? 1 : 5;

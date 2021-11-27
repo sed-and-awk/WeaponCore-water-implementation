@@ -92,8 +92,8 @@ namespace CoreSystems.Support
                     //if (Type == CompType.Weapon && Platform.PartState == CorePlatform.PlatformState.Inited)
                         //Platform.ResetParts(this);
 
-                    Entity.NeedsWorldMatrix = true;
-
+                    Entity.NeedsWorldMatrix = NeedsWorldMatrix;
+                    WorldMatrixEnabled = NeedsWorldMatrix;
                     if (!Ai.AiInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                     else OnAddedToSceneTasks(true);
 
@@ -131,7 +131,8 @@ namespace CoreSystems.Support
                         if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                             Platform.ResetParts();
 
-                        Entity.NeedsWorldMatrix = true;
+                        Entity.NeedsWorldMatrix = NeedsWorldMatrix;
+                        WorldMatrixEnabled = NeedsWorldMatrix;
 
                         // ReInit Counters
                         if (!Ai.PartCounting.ContainsKey(SubTypeId)) // Need to account for reinit case

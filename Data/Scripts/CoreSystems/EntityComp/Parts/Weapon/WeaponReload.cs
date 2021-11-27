@@ -214,7 +214,7 @@ namespace CoreSystems.Platform
         {
             var s = Comp.Session;
             var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
-            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.InventoryEntity.HasInventory && !isPhantom) return false;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.HasInventory && !isPhantom) return false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !isPhantom)
             {

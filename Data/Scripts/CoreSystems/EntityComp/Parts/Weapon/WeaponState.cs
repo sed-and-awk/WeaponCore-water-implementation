@@ -14,8 +14,8 @@ namespace CoreSystems.Platform
         {
             try
             {
-                if (PosChangedTick != Comp.Session.Tick)
-                    UpdatePivotPos();
+                //if (PosChangedTick != Comp.Session.Tick)
+                //    UpdatePivotPos();
 
                 if (Comp.UserControlled) {
                     ReturingHome = false;
@@ -23,6 +23,29 @@ namespace CoreSystems.Platform
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}", null, true); }
+        }
+
+
+        internal void EnableWorldMatrix(bool enable)
+        {
+            if (Comp.Entity.NeedsWorldMatrix != enable)
+            {
+                Comp.WorldMatrixEnabled = enable;
+                Comp.Entity.NeedsWorldMatrix = enable;
+                Log.Line($"changed weapon worldmatrix to:{enable}");
+            }
+
+            if (AzimuthPart.Entity != null)
+                AzimuthPart.Entity.NeedsWorldMatrix = enable;
+
+            if (ElevationPart.Entity != null)
+                ElevationPart.Entity.NeedsWorldMatrix = enable;
+
+            if (MuzzlePart.Entity != null)
+                MuzzlePart.Entity.NeedsWorldMatrix = enable;
+
+            //if (w.SpinPart.Entity != null)
+            //    w.SpinPart.Entity.NeedsWorldMatrix = enable;
         }
 
         internal void TargetChanged()

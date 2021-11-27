@@ -102,7 +102,12 @@ namespace CoreSystems.Platform
             Parts.Entity = (MyEntity)Comp.Entity;
             Parts.NameToEntity["None"] = Parts.Entity;
             Parts.EntityToName[Parts.Entity] = "None";
-            return GetParts();
+            var initState = GetParts();
+
+            var vanillaPart = Comp.TypeSpecific == VanillaTurret || Comp.TypeSpecific == VanillaFixed;
+            Comp.NeedsWorldMatrix = !vanillaPart && Comp.HasTurret || Comp.AnimationsModifyCoreParts;
+
+            return initState;
         }
 
         private PlatformState GetParts()
@@ -185,8 +190,8 @@ namespace CoreSystems.Platform
                         spinPart = muzzlePartEntity;
                 }
 
-                azimuthPart.NeedsWorldMatrix = true;
-                elevationPart.NeedsWorldMatrix = true;
+                azimuthPart.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                elevationPart.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
 
                 var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
                 if (Comp.TypeSpecific != Phantom) Weapons.Add(weapon);
@@ -258,7 +263,7 @@ namespace CoreSystems.Platform
                     weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                     weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
                     weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
-                    weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
+                    weapon.MuzzlePart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
                 }
 
                 if (weapon.System.HasBarrelRotation && weapon.SpinPart.Entity != null)
@@ -278,7 +283,7 @@ namespace CoreSystems.Platform
                         weapon.SpinPart.ToTransformation = spinPartPosTo;
                         weapon.SpinPart.FromTransformation = spinPartPosFrom;
                         weapon.SpinPart.PartLocalLocation = spinPartLocation;
-                        weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                        //weapon.SpinPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
                     }
                 }
 
@@ -313,7 +318,6 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                         weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
                         weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrixRef;
-                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
 
                     }
                     else
@@ -325,8 +329,6 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                         weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
                         weapon.AzimuthPart.OriginalPosition = MatrixD.Zero;
-                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-
                     }
 
                     if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
@@ -351,8 +353,7 @@ namespace CoreSystems.Platform
                         weapon.ElevationPart.FullRotationStep = fullStepElRotation;
                         weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
                         weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
-                        weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrix;
-                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                        weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrixRef;
 
                     }
                     else if (elevationPartName == "None")
@@ -364,7 +365,6 @@ namespace CoreSystems.Platform
                         weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
                         weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
                         weapon.ElevationPart.OriginalPosition = MatrixD.Zero;
-                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
                 }
 
@@ -473,14 +473,14 @@ namespace CoreSystems.Platform
                     {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
-                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
                     }
 
                     MyEntity elevationPartEntity;
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
-                        weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                        weapon.ElevationPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
                     }
 
                     if (weapon.System.HasBarrelRotation) {
@@ -491,8 +491,8 @@ namespace CoreSystems.Platform
 
                         if (spinPart != null) {
                             weapon.SpinPart.Entity = spinPart;
-                            if (spinPart != muzzlePart)
-                                weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                            //if (spinPart != muzzlePart)
+                            //    weapon.SpinPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
                         }
                     }
 
@@ -664,7 +664,7 @@ namespace CoreSystems.Platform
                 }
             }
         }
-        
+
         internal PlatformState PlatformCrash(CoreComponent comp, bool markInvalid, bool suppress, string message)
         {
             if (suppress)

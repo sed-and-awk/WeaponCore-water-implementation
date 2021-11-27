@@ -21,6 +21,10 @@ namespace CoreSystems.Platform
                 var s = Comp.Session;
                 var tick = s.Tick;
                 #region Prefire
+
+                if (PosChangedTick != Comp.Session.Tick)
+                    UpdatePivotPos();
+
                 if (_ticksUntilShoot++ < System.DelayToFire) {
 
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)

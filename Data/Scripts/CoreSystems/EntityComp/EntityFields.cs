@@ -91,7 +91,10 @@ namespace CoreSystems.Support
         internal bool CloseCondition;
         internal bool HasCloseConsition;
         internal bool HasServerOverrides;
-
+        internal bool HasInventory;
+        internal bool NeedsWorldMatrix;
+        internal bool WorldMatrixEnabled;
+        internal bool AnimationsModifyCoreParts;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -198,6 +201,7 @@ namespace CoreSystems.Support
             LazyUpdate = Type == CompType.Support || Type == CompType.Upgrade;
             InventoryEntity = TypeSpecific != CompTypeSpecific.Rifle ? CoreEntity : topEntity;
             CoreInventory = (MyInventory)InventoryEntity.GetInventoryBase();
+            HasInventory = InventoryEntity.HasInventory;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
             IdlePower = Platform.Structure.CombinedIdlePower;
