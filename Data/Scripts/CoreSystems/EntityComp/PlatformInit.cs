@@ -102,11 +102,10 @@ namespace CoreSystems.Platform
             Parts.Entity = (MyEntity)Comp.Entity;
             Parts.NameToEntity["None"] = Parts.Entity;
             Parts.EntityToName[Parts.Entity] = "None";
+
             var initState = GetParts();
 
-            var vanillaPart = Comp.TypeSpecific == VanillaTurret || Comp.TypeSpecific == VanillaFixed;
-            Comp.NeedsWorldMatrix = !vanillaPart && Comp.HasTurret || Comp.AnimationsModifyCoreParts;
-
+            Comp.NeedsWorldMatrix = Comp.TypeSpecific == VanillaTurret || Comp.HasAim || Comp.AnimationsModifyCoreParts || Comp.NeedsWorldMatrix || Comp.Entity.NeedsWorldMatrix;
             return initState;
         }
 
@@ -190,12 +189,24 @@ namespace CoreSystems.Platform
                         spinPart = muzzlePartEntity;
                 }
 
-                azimuthPart.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
-                elevationPart.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+
 
                 var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
                 if (Comp.TypeSpecific != Phantom) Weapons.Add(weapon);
                 else Phantoms.Add(weapon);
+
+                if (azimuthPart != Comp.Entity)
+                {
+                    azimuthPart.Render.NeedsDrawFromParent = true;
+                    azimuthPart.NeedsWorldMatrix = false;
+                }
+
+                if (elevationPart != Comp.Entity)
+                {
+                    elevationPart.Render.NeedsDrawFromParent = true;
+                    elevationPart.NeedsWorldMatrix = false;
+                }
+
                 CompileTurret(weapon);
             }
             return State;
@@ -263,7 +274,7 @@ namespace CoreSystems.Platform
                     weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                     weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
                     weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
-                    weapon.MuzzlePart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                    weapon.MuzzlePart.Entity.Render.NeedsDrawFromParent = true;
                 }
 
                 if (weapon.System.HasBarrelRotation && weapon.SpinPart.Entity != null)
@@ -283,7 +294,8 @@ namespace CoreSystems.Platform
                         weapon.SpinPart.ToTransformation = spinPartPosTo;
                         weapon.SpinPart.FromTransformation = spinPartPosFrom;
                         weapon.SpinPart.PartLocalLocation = spinPartLocation;
-                        //weapon.SpinPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                        weapon.SpinPart.Entity.Render.NeedsDrawFromParent = true;
+
                     }
                 }
 
@@ -473,14 +485,14 @@ namespace CoreSystems.Platform
                     {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
-                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                        weapon.AzimuthPart.Entity.Render.NeedsDrawFromParent = true;
                     }
 
                     MyEntity elevationPartEntity;
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
-                        weapon.ElevationPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                        weapon.ElevationPart.Entity.Render.NeedsDrawFromParent = true;
                     }
 
                     if (weapon.System.HasBarrelRotation) {
@@ -491,8 +503,7 @@ namespace CoreSystems.Platform
 
                         if (spinPart != null) {
                             weapon.SpinPart.Entity = spinPart;
-                            //if (spinPart != muzzlePart)
-                            //    weapon.SpinPart.Entity.NeedsWorldMatrix = Comp.NeedsWorldMatrix;
+                            weapon.SpinPart.Entity.Render.NeedsDrawFromParent = true;
                         }
                     }
 

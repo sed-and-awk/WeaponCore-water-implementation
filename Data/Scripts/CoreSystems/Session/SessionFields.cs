@@ -199,6 +199,7 @@ namespace CoreSystems
         internal readonly HashSet<MyDefinitionId> CoreSystemsUpgradeDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsRifleDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsPhantomDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyStringHash> PerformanceWarning = new HashSet<MyStringHash>();
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
@@ -256,7 +257,6 @@ namespace CoreSystems
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
         internal List<UpgradeDefinition> UpgradeDefinitions = new List<UpgradeDefinition>();
         internal List<SupportDefinition> SupportDefinitions = new List<SupportDefinition>();
-
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal Color[] HeatEmissives;

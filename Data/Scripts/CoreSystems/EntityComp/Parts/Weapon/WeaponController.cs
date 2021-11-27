@@ -124,9 +124,6 @@ namespace CoreSystems.Platform
         {
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            if (Comp.NeedsWorldMatrix && !Comp.WorldMatrixEnabled)
-                EnableWorldMatrix(true);
-
             var parentPart = ParentIsSubpart ? AzimuthPart.Parent : Comp.CoreEntity;
             var worldMatrix = parentPart.PositionComp.WorldMatrixRef;
 

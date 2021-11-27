@@ -95,6 +95,7 @@ namespace CoreSystems.Support
         internal bool NeedsWorldMatrix;
         internal bool WorldMatrixEnabled;
         internal bool AnimationsModifyCoreParts;
+        internal bool HasAim;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

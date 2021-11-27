@@ -309,7 +309,7 @@ namespace CoreSystems
                         var noAmmo = w.NoMagsToLoad && w.ProtoWeaponAmmo.CurrentAmmo == 0 && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && Tick - w.LastMagSeenTick > 600;
                         if (w.Target.HasTarget) {
 
-                            if (w.PosChangedTick != Tick) w.UpdatePivotPos();
+                            if (w.PosChangedTick != Tick)                                w.UpdatePivotPos();
                             if (!IsClient && noAmmo)
                                 w.Target.Reset(Tick, States.Expired);
                             else if (!IsClient && w.Target.TargetEntity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && (fakeTargets == null || Tick - fakeTargets.ManualTarget.LastUpdateTick > 120))
@@ -410,9 +410,6 @@ namespace CoreSystems
 
                         if (comp.Debug && !DedicatedServer)
                             WeaponDebug(w);
-
-                        if (w.PosChangedTick != w.Comp.Session.Tick && w.Comp.WorldMatrixEnabled) 
-                            w.EnableWorldMatrix(false);
                     }
                 }
                 

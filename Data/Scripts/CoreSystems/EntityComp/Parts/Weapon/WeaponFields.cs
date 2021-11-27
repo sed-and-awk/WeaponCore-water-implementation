@@ -301,6 +301,9 @@ namespace CoreSystems.Platform
                     HitEffects = new MyParticleEffect[System.Values.Assignments.Muzzles.Length];
             }
 
+            if (System.TurretMovement != WeaponSystem.TurretType.Fixed)
+                Comp.HasAim = true;
+
             PrimaryWeaponGroup = PartId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
             TurretMode = System.Values.HardPoint.Ai.TurretController;
@@ -345,10 +348,10 @@ namespace CoreSystems.Platform
                 foreach (var pa in set.Value)
                 {
                     var modifiesCore = pa.Part == azimuthPart || pa.Part == elevationPart || pa.Part == spinPart || pa.Part == entity;
-                    if (modifiesCore)
+                    if (modifiesCore || true)
                     {
                         Comp.AnimationsModifyCoreParts = true;
-                        if (!System.Session.DedicatedServer)
+                        if (!System.Session.DedicatedServer && System.Session.PerformanceWarning.Add(Comp.SubTypeId))
                             Log.Line($"Animation modifies core subparts, performance impact");
                     }
 

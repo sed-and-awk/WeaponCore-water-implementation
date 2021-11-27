@@ -131,7 +131,7 @@ namespace CoreSystems.Support
                         if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                             Platform.ResetParts();
 
-                        Entity.NeedsWorldMatrix = NeedsWorldMatrix;
+                        Entity.NeedsWorldMatrix = NeedsWorldMatrix; 
                         WorldMatrixEnabled = NeedsWorldMatrix;
 
                         // ReInit Counters
