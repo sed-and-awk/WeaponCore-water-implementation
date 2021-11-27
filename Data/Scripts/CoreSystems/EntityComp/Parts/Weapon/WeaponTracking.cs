@@ -439,11 +439,11 @@ namespace CoreSystems.Platform
             var info = GetScope.Info;
 
             var checkLevel = Comp.Ai.IsStatic ? 1 : 5;
-            bool losBlocekd = false;
+            bool losBlocked = false;
             for (int j = 0; j < 10; j++)
             {
 
-                if (losBlocekd)
+                if (losBlocked)
                     break;
 
                 var angle = GetAngle();
@@ -468,10 +468,10 @@ namespace CoreSystems.Platform
                             break;
                     }
                 }
-                losBlocekd = blockedDir >= 4;
+                losBlocked = blockedDir >= 4;
             }
 
-            PauseShoot = losBlocekd;
+            PauseShoot = losBlocked;
 
             return !PauseShoot;
         }

@@ -482,6 +482,9 @@ namespace CoreSystems.Platform
                     case "Armed":
                         o.Armed = enabled;
                         break;
+                    case "Debug":
+                        o.Debug = enabled;
+                        break;
                 }
 
                 ResetCompState(comp, playerId, clearTargets, resetState);
