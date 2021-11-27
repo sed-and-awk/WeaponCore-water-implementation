@@ -566,7 +566,7 @@ namespace CoreSystems
 
             var value = newValue ? 1 : 0;
             Weapon.WeaponComponent.RequestSetValue(comp, "Armed", value, comp.Session.PlayerId);
-            comp.Cube.UpdateTerminal();
+            if (comp.Session.IsServer) comp.Cube.UpdateTerminal();
         }
 
         internal static void TriggerCriticalReaction(IMyTerminalBlock block)
@@ -581,7 +581,7 @@ namespace CoreSystems
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             Weapon.WeaponComponent.RequestCountDown(comp, true);
-            comp.Cube.UpdateTerminal();
+            if (comp.Session.IsServer) comp.Cube.UpdateTerminal();
         }
 
         internal static void StopCountDown(IMyTerminalBlock block)
@@ -589,7 +589,7 @@ namespace CoreSystems
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             Weapon.WeaponComponent.RequestCountDown(comp, false);
-            comp.Cube.UpdateTerminal();
+            if (comp.Session.IsServer) comp.Cube.UpdateTerminal();
         }
 
         internal static bool ShowCamera(IMyTerminalBlock block)

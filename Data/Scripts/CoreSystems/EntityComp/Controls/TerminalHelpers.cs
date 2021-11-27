@@ -86,7 +86,7 @@ namespace CoreSystems.Control
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session,  "Debug", Localization.GetText("TerminalDebugTitle"), Localization.GetText("TerminalDebugTooltip"), BlockUi.GetDebug, BlockUi.RequestDebug, true, IsReady);
+            AddOnOffSwitchNoAction<T>(session,  "Debug", Localization.GetText("TerminalDebugTitle"), Localization.GetText("TerminalDebugTooltip"), BlockUi.GetDebug, BlockUi.RequestDebug, true, GuidedAmmoNoTurret);
             Separator<T>(session, "WC_sep4", HasTracking);
             AddOnOffSwitchNoAction<T>(session,  "Shoot", Localization.GetText("TerminalShootTitle"), Localization.GetText("TerminalShootTooltip"), BlockUi.GetShoot, BlockUi.RequestSetShoot, true, IsNotBomb);
 
@@ -258,6 +258,10 @@ namespace CoreSystems.Control
         internal static bool TurretOrGuidedAmmo(IMyTerminalBlock block)
         {
             return HasTurret(block) || GuidedAmmo(block);
+        }
+        internal static bool GuidedAmmoNoTurret(IMyTerminalBlock block)
+        {
+            return GuidedAmmo(block) && NoTurret(block);
         }
         internal static void SliderWriterRange(IMyTerminalBlock block, StringBuilder builder)
         {
