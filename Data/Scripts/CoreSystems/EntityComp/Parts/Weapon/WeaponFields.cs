@@ -170,6 +170,7 @@ namespace CoreSystems.Platform
         internal double MinTargetDistanceSqr;
         internal double MinTargetDistanceBufferSqr;
         internal double MuzzleDistToBarrelCenter;
+        internal double ScopeDistToCheckPos;
         internal bool ClientReloading;
         internal bool Rotating;
         internal bool IsTurret;

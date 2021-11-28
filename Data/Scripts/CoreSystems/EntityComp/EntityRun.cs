@@ -2,6 +2,7 @@
 using CoreSystems.Platform;
 using Sandbox.Game.Entities;
 using VRage.Game.Components;
+using VRageMath;
 using static CoreSystems.Session;
 using static CoreSystems.Support.Ai;
 
@@ -202,8 +203,18 @@ namespace CoreSystems.Support
 
                 if (IsBlock)
                 {
-                    for (int i = 0; i < Platform.Weapons.Count; i++)
-                        Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, FunctionalBlock.Enabled, 1);
+                    foreach (var weapon in Platform.Weapons)
+                    {
+                        MyOrientedBoundingBoxD obb;
+                        SUtils.GetBlockOrientedBoundingBox(Cube, out obb);
+                        var scopeInfo = weapon.GetScope.Info;
+                        if (!obb.Contains(ref scopeInfo.Position))
+                        {
+                            var rayBack = new RayD(scopeInfo.Position, -scopeInfo.Direction);
+                            weapon.ScopeDistToCheckPos = obb.Intersects(ref rayBack) ?? 0;
+                        }
+                        Session.FutureEvents.Schedule(weapon.DelayedStart, FunctionalBlock.Enabled, 1);
+                    }
                 }
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
