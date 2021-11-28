@@ -132,7 +132,7 @@ namespace CoreSystems
             }
 
             scaledDamage = (scaledDamage * info.ShieldResistMod) * info.ShieldBypassMod;
-            var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
+            var unscaledDetDmg = info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
             var detonateDamage = detonateOnEnd  && info.ShieldBypassMod >= 1 ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * areaDmgGlobal * shieldDmgGlobal) * info.ShieldResistMod : 0;
             if (heal)
             {
@@ -160,7 +160,6 @@ namespace CoreSystems
                         }
                 }
             }
-            //var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
             var hitWave = info.AmmoDef.Const.RealShotsPerMin <= 120;
             var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.CoreEntity.EntityId, (float)scaledDamage, (float)detonateDamage, energy, hitWave);
             if (hit.HasValue)
@@ -202,357 +201,361 @@ namespace CoreSystems
 
         private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
-            try
+            var grid = hitEnt.Entity as MyCubeGrid;
+            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
-                var grid = hitEnt.Entity as MyCubeGrid;
-                if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
+                hitEnt.Blocks?.Clear();
+                Log.Line($"DamageGrid first null check hit");
+                return;
+            }
+
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal || !t.AmmoDef.Const.IsCriticalReaction && (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.AiType == Ai.AiTypes.Grid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            {
+                t.BaseDamagePool = 0;
+                return;
+            }
+
+            _destroyedSlims.Clear();
+            _destroyedSlimsClient.Clear();
+            var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+            var areaRadius = largeGrid ? t.AmmoDef.Const.AreaRadiusLarge : t.AmmoDef.Const.AreaRadiusSmall;
+            var detonateRadius = largeGrid ? t.AmmoDef.Const.DetonateRadiusLarge : t.AmmoDef.Const.DetonateRadiusSmall;
+            var maxObjects = t.AmmoDef.Const.MaxObjectsHit;
+            var areaEffect = t.AmmoDef.AreaEffect.AreaEffect;
+            var explosive = areaEffect == AreaEffectType.Explosive;
+            var radiant = areaEffect == AreaEffectType.Radiant;
+            var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
+            var detonateDmg = t.AmmoDef.Const.DetonationDamage;
+
+            var attackerId = t.Target.CoreEntity.EntityId;
+            var attacker = t.Target.CoreEntity;
+
+            var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
+            var hitMass = t.AmmoDef.Mass;
+            var sync = MpActive && (DedicatedServer || IsServer);
+            var hasAreaDmg = areaEffectDmg > 0 && areaRadius > 0;
+            var hasDetDmg =  detonateDmg > 0 && detonateRadius > 0;
+            var radiantEffect = radiant && (hasAreaDmg || hasDetDmg);
+            var primeDamage = !hasAreaDmg;
+            var damageType = t.ShieldBypassed ? ShieldBypassDamageType : explosive || radiantEffect ? MyDamageType.Explosion : MyDamageType.Bullet;
+            var minAoeOffset = largeGrid ? 1.25 : 0.5f;
+            var gridMatrix = grid.PositionComp.WorldMatrixRef;
+
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
+
+            var playerAi = t.Ai.AiType == Ai.AiTypes.Player;
+            float gridDamageModifier = grid.GridGeneralDamageModifier;
+
+            var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist ?? t.DistanceTraveled : t.DistanceTraveled;
+
+            var fallOff = t.AmmoDef.Const.FallOffScaling && distTraveled > t.AmmoDef.Const.FallOffDistance;
+            var fallOffMultipler = 1f;
+            if (fallOff)
+            {
+                fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((distTraveled - t.AmmoDef.Const.FallOffDistance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.Const.FallOffDistance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+            }
+
+            var damagePool = t.BaseDamagePool;
+            int hits = 1;
+            if (t.AmmoDef.Const.VirtualBeams)
+            {
+                hits = t.WeaponCache.Hits;
+                areaEffectDmg *= hits;
+            }
+
+            var objectsHit = t.ObjectsHit;
+            var countBlocksAsObjects = t.AmmoDef.ObjectsHit.CountBlocks;
+            var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;
+
+            var outOfPew = false;
+            var earlyExit = false;
+            IMySlimBlock rootBlock = null;
+            var destroyed = 0;
+
+            for (int i = 0; i < hitEnt.Blocks.Count; i++)
+            {
+                if (earlyExit || outOfPew) break;
+                rootBlock = hitEnt.Blocks[i];
+
+                if (_destroyedSlims.Contains(rootBlock) || _destroyedSlimsClient.Contains(rootBlock)) continue;
+                if (rootBlock.IsDestroyed)
                 {
-                    hitEnt.Blocks?.Clear();
-                    Log.Line($"DamageGrid first null check hit");
-                    return;
-                }
-
-                if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal || !t.AmmoDef.Const.IsCriticalReaction && (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.AiType == Ai.AiTypes.Grid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
-                {
-                    t.BaseDamagePool = 0;
-                    return;
-                }
-
-                _destroyedSlims.Clear();
-                _destroyedSlimsClient.Clear();
-                var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                var areaRadius = largeGrid ? t.AmmoDef.Const.AreaRadiusLarge : t.AmmoDef.Const.AreaRadiusSmall;
-                var detonateRadius = largeGrid ? t.AmmoDef.Const.DetonateRadiusLarge : t.AmmoDef.Const.DetonateRadiusSmall;
-                var maxObjects = t.AmmoDef.Const.MaxObjectsHit;
-                var areaEffect = t.AmmoDef.AreaEffect.AreaEffect;
-                var explosive = areaEffect == AreaEffectType.Explosive;
-                var radiant = areaEffect == AreaEffectType.Radiant;
-                var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
-                var detonateDmg = t.AmmoDef.Const.DetonationDamage;
-
-                var attackerId = t.Target.CoreEntity.EntityId;
-                var attacker = t.Target.CoreEntity;
-
-                var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
-                var hitMass = t.AmmoDef.Mass;
-                var sync = MpActive && (DedicatedServer || IsServer);
-                var hasAreaDmg = areaEffectDmg > 0;
-                var radiantCascade = radiant && !detonateOnEnd;
-                var primeDamage = !radiantCascade || !hasAreaDmg;
-
-                var radiantBomb = radiant && detonateOnEnd;
-                var damageType = t.ShieldBypassed ? ShieldBypassDamageType : explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
-                var minAoeOffset = largeGrid ? 1.25 : 0.5f;
-                var gridMatrix = grid.PositionComp.WorldMatrixRef;
-
-                var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
-                var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
-
-                var playerAi = t.Ai.AiType == Ai.AiTypes.Player;
-                float gridDamageModifier = grid.GridGeneralDamageModifier;
-
-                var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist ?? t.DistanceTraveled : t.DistanceTraveled;
-
-                var fallOff = t.AmmoDef.Const.FallOffScaling && distTraveled > t.AmmoDef.Const.FallOffDistance;
-                var fallOffMultipler = 1f;
-                if (fallOff)
-                {
-                    fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((distTraveled - t.AmmoDef.Const.FallOffDistance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.Const.FallOffDistance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
-                }
-
-                var damagePool = t.BaseDamagePool;
-                int hits = 1;
-                if (t.AmmoDef.Const.VirtualBeams)
-                {
-                    hits = t.WeaponCache.Hits;
-                    areaEffectDmg *= hits;
-                }
-
-                var objectsHit = t.ObjectsHit;
-                var countBlocksAsObjects = t.AmmoDef.ObjectsHit.CountBlocks;
-                var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;
-
-                List<Vector3I> radiatedBlocks = null;
-                if (radiant) GetBlockSphereDb(grid, areaRadius, out radiatedBlocks);
-
-                var done = false;
-                var nova = false;
-                var outOfPew = false;
-                var earlyExit = false;
-                IMySlimBlock rootBlock = null;
-                var destroyed = 0;
-
-                for (int i = 0; i < hitEnt.Blocks.Count; i++)
-                {
-                    if (done || earlyExit || outOfPew && !nova) break;
-                    rootBlock = hitEnt.Blocks[i];
-
-                    if (!nova)
+                    destroyed++;
+                    _destroyedSlims.Add(rootBlock);
+                    if (IsClient)
                     {
-                        if (_destroyedSlims.Contains(rootBlock) || _destroyedSlimsClient.Contains(rootBlock)) continue;
-                        if (rootBlock.IsDestroyed)
+                        _destroyedSlimsClient.Add(rootBlock);
+                        _slimHealthClient.Remove(rootBlock);
+                    }
+                    continue;
+                }
+
+                var fatBlock = rootBlock.FatBlock as MyCubeBlock;
+                var door = fatBlock as MyDoorBase;
+                if (door != null && door.Open && !HitDoor(hitEnt, door) || playerAi && !RayAccuracyCheck(hitEnt, rootBlock))
+                    continue;
+
+                var dmgCount = 1;
+                if (radiantEffect && hasAreaDmg)
+                {
+                    BlocksInRange(rootBlock, grid, areaRadius, SlimsSortedList);
+                    var count = SlimsSortedList.Count;
+                    dmgCount = count > dmgCount ? count : dmgCount;
+                }
+
+                for (int j = 0; j < dmgCount; j++)
+                {
+                    var block = dmgCount > 1 && radiantEffect ? SlimsSortedList[j].Slim : rootBlock;
+
+                    if (partialShield && SApi.IsBlockProtected(block))
+                    {
+                        earlyExit = true;
+                        break;
+                    }
+
+                    var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
+                    float cachedIntegrity;
+                    var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
+                    var blockDmgModifier = cubeBlockDef.GeneralDamageMultiplier;
+                    float damageScale = hits;
+                    float directDamageScale = directDmgGlobal;
+                    float areaDamageScale = areaDmgGlobal;
+                    float detDamageScale = areaDmgGlobal;
+
+                    if (t.AmmoDef.Const.DamageScaling || !MyUtils.IsEqual(blockDmgModifier, 1f) || !MyUtils.IsEqual(gridDamageModifier, 1f))
+                    {
+
+                        if (blockDmgModifier < 0.000000001f || gridDamageModifier < 0.000000001f)
+                            blockHp = float.MaxValue;
+                        else
+                            blockHp = (blockHp / blockDmgModifier / gridDamageModifier);
+
+                        var d = t.AmmoDef.DamageScales;
+                        if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
                         {
-                            destroyed++;
-                            _destroyedSlims.Add(rootBlock);
-                            if (IsClient)
-                            {
-                                _destroyedSlimsClient.Add(rootBlock);
-                                _slimHealthClient.Remove(rootBlock);
-                            }
+                            outOfPew = true;
+                            damagePool = 0;
                             continue;
                         }
-                    }
 
-                    var fatBlock = rootBlock.FatBlock as MyCubeBlock;
-                    var door = fatBlock as MyDoorBase;
-                    if (door != null && door.Open && !HitDoor(hitEnt, door) || playerAi && !RayAccuracyCheck(hitEnt, rootBlock))
-                        continue;
+                        if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
+                        else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
 
-                    var radiate = radiantCascade || nova;
-                    var dmgCount = 1;
-                    if (radiate)
-                    {
-                        if (nova) GetBlockSphereDb(grid, detonateRadius, out radiatedBlocks);
-                        if (radiatedBlocks != null) ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, SlimsSortedList);
-
-                        done = nova;
-                        dmgCount = SlimsSortedList.Count;
-                    }
-
-                    try
-                    {
-                        for (int j = 0; j < dmgCount; j++)
+                        MyDefinitionBase blockDef = null;
+                        if (t.AmmoDef.Const.ArmorScaling)
                         {
-                            var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
+                            blockDef = block.BlockDefinition;
+                            var isArmor = AllArmorBaseDefinitions.Contains(blockDef) || CustomArmorSubtypes.Contains(blockDef.Id.SubtypeId);
+                            if (isArmor && d.Armor.Armor >= 0) damageScale *= d.Armor.Armor;
+                            else if (!isArmor && d.Armor.NonArmor >= 0) damageScale *= d.Armor.NonArmor;
 
-                            if (partialShield && SApi.IsBlockProtected(block))
+                            if (isArmor && (d.Armor.Light >= 0 || d.Armor.Heavy >= 0))
                             {
-                                earlyExit = true;
-                                break;
+                                var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef) || CustomHeavyArmorSubtypes.Contains(blockDef.Id.SubtypeId);
+                                if (isHeavy && d.Armor.Heavy >= 0) damageScale *= d.Armor.Heavy;
+                                else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                             }
+                        }
+                        if (t.AmmoDef.Const.CustomDamageScales)
+                        {
+                            if (blockDef == null) blockDef = block.BlockDefinition;
+                            float modifier;
+                            var found = t.AmmoDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
-                            var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
-                            float cachedIntegrity;
-                            var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
-                            var blockDmgModifier = cubeBlockDef.GeneralDamageMultiplier;
-                            float damageScale = hits;
-                            float directDamageScale = directDmgGlobal;
-                            float areaDamageScale = areaDmgGlobal;
-                            float detDamageScale = areaDmgGlobal;
+                            if (found) damageScale *= modifier;
+                            else if (t.AmmoDef.DamageScales.Custom.IgnoreAllOthers) continue;
+                        }
+                        if (GlobalDamageModifed)
+                        {
+                            if (blockDef == null) blockDef = block.BlockDefinition;
+                            BlockDamage modifier;
+                            var found = BlockDamageMap.TryGetValue(blockDef, out modifier);
 
-                            if (t.AmmoDef.Const.DamageScaling || !MyUtils.IsEqual(blockDmgModifier, 1f) || !MyUtils.IsEqual(gridDamageModifier, 1f))
+                            if (found)
                             {
-
-                                if (blockDmgModifier < 0.000000001f || gridDamageModifier < 0.000000001f)
-                                    blockHp = float.MaxValue;
-                                else
-                                    blockHp = (blockHp / blockDmgModifier / gridDamageModifier);
-
-                                var d = t.AmmoDef.DamageScales;
-                                if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
-                                {
-                                    outOfPew = true;
-                                    damagePool = 0;
-                                    continue;
-                                }
-
-                                if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
-                                else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
-
-                                MyDefinitionBase blockDef = null;
-                                if (t.AmmoDef.Const.ArmorScaling)
-                                {
-                                    blockDef = block.BlockDefinition;
-                                    var isArmor = AllArmorBaseDefinitions.Contains(blockDef) || CustomArmorSubtypes.Contains(blockDef.Id.SubtypeId);
-                                    if (isArmor && d.Armor.Armor >= 0) damageScale *= d.Armor.Armor;
-                                    else if (!isArmor && d.Armor.NonArmor >= 0) damageScale *= d.Armor.NonArmor;
-
-                                    if (isArmor && (d.Armor.Light >= 0 || d.Armor.Heavy >= 0))
-                                    {
-                                        var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef) || CustomHeavyArmorSubtypes.Contains(blockDef.Id.SubtypeId);
-                                        if (isHeavy && d.Armor.Heavy >= 0) damageScale *= d.Armor.Heavy;
-                                        else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
-                                    }
-                                }
-                                if (t.AmmoDef.Const.CustomDamageScales)
-                                {
-                                    if (blockDef == null) blockDef = block.BlockDefinition;
-                                    float modifier;
-                                    var found = t.AmmoDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
-
-                                    if (found) damageScale *= modifier;
-                                    else if (t.AmmoDef.DamageScales.Custom.IgnoreAllOthers) continue;
-                                }
-                                if (GlobalDamageModifed)
-                                {
-                                    if (blockDef == null) blockDef = block.BlockDefinition;
-                                    BlockDamage modifier;
-                                    var found = BlockDamageMap.TryGetValue(blockDef, out modifier);
-
-                                    if (found)
-                                    {
-                                        directDamageScale *= modifier.DirectModifer;
-                                        areaDamageScale *= modifier.AreaModifer;
-                                        detDamageScale *= modifier.AreaModifer;
-                                    }
-                                }
-                                if (ArmorCoreActive)
-                                {
-                                    var subtype = block.BlockDefinition.Id.SubtypeId;
-                                    if (ArmorCoreBlockMap.ContainsKey(subtype))
-                                    {
-                                        var resistances = ArmorCoreBlockMap[subtype];
-
-                                        directDamageScale /= t.AmmoDef.Const.EnergyBaseDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
-
-                                        areaDamageScale /= t.AmmoDef.Const.EnergyAreaDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
-
-                                        detDamageScale /= t.AmmoDef.Const.EnergyDetDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
-                                    }
-                                }
-
-                                if (fallOff)
-                                    damageScale *= fallOffMultipler;
+                                directDamageScale *= modifier.DirectModifer;
+                                areaDamageScale *= modifier.AreaModifer;
+                                detDamageScale *= modifier.AreaModifer;
                             }
-
-                            var blockIsRoot = block == rootBlock;
-                            var primaryDamage = primeDamage || blockIsRoot;
-
-                            if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
+                        }
+                        if (ArmorCoreActive)
+                        {
+                            var subtype = block.BlockDefinition.Id.SubtypeId;
+                            if (ArmorCoreBlockMap.ContainsKey(subtype))
                             {
-                                outOfPew = true;
-                                damagePool = 0;
-                                break;
-                            }
+                                var resistances = ArmorCoreBlockMap[subtype];
 
-                            var scaledDamage = damagePool * damageScale * directDamageScale;
+                                directDamageScale /= t.AmmoDef.Const.EnergyBaseDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
 
-                            if (primaryDamage)
-                            {
-                                if (countBlocksAsObjects) objectsHit++;
+                                areaDamageScale /= t.AmmoDef.Const.EnergyAreaDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
 
-                                if (scaledDamage <= blockHp)
-                                {
-                                    outOfPew = true;
-                                    damagePool = 0;
-                                }
-                                else
-                                {
-                                    destroyed++;
-                                    _destroyedSlims.Add(block);
-                                    if (IsClient)
-                                    {
-                                        _destroyedSlimsClient.Add(block);
-                                        if (_slimHealthClient.ContainsKey(block))
-                                            _slimHealthClient.Remove(block);
-                                    }
-                                    damagePool -= (blockHp / (damageScale * directDamageScale));
-                                }
-                            }
-                            else
-                            {
-                                scaledDamage = (areaEffectDmg * damageScale) * areaDamageScale;
-                                if (scaledDamage >= blockHp)
-                                {
-                                    destroyed++;
-                                    _destroyedSlims.Add(block);
-                                    if (IsClient)
-                                    {
-                                        _destroyedSlimsClient.Add(block);
-                                        if (_slimHealthClient.ContainsKey(block))
-                                            _slimHealthClient.Remove(block);
-                                    }
-                                }
-                            }
-
-                            if (canDamage)
-                            {
-                                block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
-                            }
-                            else
-                            {
-                                var hasBlock = _slimHealthClient.ContainsKey(block);
-                                var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
-                                if (hasBlock && _slimHealthClient[block] - realDmg > 0)
-                                    _slimHealthClient[block] -= realDmg;
-                                else if (hasBlock)
-                                    _slimHealthClient.Remove(block);
-                                else if (block.Integrity - realDmg > 0)
-                                    _slimHealthClient[block] = blockHp - realDmg;
-                            }
-
-                            var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
-
-                            if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
-                            {
-                                var travelOffset = hitEnt.Intersection.Length > minAoeOffset ? hitEnt.Intersection.Length : minAoeOffset;
-                                var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
-                                var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
-                                var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
-                                if ((areaEffectDmg * areaDamageScale) > 0) SUtils.CreateMissileExplosion(this, (areaEffectDmg * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
-                                if (detonateOnEnd && theEnd)
-                                    SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
-                            }
-                            else if (!nova)
-                            {
-                                if (hitMass > 0 && blockIsRoot)
-                                {
-                                    var speed = !t.AmmoDef.Const.IsBeamWeapon && t.AmmoDef.Const.DesiredProjectileSpeed > 0 ? t.AmmoDef.Const.DesiredProjectileSpeed : 1;
-                                    if (Session.IsServer) ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
-                                }
-
-                                if (radiantBomb && theEnd)
-                                {
-                                    nova = true;
-                                    i--;
-                                    t.BaseDamagePool = 0;
-                                    t.ObjectsHit = objectsHit;
-                                    if (t.AmmoDef.Const.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
-                                    else if (t.AmmoDef.Const.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
-                                    else damagePool = scaledDamage;
-                                    break;
-                                }
+                                detDamageScale /= t.AmmoDef.Const.EnergyDetDmg ? resistances.EnergeticResistance : resistances.KineticResistance;
                             }
                         }
 
+                        if (fallOff)
+                            damageScale *= fallOffMultipler;
                     }
-                    catch (Exception ex) { Log.Line($"Exception in DamageGrid loop catch: {ex}", null, true); }
-                }
-                try
-                {
-                    if (rootBlock != null && destroyed > 0)
+
+                    var blockIsRoot = block == rootBlock;
+                    var primaryDamage = primeDamage || blockIsRoot;
+
+                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
                     {
-                        var fat = rootBlock.FatBlock;
-                        MyOrientedBoundingBoxD obb;
-                        if (fat != null)
-                            obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
+                        outOfPew = true;
+                        damagePool = 0;
+                        break;
+                    }
+
+                    var scaledDamage = damagePool * damageScale * directDamageScale;
+
+                    if (primaryDamage)
+                    {
+                        if (countBlocksAsObjects) objectsHit++;
+
+                        if (scaledDamage <= blockHp)
+                        {
+                            outOfPew = true;
+                            damagePool = 0;
+                        }
                         else
                         {
-                            Vector3 halfExt;
-                            rootBlock.ComputeScaledHalfExtents(out halfExt);
-                            var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                            gridMatrix.Translation = grid.GridIntegerToWorld(rootBlock.Position);
-                            obb = new MyOrientedBoundingBoxD(blockBox, gridMatrix);
-                        }
-
-                        var dist = obb.Intersects(ref hitEnt.Intersection);
-                        if (dist.HasValue)
-                        {
-                            t.Hit.LastHit = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * dist.Value);
+                            destroyed++;
+                            _destroyedSlims.Add(block);
+                            if (IsClient)
+                            {
+                                _destroyedSlimsClient.Add(block);
+                                if (_slimHealthClient.ContainsKey(block))
+                                    _slimHealthClient.Remove(block);
+                            }
+                            damagePool -= (blockHp / (damageScale * directDamageScale));
                         }
                     }
-                    if (!countBlocksAsObjects) t.ObjectsHit += 1;
-                    if (!nova)
+                    else
                     {
-                        t.BaseDamagePool = damagePool;
-                        t.ObjectsHit = objectsHit;
+                        scaledDamage = (areaEffectDmg * damageScale) * areaDamageScale;
+                        if (scaledDamage >= blockHp)
+                        {
+                            destroyed++;
+                            _destroyedSlims.Add(block);
+                            if (IsClient)
+                            {
+                                _destroyedSlimsClient.Add(block);
+                                if (_slimHealthClient.ContainsKey(block))
+                                    _slimHealthClient.Remove(block);
+                            }
+                        }
                     }
-                    if (radiantCascade || nova) SlimsSortedList.Clear();
-                    hitEnt.Blocks.Clear();
+
+
+                    if (radiantEffect && primaryDamage && outOfPew && hasAreaDmg)
+                        RadiantFinish(rootBlock, block, scaledDamage, gridDamageModifier, blockDmgModifier, blockHp, attackerId, canDamage, sync, SlimsSortedList, j, ref damageType);
+                    else if (canDamage)
+                    {
+                        block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                    }
+                    else
+                    {
+                        var hasBlock = _slimHealthClient.ContainsKey(block);
+                        var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
+                        if (hasBlock && _slimHealthClient[block] - realDmg > 0)
+                            _slimHealthClient[block] -= realDmg;
+                        else if (hasBlock)
+                            _slimHealthClient.Remove(block);
+                        else if (block.Integrity - realDmg > 0)
+                            _slimHealthClient[block] = blockHp - realDmg;
+                    }
+
+                    var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
+                    if (radiantEffect && hasDetDmg && theEnd)
+                    {
+                        BlocksInRange(rootBlock, grid, detonateRadius, SlimsSortedList);
+                        RadiantFinish(rootBlock, block, detonateDmg, gridDamageModifier, blockDmgModifier, blockHp, attackerId, canDamage, sync, SlimsSortedList, j, ref damageType);
+                    }
+                    else if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
+                    {
+                        var travelOffset = hitEnt.Intersection.Length > minAoeOffset ? hitEnt.Intersection.Length : minAoeOffset;
+                        var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
+                        var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
+                        var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
+                        if ((areaEffectDmg * areaDamageScale) > 0) SUtils.CreateMissileExplosion(this, (areaEffectDmg * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (detonateOnEnd && theEnd)
+                            SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                    }
+                    else 
+                    {
+                        if (hitMass > 0 && blockIsRoot)
+                        {
+                            var speed = !t.AmmoDef.Const.IsBeamWeapon && t.AmmoDef.Const.DesiredProjectileSpeed > 0 ? t.AmmoDef.Const.DesiredProjectileSpeed : 1;
+                            if (Session.IsServer) ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
+                        }
+                    }
+
+                    if (theEnd)
+                        break; 
                 }
-                catch (Exception ex) { Log.Line($"Exception in DamageGrid finish catch: {ex}", null, true); }
+
             }
-            catch (Exception ex) { Log.Line($"Exception in DamageGrid main catch: {ex}", null, true); }
+
+            if (rootBlock != null && destroyed > 0)
+            {
+                var fat = rootBlock.FatBlock;
+                MyOrientedBoundingBoxD obb;
+                if (fat != null)
+                    obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
+                else
+                {
+                    Vector3 halfExt;
+                    rootBlock.ComputeScaledHalfExtents(out halfExt);
+                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                    gridMatrix.Translation = grid.GridIntegerToWorld(rootBlock.Position);
+                    obb = new MyOrientedBoundingBoxD(blockBox, gridMatrix);
+                }
+
+                var dist = obb.Intersects(ref hitEnt.Intersection);
+                if (dist.HasValue)
+                    t.Hit.LastHit = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * dist.Value);
+            }
+            if (!countBlocksAsObjects) 
+                t.ObjectsHit += 1;
+
+            t.BaseDamagePool = damagePool;
+            t.ObjectsHit = objectsHit;
+
+            if (radiantEffect) 
+                SlimsSortedList.Clear();
+            hitEnt.Blocks.Clear();
+        }
+
+        private void RadiantFinish(IMySlimBlock rootBlock, IMySlimBlock currentBlock, float remainingDamage, float gridDamageModifier, float blockDmgModifier, float blockHp, long attackerId, bool canDamage, bool sync, List<RadiatedBlock> radiatedBlocks, int index, ref MyStringHash damageType)
+        {
+            var blockCount = radiatedBlocks.Count;
+            var blockTravelDist = rootBlock != currentBlock ? Vector3I.DistanceManhattan(rootBlock.Position, currentBlock.Position) : 1;
+            var scale = Math.Pow((2 * blockTravelDist) + 1, 3);
+            var scaledDamage = (float)(remainingDamage / scale);
+            var blockEnd = (int)scale;
+            var endIndex = blockCount > blockEnd ? blockEnd : blockCount;
+            for (int i = index; i < endIndex; i++)
+            {
+                var block = radiatedBlocks[i].Slim;
+
+                if (canDamage)
+                {
+                    block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                }
+                else
+                {
+                    var hasBlock = _slimHealthClient.ContainsKey(block);
+                    var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
+                    if (hasBlock && _slimHealthClient[block] - realDmg > 0)
+                        _slimHealthClient[block] -= realDmg;
+                    else if (hasBlock)
+                        _slimHealthClient.Remove(block);
+                    else if (block.Integrity - realDmg > 0)
+                        _slimHealthClient[block] = blockHp - realDmg;
+                }
+            }
         }
 
         private void DamageDestObj(HitEntity hitEnt, ProInfo info, bool canDamage)
@@ -704,7 +707,7 @@ namespace CoreSystems
 
             using (destObj.Pin())
             {
-                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && info.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Radiant;
+                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime;
 
                 info.ObjectsHit++;
                 float damageScale = 1 * directDmgGlobal;
@@ -764,21 +767,6 @@ namespace CoreSystems
             entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero);
         }
 
-        internal static void ApplyDeformationCubeGrid(LineD intersect, Vector3D hitPosition, MyCubeGrid grid, float damage, float hitMass)
-        {
-            /*
-            var matrix = grid.PositionComp.WorldMatrixNormalizedInv;
-            var vector3D1 = Vector3D.Transform(hitPosition, matrix);
-            var vector3D2 = Vector3D.TransformNormal(intersect.Direction, matrix);
-            float deformationOffset = 0.00664f * hitMass;
-            float num1 = 0.011904f * damage;
-            float num2 = 0.008928f * damage;
-            float softAreaPlanar = MathHelper.Clamp(num1, grid.GridSize * 0.75f, grid.GridSize * 1.3f);
-            float softAreaVertical = MathHelper.Clamp(num2, grid.GridSize * 0.9f, grid.GridSize * 1.3f);
-            //grid.Physics.ApplyDeformation(deformationOffset, softAreaPlanar, softAreaVertical, vector3D1, vector3D2, MyDamageType.Bullet, 0.0f, 0.0f, 0L);
-            */
-        }
-
         private bool HitDoor(HitEntity hitEnt, MyDoorBase door)
         {
             var ray = new RayD(ref hitEnt.Intersection.From, ref hitEnt.Intersection.Direction);
@@ -819,44 +807,84 @@ namespace CoreSystems
             return false;
         }
 
-        public void GetBlockSphereDb(MyCubeGrid grid, double areaRadius, out List<Vector3I> radiatedBlocks)
+        public void BlocksInRange(IMySlimBlock root, MyCubeGrid grid, double radius, List<RadiatedBlock> list)
         {
-            areaRadius = Math.Ceiling(areaRadius);
+            list.Clear();
+            var rootPos = root.Position;
+            list.Add(new RadiatedBlock {Center = rootPos, Position = rootPos, Slim = root});
 
-            if (grid.GridSizeEnum == MyCubeSize.Large)
+            var size = (int)Math.Floor(radius * grid.GridSizeR);
+
+            var min = root.Min - size;
+            var max = root.Max + size;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+
+            Vector3I.Max(ref min, ref gridMin, out min);
+            Vector3I.Min(ref max, ref gridMax, out max);
+
+            var minI = min;
+            var maxI = max;
+
+            var iter = new Vector3I_RangeIterator(ref minI, ref maxI);
+            while (iter.IsValid())
             {
-                if (areaRadius < 3) areaRadius = 3;
-                LargeBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
+                Vector3I next;
+                iter.GetNext(out next);
+
+                MyCube myCube;
+                if (grid.TryGetCube(next, out myCube))
+                {
+                    var slim = (IMySlimBlock)myCube.CubeBlock;
+                    if (next == slim.Position && !slim.IsDestroyed)
+                    {
+                        list.Add(new RadiatedBlock { Center = rootPos, Position = next, Slim = slim });
+                    }
+                }
             }
-            else SmallBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
         }
 
-        private void GenerateBlockSphere(MyCubeSize gridSizeEnum, double radiusInMeters)
+        public static void GetBlocksInsideSphereFast(MyCubeGrid grid, ref BoundingSphereD sphere, bool checkDestroyed, List<IMySlimBlock> blocks)
         {
-            var gridSizeInv = 2.0; // Assume small grid (1 / 0.5)
-            if (gridSizeEnum == MyCubeSize.Large)
-                gridSizeInv = 0.4; // Large grid (1 / 2.5)
-
-            var radiusInBlocks = radiusInMeters * gridSizeInv;
-            var radiusSq = radiusInBlocks * radiusInBlocks;
-            var radiusCeil = (int)Math.Ceiling(radiusInBlocks);
+            var radius = sphere.Radius;
+            radius *= grid.GridSizeR;
+            var center = grid.WorldToGridInteger(sphere.Center);
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            double radiusSq = radius * radius;
+            int radiusCeil = (int)Math.Ceiling(radius);
             int i, j, k;
-            var max = Vector3I.One * radiusCeil;
-            var min = Vector3I.One * -radiusCeil;
-
-            var blockSphereLst = _blockSpherePool.Get();
-            for (i = min.X; i <= max.X; ++i)
-                for (j = min.Y; j <= max.Y; ++j)
-                    for (k = min.Z; k <= max.Z; ++k)
+            Vector3I max2 = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
+            Vector3I min2 = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
+            for (i = min2.X; i <= max2.X; ++i)
+            {
+                for (j = min2.Y; j <= max2.Y; ++j)
+                {
+                    for (k = min2.Z; k <= max2.Z; ++k)
+                    {
                         if (i * i + j * j + k * k < radiusSq)
-                            blockSphereLst.Add(new Vector3I(i, j, k));
+                        {
+                            MyCube cube;
+                            var vector3I = center + new Vector3I(i, j, k);
 
-            blockSphereLst.Sort((a, b) => Vector3I.Dot(a, a).CompareTo(Vector3I.Dot(b, b)));
-            if (gridSizeEnum == MyCubeSize.Large)
-                LargeBlockSphereDb.Add(radiusInMeters, blockSphereLst);
-            else
-                SmallBlockSphereDb.Add(radiusInMeters, blockSphereLst);
+                            if (grid.TryGetCube(vector3I, out cube))
+                            {
+                                var slim = (IMySlimBlock)cube.CubeBlock;
+                                if (slim.Position == vector3I)
+                                {
+                                    if (checkDestroyed && slim.IsDestroyed)
+                                        continue;
+
+                                    blocks.Add(slim);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
 
         private void ShiftAndPruneBlockSphere(MyCubeGrid grid, Vector3I center, List<Vector3I> sphereOfCubes, List<RadiatedBlock> slims)
         {
@@ -873,12 +901,11 @@ namespace CoreSystems
                 var v3ICheck = center + sphereOfCubes[i];
                 var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
                 if (!contained) continue;
-
                 MyCube cube;
                 if (grid.TryGetCube(v3ICheck, out cube))
                 {
                     IMySlimBlock slim = cube.CubeBlock;
-                    if (slim.Position == v3ICheck)
+                    if (slim.Position == v3ICheck){}
                         slims.Add(new RadiatedBlock { Center = center, Slim = slim, Position = v3ICheck });
                 }
             }
@@ -1015,47 +1042,6 @@ namespace CoreSystems
             }
             if (sorted)
                 SlimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
-        }
-
-        public static void GetBlocksInsideSphereFast(MyCubeGrid grid, ref BoundingSphereD sphere, bool checkDestroyed, List<IMySlimBlock> blocks)
-        {
-            var radius = sphere.Radius;
-            radius *= grid.GridSizeR;
-            var center = grid.WorldToGridInteger(sphere.Center);
-            var gridMin = grid.Min;
-            var gridMax = grid.Max;
-            double radiusSq = radius * radius;
-            int radiusCeil = (int)Math.Ceiling(radius);
-            int i, j, k;
-            Vector3I max2 = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
-            Vector3I min2 = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
-            for (i = min2.X; i <= max2.X; ++i)
-            {
-                for (j = min2.Y; j <= max2.Y; ++j)
-                {
-                    for (k = min2.Z; k <= max2.Z; ++k)
-                    {
-                        if (i * i + j * j + k * k < radiusSq)
-                        {
-                            MyCube cube;
-                            var vector3I = center + new Vector3I(i, j, k);
-
-                            if (grid.TryGetCube(vector3I, out cube))
-                            {
-                                var slim = (IMySlimBlock)cube.CubeBlock;
-                                if (slim.Position == vector3I)
-                                {
-                                    if (checkDestroyed && slim.IsDestroyed)
-                                        continue;
-
-                                    blocks.Add(slim);
-
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         public void GetBlocksInsideSphereBrute(MyCubeGrid grid, Vector3I center, ref BoundingSphereD sphere, bool sorted)

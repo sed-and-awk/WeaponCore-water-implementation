@@ -666,10 +666,6 @@ namespace CoreSystems.Support
             else
                 areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
 
-            if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
-            {
-                return areaEffectDamage;
-            }
             return (float)(areaEffectDamage * (areaEffectSize * 0.5d));
         }
 
@@ -678,10 +674,6 @@ namespace CoreSystems.Support
             if (!a.AreaEffect.Detonation.DetonateOnEnd || a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
             {
                 return 0;
-            }
-            if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
-            {
-                return a.AreaEffect.Detonation.DetonationDamage;
             }
             return (float)(a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d));
         }

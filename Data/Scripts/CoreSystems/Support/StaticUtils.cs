@@ -378,8 +378,8 @@ namespace CoreSystems.Support
             var quat = Quaternion.CreateFromRotationMatrix(block.PositionComp.WorldMatrixRef);
             double factor = (block.BlockDefinition.CubeSize == MyCubeSize.Large ? 2.5d : 0.5d);
             var halfExtents = new Vector3D(block.BlockDefinition.Size) * factor / 2d;
-            var worldMin = Vector3D.Transform(new Vector3D(block.Min) * factor, block.CubeGrid.WorldMatrix);
-            var worldMax = Vector3D.Transform(new Vector3D(block.Max) * factor, block.CubeGrid.WorldMatrix);
+            var worldMin = Vector3D.Transform(new Vector3D(block.Min) * factor, block.CubeGrid.PositionComp.WorldMatrixRef);
+            var worldMax = Vector3D.Transform(new Vector3D(block.Max) * factor, block.CubeGrid.PositionComp.WorldMatrixRef);
             blockBox = new MyOrientedBoundingBoxD((worldMin + worldMax) / 2d, halfExtents, quat);
         }
     }

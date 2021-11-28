@@ -297,42 +297,6 @@ namespace CoreSystems
         }
 
 
-        private bool GetClosestLocalPos(MyCubeGrid grid, Vector3I center, double areaRadius, out Vector3D newWorldPos)
-        {
-            if (areaRadius < 3 && grid.GridSizeEnum == MyCubeSize.Large) areaRadius = 3;
-
-            List<Vector3I> tmpSphereOfV3S;
-            areaRadius = Math.Ceiling(areaRadius);
-            if (grid.GridSizeEnum == MyCubeSize.Large && LargeBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S) || SmallBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S))
-            {
-                var gMinX = grid.Min.X;
-                var gMinY = grid.Min.Y;
-                var gMinZ = grid.Min.Z;
-                var gMaxX = grid.Max.X;
-                var gMaxY = grid.Max.Y;
-                var gMaxZ = grid.Max.Z;
-
-                for (int i = 0; i < tmpSphereOfV3S.Count; i++)
-                {
-                    var v3ICheck = center + tmpSphereOfV3S[i];
-                    var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
-                    if (!contained) continue;
-
-                    MyCube cube;
-                    if (grid.TryGetCube(v3ICheck, out cube))
-                    {
-                        IMySlimBlock slim = cube.CubeBlock;
-                        if (slim.Position == v3ICheck)
-                        {
-                            newWorldPos = grid.GridIntegerToWorld(slim.Position);
-                            return true;
-                        }
-                    }
-                }
-            }
-            newWorldPos = Vector3D.Zero;
-            return false;
-        }
         /*
         IEnumerable<Vector3I> NearLine(Vector3I start, LineD line)
         {

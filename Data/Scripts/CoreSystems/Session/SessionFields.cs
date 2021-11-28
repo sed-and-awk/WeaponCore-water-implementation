@@ -146,8 +146,6 @@ namespace CoreSystems
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> CoreSystemsDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
-        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
-        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<MyStringHash, AreaRestriction> AreaRestrictions = new Dictionary<MyStringHash, AreaRestriction>(MyStringHash.Comparer);

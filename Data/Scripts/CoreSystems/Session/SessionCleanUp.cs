@@ -214,8 +214,6 @@ namespace CoreSystems
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
             AcquireTargets.Clear();
-            LargeBlockSphereDb.Clear();
-            SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
             _subTypeIdWeaponDefs.Clear();
             WeaponDefinitions.Clear();
