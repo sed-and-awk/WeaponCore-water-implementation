@@ -81,7 +81,7 @@ namespace CoreSystems
                         continue;
 
                     if (ShieldApiLoaded)
-                        SApi.AddAttacker(comp.TopEntity.EntityId);
+                        SApi.AddAttacker(comp.CoreEntity.EntityId);
 
                     IdToCompMap[comp.CoreEntity.EntityId] = comp;
                     comp.CoreEntity.Components.Add(comp);

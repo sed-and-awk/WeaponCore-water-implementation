@@ -133,7 +133,7 @@ namespace CoreSystems
 
             scaledDamage = (scaledDamage * info.ShieldResistMod) * info.ShieldBypassMod;
             var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
-            var detonateDamage = detonateOnEnd ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * areaDmgGlobal * shieldDmgGlobal) * info.ShieldResistMod : 0;
+            var detonateDamage = detonateOnEnd  && info.ShieldBypassMod >= 1 ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * areaDmgGlobal * shieldDmgGlobal) * info.ShieldResistMod : 0;
             if (heal)
             {
                 var heat = SApi.GetShieldHeat(shield);

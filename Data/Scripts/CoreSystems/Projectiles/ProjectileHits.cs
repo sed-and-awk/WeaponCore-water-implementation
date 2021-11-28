@@ -165,7 +165,7 @@ namespace CoreSystems.Projectiles
                                         {
                                             p.Info.ShieldBypassed = true;
                                             modifiedBypassMod = bypassAmmo && faceInfo.Item1 ? 0f : modifiedBypassMod;
-                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.2f;
+                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.15f;
                                         }
                                         else p.Info.ShieldBypassMod = 1f;
                                     }

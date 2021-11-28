@@ -186,7 +186,11 @@ namespace CoreSystems.Projectiles
                 OriginTargetPos = Info.Target.Projectile.Position;
                 Info.Target.Projectile.Seekers.Add(this);
             }
-            else if (Info.Target.TargetEntity != null) OriginTargetPos = Info.Target.TargetEntity.PositionComp.WorldAABB.Center;
+            else if (Info.Target.TargetEntity != null)
+            {
+                OriginTargetPos = Info.Target.TargetEntity.PositionComp.WorldAABB.Center;
+                HadTarget = true;
+            }
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
