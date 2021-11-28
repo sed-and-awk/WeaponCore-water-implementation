@@ -39,7 +39,7 @@ namespace CoreSystems.Support
                         { "TerminalStopCountTitle", "Stop Countdown" },
                         { "TerminalStopCountTooltip", "Stop Countdown" },
                         { "TerminalArmTitle", "Arm Reaction" },
-                        { "TerminalArmTooltip", "Arm Reaction" },
+                        { "TerminalArmTooltip", "When checked, the warhead can be detonated manually or by unwary handle." },
                         { "TerminalTriggerTitle", "Trigger" },
                         { "TerminalTriggerTooltip", "Trigger" },
                         { "TerminalWeaponRangeTitle", "Aiming Radius" },
