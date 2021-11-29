@@ -203,10 +203,10 @@ namespace CoreSystems.Support
 
                 if (IsBlock)
                 {
+                    MyOrientedBoundingBoxD obb;
+                    SUtils.GetBlockOrientedBoundingBox(Cube, out obb);
                     foreach (var weapon in Platform.Weapons)
                     {
-                        MyOrientedBoundingBoxD obb;
-                        SUtils.GetBlockOrientedBoundingBox(Cube, out obb);
                         var scopeInfo = weapon.GetScope.Info;
                         if (!obb.Contains(ref scopeInfo.Position))
                         {
