@@ -6,11 +6,13 @@ using Jakaria;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using static CoreSystems.Support.WeaponDefinition.TargetingDef.BlockTypes;
@@ -415,13 +417,13 @@ namespace CoreSystems
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (upgrade != null || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
+                            else if (upgrade != null || fat is IMyRadioAntenna  || fat is IMyLaserAntenna || fat is MyRemoteControl || fat is IMyShipToolBase || fat is IMyMedicalRoom || fat is IMyCameraBlock) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust)
                             {
                                 newTypeMap[Thrust].Add(fat);
                                 thrusters++;
                             }
-                            else if (fat is MyGyro)
+                            else if (fat is MyGyro || cockpit != null && cockpit.EnableShipControl)
                             {
                                 newTypeMap[Steering].Add(fat);
                                 gyros++;
