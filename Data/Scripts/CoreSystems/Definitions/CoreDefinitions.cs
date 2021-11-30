@@ -465,9 +465,9 @@ namespace CoreSystems.Support
             {
                 public enum HardwareType
                 {
-                    BlockWeapon,
-                    HandWeapon,
-                    Phantom,
+                    BlockWeapon = 0,
+                    HandWeapon = 1,
+                    Phantom = 6,
                 }
 
                 [ProtoMember(1)] internal float RotateRate;
