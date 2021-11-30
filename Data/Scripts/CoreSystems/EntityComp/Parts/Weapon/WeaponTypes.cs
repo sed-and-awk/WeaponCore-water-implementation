@@ -20,6 +20,7 @@ namespace CoreSystems.Platform
             public void NormalShootRayCallBack(IHitInfo hitInfo)
             {
                 Weapon.Casting = false;
+                Weapon.PauseShoot = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.TargetEntity is IMyCharacter;
                 var scope = Weapon.GetScope;
@@ -80,6 +81,7 @@ namespace CoreSystems.Platform
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                        Weapon.PauseShoot = true;
                         return;
                     }
                     if (!topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0 || !Session.GridEnemy(Weapon.Comp.Ai.AiOwner, topAsGrid))
