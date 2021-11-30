@@ -37,6 +37,7 @@ namespace CoreSystems.Api
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetCorePhantoms"] = new Action<ICollection<MyDefinitionId>>(GetCorePhantoms),
                 ["GetCoreRifles"] = new Action<ICollection<MyDefinitionId>>(GetCoreRifles),
+                ["GetCoreArmors"] = new Action<IList<byte[]>>(GetCoreArmors),
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>>(GetSortedThreats),
@@ -521,6 +522,11 @@ namespace CoreSystems.Api
                 collection.Add(def);
         }
 
+        private void GetCoreArmors(IList<byte[]> collection)
+        {
+            foreach (var def in _session.CoreSystemsPArmorDefs)
+                collection.Add(MyAPIGateway.Utilities.SerializeToBinary(def));
+        }
         private void GetCoreTurrets(ICollection<MyDefinitionId> collection)
         {
             foreach (var def in _session.CoreSystemsTurretBlockDefs)

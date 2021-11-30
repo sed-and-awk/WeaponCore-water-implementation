@@ -199,6 +199,8 @@ namespace CoreSystems
         internal readonly HashSet<MyDefinitionId> CoreSystemsUpgradeDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsRifleDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsPhantomDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<ArmorDefinition> CoreSystemsPArmorDefs = new HashSet<ArmorDefinition>();
+
         internal readonly HashSet<MyStringHash> PerformanceWarning = new HashSet<MyStringHash>();
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);

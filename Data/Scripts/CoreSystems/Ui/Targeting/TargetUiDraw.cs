@@ -506,7 +506,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     break;
                 case 7:
                     var type = targetState.ShieldMod > 0 ? "ENERGY" : targetState.ShieldMod < 0 ? "KINETIC" : "NEUTRAL";
-                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? (Math.Round(1 / (2 - Math.Abs(targetState.ShieldMod)))/2, 1) : 1;
+                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? Math.Round(1 / (2 - Math.Abs(targetState.ShieldMod))/2, 1) : 1;
                     textStr = $"{type}: {value}x";
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 3);
