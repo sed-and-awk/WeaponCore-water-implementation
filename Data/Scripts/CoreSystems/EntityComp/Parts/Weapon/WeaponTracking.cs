@@ -736,11 +736,11 @@ namespace CoreSystems.Platform
             }
             return false;
         }
-
         private bool RayCheckTest()
         {
-            var trackingCheckPosition = GetScope.Info.Position;
-
+            var scopeInfo = GetScope.Info;
+            var trackingCheckPosition = ScopeDistToCheckPos > 0 ? scopeInfo.Position - (scopeInfo.Direction * ScopeDistToCheckPos) : scopeInfo.Position;
+            
             if (System.Session.DebugLos && Target.TargetEntity != null)
             {
                 var trackPos = BarrelOrigin + (MyPivotFwd * MuzzleDistToBarrelCenter);

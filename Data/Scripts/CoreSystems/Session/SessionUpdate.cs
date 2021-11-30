@@ -9,6 +9,7 @@ using static CoreSystems.Support.Target;
 using static CoreSystems.Support.CoreComponent.Start;
 using static CoreSystems.Support.CoreComponent.TriggerActions;
 using static CoreSystems.Support.WeaponDefinition.HardPointDef.HardwareDef;
+using static CoreSystems.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 using static CoreSystems.ProtoWeaponState;
 namespace CoreSystems
 {
@@ -480,7 +481,7 @@ namespace CoreSystems
                 
                 var w = ShootingWeapons[i];
                 var invalidWeapon = w.Comp.CoreEntity.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.TopEntity.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
-                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 1200 && QCount == w.ShortLoadId;
+                var smartTimer = w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == Smart && QCount == w.ShortLoadId && (w.Target.HasTarget && Tick - w.LastSmartLosCheck > 240 || Tick - w.LastSmartLosCheck > 1200);
                 var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot || (w.ProtoWeaponAmmo.CurrentAmmo == 0 && w.ClientMakeUpShots == 0) && w.ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 if (quickSkip) continue;
 
