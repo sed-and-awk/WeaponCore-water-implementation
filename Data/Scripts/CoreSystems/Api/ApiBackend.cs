@@ -524,7 +524,7 @@ namespace CoreSystems.Api
 
         private void GetCoreArmors(IList<byte[]> collection)
         {
-            foreach (var def in _session.CoreSystemsPArmorDefs)
+            foreach (var def in _session.CoreSystemsArmorDefs)
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(def));
         }
         private void GetCoreTurrets(ICollection<MyDefinitionId> collection)

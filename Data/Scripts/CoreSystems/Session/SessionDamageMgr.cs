@@ -199,7 +199,7 @@ namespace CoreSystems
             }
         }
 
-        private void DamageGrid2(HitEntity hitEnt, ProInfo t, bool canDamage)
+        private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
             try
             {
@@ -593,7 +593,7 @@ namespace CoreSystems
                 SmallBlockSphereDb.Add(radiusInMeters, blockSphereLst);
         }
 
-        private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
+        private void DamageGridNew(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
