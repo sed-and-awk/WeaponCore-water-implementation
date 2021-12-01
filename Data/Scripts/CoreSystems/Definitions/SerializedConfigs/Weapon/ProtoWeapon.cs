@@ -391,15 +391,6 @@ namespace CoreSystems
             return false;
         }
 
-        public void WeaponInit(Weapon w)
-        {
-            WeaponRandom.Init(w.UniqueId);
-        }
-
-        public void PartRefreshClient(Weapon w)
-        {
-            WeaponRandom.Init(w.UniqueId, false);
-        }
         internal void ClearTarget()
         {
             ++Revision;
