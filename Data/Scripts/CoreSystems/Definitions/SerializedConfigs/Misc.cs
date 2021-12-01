@@ -74,9 +74,11 @@ namespace CoreSystems
             Acquire,
         }
 
-        public void Init(int uniqueId)
+        public void Init(int uniqueId, bool resetSeed = true)
         {
-            CurrentSeed = uniqueId;
+            if (resetSeed)
+                CurrentSeed = int.MaxValue - uniqueId;
+
             TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
             AcquireRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }

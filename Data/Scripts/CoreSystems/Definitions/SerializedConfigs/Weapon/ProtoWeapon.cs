@@ -394,27 +394,11 @@ namespace CoreSystems
         public void WeaponInit(Weapon w)
         {
             WeaponRandom.Init(w.UniqueId);
-
-            var rand = WeaponRandom;
-            rand.CurrentSeed = w.UniqueId;
-
-            rand.TurretRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
-            rand.AcquireRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
         }
 
         public void PartRefreshClient(Weapon w)
         {
-            try
-            {
-                var rand = WeaponRandom;
-
-                rand.TurretRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
-                rand.AcquireRandom = new XorShiftRandomStruct((ulong)rand.CurrentSeed);
-                return;
-            }
-            catch (Exception e) { Log.Line("Client Weapon Values Failed To load re-initing... how?", null, true); }
-
-            WeaponInit(w);
+            WeaponRandom.Init(w.UniqueId, false);
         }
         internal void ClearTarget()
         {
