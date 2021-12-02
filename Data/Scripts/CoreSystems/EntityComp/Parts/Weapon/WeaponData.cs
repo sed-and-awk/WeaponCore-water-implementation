@@ -56,7 +56,7 @@ namespace CoreSystems.Platform
                             Repo.Values.Targets[i] = new ProtoWeaponTransferTarget();
                             w.TargetData = Repo.Values.Targets[i];
                             w.TargetData.WeaponRandom = new WeaponRandomGenerator();
-                            w.TargetData.WeaponInit(w);
+                            w.TargetData.WeaponRandom.Init(w);
                         }
                         else
                         {
@@ -64,7 +64,7 @@ namespace CoreSystems.Platform
                             w.ClientStartId = w.Reload.StartId;
                             w.ClientEndId = w.Reload.EndId;
                             w.TargetData = Repo.Values.Targets[i];
-                            w.TargetData.PartRefreshClient(w);
+                            w.TargetData.WeaponRandom.Init(w);
                         }
 
                     }
@@ -100,7 +100,7 @@ namespace CoreSystems.Platform
                             Repo.Values.Targets[i] = new ProtoWeaponTransferTarget();
                             w.TargetData = Repo.Values.Targets[i];
                             w.TargetData.WeaponRandom = new WeaponRandomGenerator();
-                            w.TargetData.WeaponInit(w);
+                            w.TargetData.WeaponRandom.Init(w);
 
                             if (w.System.Values.HardPoint.HardWare.CriticalReaction.PreArmed)
                                 Repo.Values.Set.Overrides.Armed = true;

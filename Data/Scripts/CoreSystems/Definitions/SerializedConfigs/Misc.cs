@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CoreSystems.Platform;
 using CoreSystems.Support;
 using ProtoBuf;
 
@@ -74,9 +75,11 @@ namespace CoreSystems
             Acquire,
         }
 
-        public void Init(int uniqueId)
+        public void Init(Weapon w)
         {
-            CurrentSeed = uniqueId;
+            if (w.Comp.Session.IsServer)
+                CurrentSeed = int.MaxValue - w.UniqueId;
+
             TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
             AcquireRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }
