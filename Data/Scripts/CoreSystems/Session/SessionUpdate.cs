@@ -288,7 +288,7 @@ namespace CoreSystems
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || (w.Loading || w.Reload.WaitForClient) && w.ShowReload || w.System.LockOnFocus);
+                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || (w.Loading || w.Reload.WaitForClient) && w.ShowReload || w.System.LockOnFocus && !w.Comp.ModOverride);
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
@@ -387,8 +387,8 @@ namespace CoreSystems
                         var manualShot = (compManualMode || w.PartState.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishShots || delayedFire);
-                        w.LockOnFireState = shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
-                        var shotReady = canShoot && (shoot && !w.System.LockOnFocus || w.LockOnFireState);
+                        w.LockOnFireState = shoot && (w.System.LockOnFocus && !w.Comp.ModOverride) && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
+                        var shotReady = canShoot && (shoot && (!w.System.LockOnFocus || w.Comp.ModOverride) || w.LockOnFireState);
                         
                         if (shotReady && ai.CanShoot) {
 

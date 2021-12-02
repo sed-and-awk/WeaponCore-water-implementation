@@ -120,7 +120,7 @@ namespace CoreSystems.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if (!ActiveAmmoDef.AmmoDef.Const.Reloadable && !Comp.UnlimitedPower && !ExitCharger)
+                if (!ActiveAmmoDef.AmmoDef.Const.Reloadable && !Comp.ModOverride && !ExitCharger)
                     ChargeReload();
             }
             IsShooting = true;

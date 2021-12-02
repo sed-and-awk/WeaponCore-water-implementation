@@ -80,7 +80,7 @@ namespace CoreSystems.Support
         internal bool UpdatedState;
         internal bool UserControlled;
         internal bool Debug;
-        internal bool UnlimitedPower;
+        internal bool ModOverride;
         internal bool Registered;
         internal bool ResettingSubparts;
         internal bool UiEnabled;

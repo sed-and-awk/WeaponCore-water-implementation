@@ -60,7 +60,7 @@ namespace CoreSystems.Api
                 ["GetHeatLevel"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, float>(GetHeatLevel),
                 ["GetCurrentPower"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, float>(GetCurrentPower),
                 ["GetMaxPower"] = new Func<MyDefinitionId, float>(GetMaxPower),
-                ["DisableRequiredPower"] = new Action<Sandbox.ModAPI.IMyTerminalBlock>(DisableRequiredPower),
+                ["DisableRequiredPower"] = new Action<Sandbox.ModAPI.IMyTerminalBlock>(ModOverride),
                 ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
                 ["HasCoreWeapon"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, bool>(HasCoreWeapon),
                 ["GetOptimalDps"] = new Func<IMyEntity, float>(GetOptimalDps),
@@ -879,11 +879,11 @@ namespace CoreSystems.Api
             return 0f; //Need to implement
         }
 
-        private static void DisableRequiredPower(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
+        private static void ModOverride(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Platform != null && comp.Platform.State == Ready)
-                comp.UnlimitedPower = true;
+                comp.ModOverride = true;
         }
 
         private bool HasGridAi(IMyEntity entity)

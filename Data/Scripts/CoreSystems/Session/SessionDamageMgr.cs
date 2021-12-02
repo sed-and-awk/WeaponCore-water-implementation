@@ -22,9 +22,9 @@ namespace CoreSystems
 {
     public struct RadiatedBlock
     {
-        public Vector3I Center;
         public IMySlimBlock Slim;
         public int Hits;
+        public int Distance;
     }
 
     public partial class Session
@@ -595,6 +595,8 @@ namespace CoreSystems
 
         private void DamageGridNew(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
+            //DamageGrid2(hitEnt, t,  canDamage);
+            //return;
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
@@ -608,7 +610,6 @@ namespace CoreSystems
                 t.BaseDamagePool = 0;
                 return;
             }
-            DsUtil2.Start("", false);
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -666,7 +667,6 @@ namespace CoreSystems
             var destroyed = 0;
             var blockCount = hitEnt.Blocks.Count;
             var radiating = false;
-            var radiantScaler = 0f;
             for (int i = 0; i < blockCount; i++)
             {
                 if (earlyExit || (basePool <= 0 || objectsHit >= maxObjects) && !novaing)
@@ -705,7 +705,6 @@ namespace CoreSystems
                     BlocksInRange(rootBlock, grid, areaRadius, SlimsSortedList);
                     dmgCount = SlimsSortedList.Count;
                     radiating = dmgCount > 0;
-
                     //Log.Line($"get area blocks: {dmgCount}");
                 }
 
@@ -723,7 +722,7 @@ namespace CoreSystems
                     var block = dmgCount > 1 && radiantEffect ? SlimsSortedList[j].Slim : rootBlock;
                     if (block.IsDestroyed)
                         continue;
-                    
+
                     if (partialShield && SApi.IsBlockProtected(block))
                     {
                         earlyExit = true;
@@ -823,30 +822,28 @@ namespace CoreSystems
 
                     var detScaledDamage = damageScale * detDamageScale; 
 
-
                     var scaledDamage = baseScaledDamage;
 
-                    if (radiantScaler > 0)
+
+                    if (radiating)
                     {
+                        var rBlock = SlimsSortedList[j];
 
-                        if (radiating)
-                        {
+                        scaledDamage = areaEffectDmg * damageScale * areaDamageScale * (1f / rBlock.Distance);
 
-                            scaledDamage = damageScale * areaDamageScale * radiantScaler;
+                        if (blockIsRoot)
+                            scaledDamage += baseScaledDamage;
+                        else
+                            scaledDamage *= rBlock.Hits;
 
-                            if (blockIsRoot)
-                                scaledDamage += baseScaledDamage;
-                            else
-                                scaledDamage *= SlimsSortedList[j].Hits;
+                        //Log.Line($"[radiant] damage:{scaledDamage} - {areaEffectDmg} - {damageScale} - {areaDamageScale} - {rBlock.Hits} - {baseScaledDamage} - {(1f / rBlock.Distance)} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
+                    }
+                    else  if (novaing)
+                    {
+                        var rBlock = SlimsSortedList[j];
 
-                            Log.Line($"radiant damage: {i} - {j} - damage:{scaledDamage}");
-                        }
-                        else  if (novaing)
-                        {
-                            scaledDamage = (damageScale * detDamageScale) * radiantScaler *  SlimsSortedList[j].Hits;
-                            Log.Line($"novaing damage: {i} - {j} - damage:{scaledDamage}");
-                        }
-
+                        scaledDamage = (damageScale * detDamageScale) * (1f / rBlock.Distance) * rBlock.Hits;
+                        Log.Line($"[novaing] damage:{scaledDamage} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
                     }
 
                     if (primeDamage && !radiating && !novaing) 
@@ -857,15 +854,15 @@ namespace CoreSystems
 
                         if (radiating)
                         {
-                            Log.Line($"[radiantResist] scaledDamage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - rad:{radiating} - nova:{novaing} - root:{blockIsRoot} - i:{i} - j:{j} - blockCnt:{dmgCount}");
+                            //Log.Line($"[radiantResist] damage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - rad:{radiating} - root:{blockIsRoot} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
                         }
                         else if (novaing)
                         {
-                            Log.Line($"[novaResist] scaledDamage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - rad:{radiating} - nova:{novaing} - root:{blockIsRoot} - i:{i} - j:{j} - blockCnt:{dmgCount}");
+                            Log.Line($"[novaResist] damage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - nova:{novaing} - root:{blockIsRoot} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
                         }
                         else if (primaryDamage)
                         {
-                            Log.Line($"[primaryEmpty] scaledDamage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - rad:{radiating} - nova:{novaing} - root:{blockIsRoot} - i:{i} - j:{j} - blockCnt:{dmgCount}");
+                            Log.Line($"[primaryEmpty] damage:{scaledDamage}  <= blockHp:{blockHp} - basePool:{basePool} - root:{blockIsRoot} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
                             basePool = 0;
                         }
                     }
@@ -885,11 +882,11 @@ namespace CoreSystems
                             var oldPool = basePool;
                             var removeFromPool = (blockHp / baseScale);
                             basePool -= (blockHp / baseScale);
-                            Log.Line($"[baseDamage] oldPool:{oldPool} - remove:{removeFromPool} - newPool:{oldPool - removeFromPool} - i:{i} - j:{j} - blockCnt:{dmgCount}");
+                            Log.Line($"[baseDamage] oldPool:{oldPool} - remove:{removeFromPool} - newPool:{oldPool - removeFromPool} - i:{i}[{hitEnt.Blocks.Count - 1}] - j:{j}[{dmgCount - 1}]");
                         }
                     }
 
-                    var endCycle = basePool <= 0 && !radiating && !novaing || objectsHit >= maxObjects;
+                    var endCycle = basePool <= 0 && j + 1 == dmgCount && !novaing || objectsHit >= maxObjects;
 
                     if (canDamage)
                     {
@@ -980,8 +977,6 @@ namespace CoreSystems
             if (radiantEffect) 
                 SlimsSortedList.Clear();
             hitEnt.Blocks.Clear();
-
-            DsUtil2.Complete("", false, true);
         }
 
         private void RadiantFinish(IMySlimBlock rootBlock, IMySlimBlock currentBlock, float remainingDamage, float gridDamageModifier, float blockDmgModifier, float blockHp, long attackerId, bool canDamage, bool sync, List<RadiatedBlock> radiatedBlocks, int index, ref MyStringHash damageType, out int destroyed)
@@ -1281,6 +1276,10 @@ namespace CoreSystems
         {
             list.Clear();
             var rootPos = root.Position;
+
+            var span = root.Max + 1 - root.Min;
+            var rootBlockSize = (span.X * span.Y * span.Z);
+            list.Add(new RadiatedBlock { Slim = root, Distance = 1, Hits = rootBlockSize });
             var size = (int)Math.Floor(radius * grid.GridSizeR);
 
             var min = root.Min - size;
@@ -1310,18 +1309,17 @@ namespace CoreSystems
                     if (slim.IsDestroyed)
                         continue;
                     ++count;
-                    if (slim == last)
+                    if (slim == last || slim == root)
                         continue;
 
                     if (last != null && count > 1)
                     {
-                        var result = list[0];
+                        var result = list[index];
                         result.Hits = count - 1;
                         list[index] = result;
                         count = 1;
                     }
-
-                    list.Add(new RadiatedBlock { Center = rootPos, Slim = slim, Hits = count });
+                    list.Add(new RadiatedBlock { Slim = slim, Distance = Vector3I.DistanceManhattan(rootPos, next) + 1, Hits = count });
                     last = slim;
                     ++index;
                 }
@@ -1390,7 +1388,7 @@ namespace CoreSystems
                 {
                     IMySlimBlock slim = cube.CubeBlock;
                     if (slim.Position == v3ICheck){}
-                        slims.Add(new RadiatedBlock { Center = center, Slim = slim });
+                        slims.Add(new RadiatedBlock { Slim = slim });
                 }
             }
         }
@@ -1417,7 +1415,7 @@ namespace CoreSystems
                             {
                                 var radiatedBlock = new RadiatedBlock
                                 {
-                                    Center = center, Slim = slim
+                                    Slim = slim
                                 };
                                 points.Add(radiatedBlock);
                             }

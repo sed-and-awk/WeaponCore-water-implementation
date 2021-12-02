@@ -103,7 +103,7 @@ namespace CoreSystems
         {
             var comp = w.Comp;
 
-            if (!w.BaseComp.UnlimitedPower) {
+            if (!w.BaseComp.ModOverride) {
 
                 if (!w.Charging)
                     w.DrawPower(assignedPower, ai);
