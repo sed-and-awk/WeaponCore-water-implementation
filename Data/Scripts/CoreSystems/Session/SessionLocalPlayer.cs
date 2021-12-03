@@ -391,8 +391,6 @@ namespace CoreSystems
 
         internal void TargetSelection()
         {
-            if (InGridAiBlock && (UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight && PlayerDummyTargets[PlayerId].PaintedTarget.EntityId == 0))
-                TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
 
             if (UiInput.ActionKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestAddLock(TrackingAi);
@@ -409,6 +407,9 @@ namespace CoreSystems
                         TrackingAi.Construct.Focus.RequestNextActive(UiInput.LongShift, TrackingAi);
                 }
             }
+
+            if (InGridAiBlock && (UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight && PlayerDummyTargets[PlayerId].PaintedTarget.EntityId == 0))
+                TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
         }
 
         internal void RemoveGps()

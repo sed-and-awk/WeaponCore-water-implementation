@@ -229,7 +229,7 @@ namespace CoreSystems
                     if (wComp.ManualMode || wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter)
                         PlayerDummyTargets.TryGetValue(wComp.Data.Repo.Values.State.PlayerId, out fakeTargets);
 
-                    wComp.PainterMode = fakeTargets != null && wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && fakeTargets.PaintedTarget.EntityId != 0 && !fakeTargets.PaintedTarget.Dirty;
+                    wComp.PainterMode = fakeTargets != null && wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && fakeTargets.PaintedTarget.EntityId != 0;
                     wComp.FakeMode = wComp.ManualMode || wComp.PainterMode;
                     wComp.WasControlled = wComp.UserControlled;
                     wComp.UserControlled = wComp.Data.Repo.Values.State.Control != ControlMode.None;
