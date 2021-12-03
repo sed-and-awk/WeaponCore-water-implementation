@@ -45,6 +45,12 @@ namespace CoreSystems
 
             if (info.System.Session.IsServer)
             {
+                var massMulti = 1f;
+
+                Ai.TargetInfo tInfo;
+                if (info.Ai.Targets.TryGetValue(hitEnt.Entity, out tInfo) && tInfo.TargetAi?.ShieldBlock != null && info.System.Session.SApi.IsFortified(tInfo.TargetAi.ShieldBlock))
+                    massMulti = 10f;
+
                 var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
 
                 Vector3D forceFrom = Vector3D.Zero;
@@ -89,8 +95,8 @@ namespace CoreSystems
                     force = positive ?MathHelper.Lerp(distFromFocalPoint, forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage) : MathHelper.Lerp(Math.Abs(distFromFocalPoint), forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage);
                 }
                 var massMod = !forceDef.DisableRelativeMass ? hitEnt.Entity.Physics.Mass : 1;
-
-                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (force * massMod), forcePosition, Vector3.Zero);
+                
+                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (((force * massMod)) / massMulti), forcePosition, Vector3.Zero);
                 if (forceDef.ShooterFeelsForce && info.Ai?.GridEntity != null)
                 {
 
@@ -110,7 +116,7 @@ namespace CoreSystems
 
                     }
 
-                    info.Ai.GridEntity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -normHitDir * (force * massMod), forcePosition, Vector3.Zero);
+                    info.Ai.GridEntity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -normHitDir * ((force * massMod) * massMod), forcePosition, Vector3.Zero);
                 }
             }
 

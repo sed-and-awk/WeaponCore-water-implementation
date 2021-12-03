@@ -649,12 +649,12 @@ namespace CoreSystems
 
         internal void SendFixedGunHitEvent(MyEntity triggerEntity, MyEntity hitEnt, Vector3 origin, Vector3 velocity, Vector3 up, int muzzleId, int systemId, int ammoIndex, float maxTrajectory)
         {
-            if (triggerEntity == null) return;
+            if (triggerEntity == null || hitEnt == null) return;
 
             var comp = triggerEntity.Components.Get<CoreComponent>();
 
             int weaponId;
-            if (comp.Ai?.TopEntity != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
+            if (comp?.Ai?.TopEntity != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
@@ -947,7 +947,7 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FakeTargetPacket
+                PacketsToServer.Add(new PaintedTargetPacket
                 {
                     EntityId = ai.TopEntity.EntityId,
                     SenderId = ai.Session.MultiplayerId,
@@ -961,7 +961,7 @@ namespace CoreSystems
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = ai.TopEntity,
-                    Packet = new FakeTargetPacket
+                    Packet = new PaintedTargetPacket
                     {
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,

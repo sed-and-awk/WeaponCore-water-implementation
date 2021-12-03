@@ -225,6 +225,28 @@ namespace CoreSystems.Support
                 LastUpdateTick = ai.Session.Tick;
             }
 
+            internal void Sync(PaintedTargetPacket packet, Ai ai)
+            {
+                if (packet.TargetId == 0)
+                {
+
+                    EntityId = 0;
+                    LocalPosition = Vector3D.Zero;
+                    FakeInfo.WorldPosition = packet.Pos;
+                    FakeInfo.LinearVelocity = Vector3.Zero;
+                    FakeInfo.Acceleration = Vector3.Zero;
+                }
+                else
+                {
+                    EntityId = packet.TargetId;
+                    LocalPosition = packet.Pos;
+                }
+
+                LastInfoTick = 0;
+                MissCount = 0;
+                LastUpdateTick = ai.Session.Tick;
+            }
+
             internal FakeWorldTargetInfo GetFakeTargetInfo(Ai ai)
             {
                 MyEntity ent;
@@ -240,11 +262,11 @@ namespace CoreSystems.Support
                             FakeInfo.Acceleration = ent.Physics.LinearAcceleration;
                         }
                         else if (Type == FakeType.Painted)
-                            Dirty = true;
+                            Dirty = !ai.Session.DedicatedServer;
                     }
                 }
                 else if (Type == FakeType.Painted)
-                    Dirty = true;
+                    Dirty = !ai.Session.DedicatedServer;
 
                 return FakeInfo;
             }

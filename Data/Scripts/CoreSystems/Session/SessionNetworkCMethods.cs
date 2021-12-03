@@ -291,6 +291,40 @@ namespace CoreSystems
 
             return true;
         }
+
+        private bool ClientPaintedTargetUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            data.ErrorPacket.NoReprocess = true;
+            var targetPacket = (PaintedTargetPacket)packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+            Ai ai;
+            if (myGrid != null && EntityAIs.TryGetValue(myGrid, out ai))
+            {
+
+                long playerId;
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                {
+
+                    FakeTargets dummyTargets;
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets))
+                    {
+                        dummyTargets.PaintedTarget.Sync(targetPacket, ai);
+                    }
+                    else
+                        return Error(data, Msg("Player dummy target not found"));
+                }
+                else
+                    return Error(data, Msg("SteamToPlayer missing Player"));
+
+                data.Report.PacketValid = true;
+            }
+            else
+                return Error(data, Msg($"GridId: {packet.EntityId}", myGrid != null), Msg("Ai"));
+
+            return true;
+        }
         // no storge sync
 
         private bool ClientClientMouseEvent(PacketObj data)

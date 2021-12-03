@@ -91,6 +91,7 @@ namespace CoreSystems
     [ProtoInclude(33, typeof(SupportStatePacket))]
     [ProtoInclude(34, typeof(EwaredBlocksPacket))]
     [ProtoInclude(35, typeof(ClientReadyPacket))]
+    [ProtoInclude(36, typeof(PaintedTargetPacket))]
 
     public class Packet
     {
@@ -441,6 +442,20 @@ namespace CoreSystems
         }
     }
 
+
+    [ProtoContract]
+    public class PaintedTargetPacket : Packet
+    {
+        [ProtoMember(1)] internal Vector3 Pos;
+        [ProtoMember(2)] internal long TargetId;
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Pos = new Vector3();
+            TargetId = 0;
+        }
+    }
 
     [ProtoContract]
     public class FocusPacket : Packet

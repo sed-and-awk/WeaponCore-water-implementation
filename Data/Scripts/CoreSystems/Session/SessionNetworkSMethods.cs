@@ -124,10 +124,10 @@ namespace CoreSystems
             return true;
         }
 
-        private bool ServerMarkedTargetUpdate(PacketObj data)
+        private bool ServerPaintedTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var targetPacket = (FakeTargetPacket)packet;
+            var targetPacket = (PaintedTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
