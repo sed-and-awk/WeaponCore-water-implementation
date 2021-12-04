@@ -75,9 +75,9 @@ namespace CoreSystems
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int CurrentAmmo; //save
         [ProtoMember(3)] public float CurrentCharge; //save
-        [ProtoMember(4)] public long CurrentMags; // save
-        [ProtoMember(5)] public int AmmoTypeId; //remove me
-        [ProtoMember(6)] public int AmmoCycleId; //remove me
+        //[ProtoMember(4)] public long CurrentMags; // save
+        //[ProtoMember(5)] public int AmmoTypeId; //remove me
+        //[ProtoMember(6)] public int AmmoCycleId; //remove me
 
         public bool Sync(Weapon w, ProtoWeaponAmmo sync)
         {
@@ -87,6 +87,7 @@ namespace CoreSystems
 
                 CurrentAmmo = sync.CurrentAmmo;
                 CurrentCharge = sync.CurrentCharge;
+                w.ClientMakeUpShots = 0;
 
                 return true;
             }
