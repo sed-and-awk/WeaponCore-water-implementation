@@ -981,17 +981,11 @@ namespace CoreSystems.Support
                     System.Session.Av.BeamEffects[UniqueMuzzleId] = effect;
 
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                //effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                //effect.WorldMatrix = matrix;
-                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
-                //if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
             }
             else if (effect != null && !effect.IsEmittingStopped) {
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
-                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                // if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
                 effect.WorldMatrix = matrix;
             }
         }

@@ -159,7 +159,7 @@ namespace CoreSystems
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             comp.Data.Repo.Values.State.PlayerId = cyclePacket.PlayerId;
-            comp.Platform.Weapons[cyclePacket.PartId].ChangeAmmo(cyclePacket.NewAmmoId);
+            comp.Platform.Weapons[cyclePacket.PartId].QueueAmmoChange(cyclePacket.NewAmmoId);
             data.Report.PacketValid = true;
 
             return true;

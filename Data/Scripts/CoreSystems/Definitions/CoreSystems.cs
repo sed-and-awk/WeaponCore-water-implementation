@@ -94,6 +94,7 @@ namespace CoreSystems.Support
             public MyDefinitionId EjectionDefinitionId;
             public AmmoDef AmmoDef;
             public string AmmoName;
+            public string AmmoNameQueued;
             public bool IsShrapnel;
         }
 

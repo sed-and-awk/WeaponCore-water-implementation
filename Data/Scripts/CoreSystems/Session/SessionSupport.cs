@@ -864,7 +864,7 @@ namespace CoreSystems
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
-        internal MyEntity CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = long.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, bool addToPrunning = false, bool shadows = false)
+        internal MyEntity CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = int.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, bool addToPrunning = false, bool shadows = false)
         {
             if (!Inited) lock (InitObj) Init();
 
@@ -903,7 +903,7 @@ namespace CoreSystems
             if (ammoName != null && AmmoMaps.TryGetValue(phantomType, out ammoMap) && ammoMap.TryGetValue(ammoName, out ammoType))
                 comp.DefaultAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
 
-            comp.DefaultReloads = defaultReloads;
+            comp.DefaultReloads = (int)defaultReloads;
             comp.DefaultTrigger = trigger;
             comp.HasCloseConsition = closeWhenOutOfAmmo;
 

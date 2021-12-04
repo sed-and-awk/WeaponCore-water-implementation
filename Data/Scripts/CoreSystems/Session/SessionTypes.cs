@@ -450,7 +450,7 @@ namespace CoreSystems
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.AmmoTypeId}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.AmmoTypeId}"); }
                     },
                     {"Action", () => {
                             var message = string.Empty;
@@ -478,7 +478,7 @@ namespace CoreSystems
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentMags}"); }
                     },
                     {"LastEvent", () => {
                             var message = string.Empty;

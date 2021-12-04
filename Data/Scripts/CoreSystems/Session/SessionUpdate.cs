@@ -216,6 +216,7 @@ namespace CoreSystems
                         var track = (isControllingPlayer && (wComp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && wComp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView || UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == wComp.Data.Repo.Values.Set.Overrides.CameraChannel));
                         if (isControllingPlayer)
                         {
+                            TargetUi.LastTrackTick = Tick;
                             if (MpActive && wasTrack != track)
                                 wComp.Session.SendTrackReticleUpdate(wComp, track);
                             else if (IsServer)
@@ -266,11 +267,13 @@ namespace CoreSystems
                         ///Check Reload
                         ///                        
 
-
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Loading) { // does this need StayCharged?
 
-                            if (IsServer && (w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.CheckInventorySystem))
-                                w.ComputeServerStorage();
+                            if (IsServer)
+                            {
+                                if (w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.CheckInventorySystem)
+                                    w.ComputeServerStorage();
+                            }
                             else if (IsClient) {
 
                                 if (w.ClientReloading && w.Reload.EndId > w.ClientEndId && w.Reload.StartId == w.ClientStartId)

@@ -173,7 +173,6 @@ namespace CoreSystems.Support
             public uint LastUpdateTick;
             public uint LastInfoTick;
             public int MissCount;
-            public bool Dirty;
 
             internal void Update(Vector3D hitPos, uint tick, MyEntity ent = null, long entId = 0)
             {
@@ -197,7 +196,6 @@ namespace CoreSystems.Support
                     FakeInfo.Acceleration = Vector3.Zero;
                 }
 
-                Dirty = false;
                 LastInfoTick = 0;
                 MissCount = 0;
                 LastUpdateTick = tick;
@@ -261,12 +259,12 @@ namespace CoreSystems.Support
                             FakeInfo.LinearVelocity = ent.Physics.LinearVelocity;
                             FakeInfo.Acceleration = ent.Physics.LinearAcceleration;
                         }
-                        else if (Type == FakeType.Painted)
-                            Dirty = !ai.Session.DedicatedServer;
+                        else if (Type == FakeType.Painted && EntityId != 0)
+                            ClearMark(ai.Session.Tick);
                     }
                 }
-                else if (Type == FakeType.Painted)
-                    Dirty = !ai.Session.DedicatedServer;
+                else if (Type == FakeType.Painted && EntityId != 0)
+                    ClearMark(ai.Session.Tick);
 
                 return FakeInfo;
             }
@@ -281,7 +279,6 @@ namespace CoreSystems.Support
                 FakeInfo.WorldPosition = Vector3D.Zero;
                 FakeInfo.LinearVelocity = Vector3.Zero;
                 FakeInfo.Acceleration = Vector3.Zero;
-                Dirty = true;
             }
 
             public class FakeWorldTargetInfo

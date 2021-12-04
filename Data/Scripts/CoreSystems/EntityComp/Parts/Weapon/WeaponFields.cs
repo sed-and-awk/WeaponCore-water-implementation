@@ -77,11 +77,13 @@ namespace CoreSystems.Platform
         internal uint ElevationTick;
         internal uint AzimuthTick;
         internal uint FastTargetResetTick;
+
         internal float HeatPerc;
         internal int BarrelRate;
         internal int ShotsFired;
         internal int LastMuzzle;
         internal int MiddleMuzzleIndex;
+        internal int DelayedCycleId;
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
@@ -107,7 +109,7 @@ namespace CoreSystems.Platform
         internal MathFuncs.Cone AimCone;
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
 
-
+        internal string AmmoName = "";
         internal ProtoWeaponPartState PartState;
         internal ProtoWeaponReload Reload;
         internal ProtoWeaponTransferTarget TargetData;

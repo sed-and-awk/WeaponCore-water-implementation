@@ -17,9 +17,6 @@ namespace CoreSystems
 
         public void ResetToFreshLoadState(Weapon.WeaponComponent comp)
         {
-            //Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
-            //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
-            //Values.PartState.PlayerId = -1;
             Values.State.TrackingReticle = false;
             Values.Set.DpsModifier = 1;
             Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
@@ -39,10 +36,9 @@ namespace CoreSystems
                 var wr = Values.Reloads[i];
                 var wa = Ammos[i];
                 var we = comp.Collection[i];
-                wa.AmmoCycleId = comp.DefaultAmmoId;
 
                 if (comp.DefaultReloads != 0)
-                    we.ProtoWeaponAmmo.CurrentMags = comp.DefaultReloads;
+                    we.Reload.CurrentMags = comp.DefaultReloads;
                 
                 ws.Heat = 0;
                 ws.Overheated = false;
@@ -56,7 +52,6 @@ namespace CoreSystems
 
                 wr.StartId = 0;
                 wr.WaitForClient = false;
-                //wr.ClientProjectileCurrentCounter = 0;
             }
             ResetCompBaseRevisions();
         }
@@ -81,8 +76,8 @@ namespace CoreSystems
         [ProtoMember(2)] public int CurrentAmmo; //save
         [ProtoMember(3)] public float CurrentCharge; //save
         [ProtoMember(4)] public long CurrentMags; // save
-        [ProtoMember(5)] public int AmmoTypeId; //save
-        [ProtoMember(6)] public int AmmoCycleId; //save
+        [ProtoMember(5)] public int AmmoTypeId; //remove me
+        [ProtoMember(6)] public int AmmoCycleId; //remove me
 
         public bool Sync(Weapon w, ProtoWeaponAmmo sync)
         {
@@ -90,32 +85,9 @@ namespace CoreSystems
             {
                 Revision = sync.Revision;
 
-                if (CurrentAmmo != sync.CurrentAmmo)
-                {
-
-                    var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
-                    var notShotBlocked = !w.PreFired && !w.Loading && !w.FinishShots && !w.IsShooting;
-                    if (!notShotBlocked && !ammoSpent)
-                    {
-
-                        var clientCheck = w.ActiveAmmoDef != null && w.ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && w.System.Session.PlayerId == w.Comp.Data.Repo.Values.State.PlayerId;
-                        if (!clientCheck) 
-                            CurrentAmmo = sync.CurrentAmmo;
-                    }
-                }
-
+                CurrentAmmo = sync.CurrentAmmo;
                 CurrentCharge = sync.CurrentCharge;
 
-                if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)
-                    w.ClientReload(true);
-
-                CurrentMags = sync.CurrentMags;
-                AmmoTypeId = sync.AmmoTypeId;
-
-                if (sync.AmmoCycleId > AmmoCycleId)
-                    w.ChangeActiveAmmoClient();
-
-                AmmoCycleId = sync.AmmoCycleId;
                 return true;
             }
             return false;
@@ -198,6 +170,8 @@ namespace CoreSystems
         [ProtoMember(3)] public int EndId; //save
         [ProtoMember(4)] public int MagsLoaded = 1;
         [ProtoMember(5)] public bool WaitForClient; //don't save
+        [ProtoMember(6)] public int AmmoTypeId; //save
+        [ProtoMember(7)] public int CurrentMags; // save
 
         public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {
@@ -207,7 +181,15 @@ namespace CoreSystems
                 StartId = sync.StartId;
                 EndId = sync.EndId;
                 MagsLoaded = sync.MagsLoaded;
+                
                 WaitForClient = sync.WaitForClient;
+                
+                var oldAmmoId = AmmoTypeId;
+                AmmoTypeId = sync.AmmoTypeId;
+
+                if (oldAmmoId != AmmoTypeId)
+                    w.ChangeActiveAmmoClient();
+
                 w.ClientReload(true);
             }
         }

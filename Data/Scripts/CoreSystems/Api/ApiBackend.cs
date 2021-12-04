@@ -938,7 +938,7 @@ namespace CoreSystems.Api
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         if (comp.Session.IsServer) {
-                            w.ProtoWeaponAmmo.AmmoTypeId = i;
+                            w.Reload.AmmoTypeId = i;
                             if (comp.Session.MpActive)
                                 comp.Session.SendWeaponReload(w);
                         }
@@ -1146,16 +1146,7 @@ namespace CoreSystems.Api
                     {
                         if (ammoType.AmmoName == ammoName)
                         {
-                            if (_session.IsServer)
-                            {
-                                w.ProposedAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
-                                w.ChangeActiveAmmoServer();
-                            }
-                            else
-                            {
-                                w.ProtoWeaponAmmo.AmmoTypeId = ammoType.AmmoDef.Const.AmmoIdxPos;
-                                w.ChangeActiveAmmoClient();
-                            }
+                            w.QueueAmmoChange(ammoType.AmmoDef.Const.AmmoIdxPos);
                             break;
                         }
                     }
@@ -1173,7 +1164,7 @@ namespace CoreSystems.Api
                 if (weaponId < wComp.Collection.Count)
                 {
                     var w = wComp.Collection[weaponId];
-                    w.ProtoWeaponAmmo.CurrentMags = magCount;
+                    w.Reload.CurrentMags = (int)magCount;
                 }
             }
         }

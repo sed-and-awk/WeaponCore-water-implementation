@@ -276,7 +276,6 @@ namespace CoreSystems
                     FakeTargets dummyTargets;
                     if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets)) {
                         dummyTargets.ManualTarget.Sync(targetPacket, ai);
-                        dummyTargets.PaintedTarget.Sync(targetPacket, ai);
                     }
                     else
                         return Error(data, Msg("Player dummy target not found"));

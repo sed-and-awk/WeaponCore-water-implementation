@@ -347,7 +347,7 @@ namespace CoreSystems
                     AmmoList.Add(item);
                 }
 
-                return comp.Collection[i].ProtoWeaponAmmo.AmmoTypeId;
+                return comp.Collection[i].Reload.AmmoTypeId;
             }
             return 0;
         }
@@ -363,7 +363,7 @@ namespace CoreSystems
                 if (!wep.System.HasAmmoSelection || newValue >= wep.System.AmmoTypes.Length || !wep.System.AmmoTypes[newValue].AmmoDef.Const.IsTurretSelectable)
                     continue;
 
-                wep.ChangeAmmo((int)newValue);
+                wep.QueueAmmoChange((int)newValue);
             }
         }
 

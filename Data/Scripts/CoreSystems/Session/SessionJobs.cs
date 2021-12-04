@@ -261,7 +261,7 @@ namespace CoreSystems
                 {
                     var painted = pair.Value.PaintedTarget;
                     MyEntity target;
-                    if (!painted.Dirty && painted.EntityId != 0 && !MyUtils.IsZero(painted.LocalPosition) && MyEntities.TryGetEntityById(painted.EntityId, out target))
+                    if (painted.EntityId != 0 && MyEntities.TryGetEntityById(painted.EntityId, out target))
                     {
                         var grid = target as MyCubeGrid;
                         if (player.IdentityId == PlayerId && grid != null)
@@ -294,39 +294,6 @@ namespace CoreSystems
                 }
             }
         }
-
-        internal void ClearMark()
-        {
-            Ai.FakeTargets fakes;
-            IMyPlayer player;
-            MyEntity target;
-            if (PlayerDummyTargets.TryGetValue(PlayerId, out fakes) && Players.TryGetValue(PlayerId, out player) && MyEntities.TryGetEntityById(fakes.PaintedTarget.EntityId, out target))
-            {
-                var grid = target as MyCubeGrid;
-                if (player.IdentityId == PlayerId && grid != null)
-                {
-                    fakes.PaintedTarget.ClearMark(Tick);
-                }
-            }
-        }
-        /*
-        IEnumerable<Vector3I> NearLine(Vector3I start, LineD line)
-        {
-            MinHeap blocks;
-            HashSet<Vector3I> seen = new HashSet<Vector3I> {start};
-            blocks.Add(dist(line, start), start);
-            while (!blocks.Empty)
-            {
-                var next = blocks.RemoveMin();
-                yield return next;
-                foreach (var neighbor in Neighbors(next))
-                {
-                    if (seen.add(neighbor))
-                        blocks.Add(dist(line, neighbor), neighbor);
-                }
-            }
-        }
-        */
 
         private void UpdateGrids()
         {
