@@ -65,7 +65,7 @@ namespace CoreSystems.Platform
 
         internal void QueueAmmoChange(int newAmmoId)
         {
-            if (!Reload.WaitForClient && ClientMakeUpShots == 0)
+            if (ClientMakeUpShots == 0 && (!ClientReloading || ProtoWeaponAmmo.CurrentAmmo == 0))
             {
                 DelayedCycleId = newAmmoId;
                 AmmoName = System.AmmoTypes[newAmmoId].AmmoNameQueued;
