@@ -10,46 +10,43 @@ namespace CoreSystems.Platform
         internal void ChangeActiveAmmoServer()
         {
             var proposed = ProposedAmmoId != -1;
-            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
+            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[Reload.AmmoTypeId];
             ScheduleAmmoChange = false;
 
             if (ActiveAmmoDef == ammoType)
                 return;
-            
-            ++ProtoWeaponAmmo.AmmoCycleId;
 
             if (proposed)
             {
-                ProtoWeaponAmmo.AmmoTypeId = ProposedAmmoId;
+                Reload.AmmoTypeId = ProposedAmmoId;
                 ProposedAmmoId = -1;
                 ProtoWeaponAmmo.CurrentAmmo = 0;
-                ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? 0 : long.MaxValue;
+                Reload.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? 0 : int.MaxValue;
             }
 
-            ActiveAmmoDef = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[Reload.AmmoTypeId];
+            if (string.IsNullOrEmpty(AmmoName)) 
+                AmmoName = ActiveAmmoDef.AmmoName;
             PrepAmmoShuffle();
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : long.MaxValue;
+                Reload.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : int.MaxValue;
             
             CheckInventorySystem = true;
 
             UpdateRof();
             SetWeaponDps();
             UpdateWeaponRange();
-
-            if (System.Session.MpActive)
-                System.Session.SendWeaponAmmoData(this);
         }
 
         internal void ChangeActiveAmmoClient()
         {
-            var ammoType = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
+            var ammoType = System.AmmoTypes[Reload.AmmoTypeId];
 
             if (ActiveAmmoDef == ammoType)
                 return;
 
-            ActiveAmmoDef = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[Reload.AmmoTypeId];
             PrepAmmoShuffle();
 
             UpdateRof();
@@ -66,30 +63,18 @@ namespace CoreSystems.Platform
                 AmmoShufflePattern[i] = i;
         }
 
-        internal void AmmoChange(object o)
+        internal void QueueAmmoChange(int newAmmoId)
         {
-            try
+            var serverAccept = System.Session.IsServer && (!Loading || DelayedCycleId < 0);
+            var clientAccept = System.Session.IsClient && ClientMakeUpShots == 0 && !ServerQueuedAmmo && (!ClientReloading || ProtoWeaponAmmo.CurrentAmmo == 0);
+            if (clientAccept || serverAccept)
             {
-                var ammoChange = (AmmoLoad)o;
-                if (ammoChange.Change == AmmoLoad.ChangeType.Add)
-                {
-                    var oldType = System.AmmoTypes[ammoChange.OldId];
-                    if (Comp.CoreInventory.CanItemsBeAdded(ammoChange.Amount, oldType.AmmoDefinitionId))
-                        Comp.CoreInventory.AddItems(ammoChange.Amount, ammoChange.Item.Content);
-                    else
-                    {
-                        if (!Comp.Session.MpActive)
-                            MyAPIGateway.Utilities.ShowNotification($"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine", 3000, "Red");
-                        else if (Comp.Data.Repo.Values.State.PlayerId > 0)
-                        {
-                            var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
-                            Comp.Session.SendClientNotify(Comp.Data.Repo.Values.State.PlayerId, message, true, "Red", 3000);
-                        }
-                        MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotFwd, MyPivotUp);
-                    }
-                }
+                DelayedCycleId = newAmmoId;
+                AmmoName = System.AmmoTypes[newAmmoId].AmmoNameQueued;
+
+                if (System.Session.IsClient)
+                    ChangeAmmo(newAmmoId);
             }
-            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.Content.SubtypeName}", null, true); }
         }
 
         internal void ChangeAmmo(int newAmmoId)
@@ -99,20 +84,8 @@ namespace CoreSystems.Platform
                 ProposedAmmoId = newAmmoId;
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var canReload = ProtoWeaponAmmo.CurrentAmmo == 0;
-                var removeAmmo = !canReload && !instantChange && !Loading;
 
-                var unloadMag = removeAmmo && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo >= ActiveAmmoDef.AmmoDef.Const.MagazineSize && Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom;
-                int magsToUnload = ProtoWeaponAmmo.CurrentAmmo / ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
-
-                if (removeAmmo)
-                {
-                    ProtoWeaponAmmo.CurrentAmmo = 0;
-                    canReload = true;
-                }
-
-                if (unloadMag)
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = magsToUnload, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
 
                 if (instantChange)
                     ChangeActiveAmmoServer();
@@ -120,7 +93,7 @@ namespace CoreSystems.Platform
                     ScheduleAmmoChange = true;
 
                 if (proposedAmmo.AmmoDef.Const.Reloadable && canReload)
-                    ComputeServerStorage();
+                    ComputeServerStorage(true);
             }
             else 
                 System.Session.SendAmmoCycleRequest(this, newAmmoId);
@@ -133,9 +106,9 @@ namespace CoreSystems.Platform
                 return true;
             }
 
-            ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : ProtoWeaponAmmo.CurrentMags;
+            Reload.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : Reload.CurrentMags;
             var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-            var nothingToLoad = ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable;
+            var nothingToLoad = Reload.CurrentMags <= 0 && !energyDrainable;
 
             if (NoMagsToLoad) {
                 if (nothingToLoad)
@@ -145,20 +118,15 @@ namespace CoreSystems.Platform
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Remove(this);
                 NoMagsToLoad = false;
                 LastMagSeenTick = System.Session.Tick;
-
-                if (System.Session.MpActive)
-                    System.Session.SendWeaponAmmoData(this);
             }
             else if (nothingToLoad)
             {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Add(this);
 
-                if (!NoMagsToLoad) {
+                if (!NoMagsToLoad) 
                     CheckInventorySystem = true;
-                    if (System.Session.MpActive)
-                        System.Session.SendWeaponAmmoData(this);
-                }
+
                 NoMagsToLoad = true;
             }
 
@@ -171,7 +139,7 @@ namespace CoreSystems.Platform
 
             if (!syncUp) {
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-                if (ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon && !Loading) {
+                if (Reload.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon && !Loading) {
                     
                     if (!Comp.Session.IsCreative) {
 
@@ -181,7 +149,8 @@ namespace CoreSystems.Platform
                     }
                 }
                 
-                if (Loading && ClientMakeUpShots < 1 && ReloadEndTick < uint.MaxValue - 1)
+
+                if (Loading && ClientMakeUpShots < 1 && LoadingWait && Reload.EndId > ClientEndId)
                     Reloaded(1);
 
                 return false;
@@ -206,11 +175,11 @@ namespace CoreSystems.Platform
             return true;
         }
 
-        internal bool ComputeServerStorage()
+        internal bool ComputeServerStorage(bool calledFromReload = false)
         {
             var s = Comp.Session;
             var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
-            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.InventoryEntity.HasInventory && !isPhantom) return false;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.HasInventory && !isPhantom) return false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !isPhantom)
             {
@@ -219,8 +188,8 @@ namespace CoreSystems.Platform
                     Comp.CurrentInventoryVolume = (float)Comp.CoreInventory.CurrentVolume;
                     var freeVolume = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
                     var spotsFree = (int)(freeVolume / ActiveAmmoDef.AmmoDef.Const.MagVolume);
-                    ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
-                    CurrentAmmoVolume = ProtoWeaponAmmo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                    Reload.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                    CurrentAmmoVolume = Reload.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                     var magsRequested = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
                     var magsGranted = magsRequested > spotsFree ? spotsFree : magsRequested;
@@ -244,12 +213,15 @@ namespace CoreSystems.Platform
                 }
             }
 
-            var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Loading;
+            var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Loading || calledFromReload;
             return !invalidStates && ServerReload();
         }
 
         internal bool ServerReload()
         {
+            if (DelayedCycleId >= 0)
+                ChangeAmmo(DelayedCycleId);
+
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
@@ -264,15 +236,15 @@ namespace CoreSystems.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
 
                 var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
-                Reload.MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= ProtoWeaponAmmo.CurrentMags || Comp.Session.IsCreative ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : (int)ProtoWeaponAmmo.CurrentMags;
+                Reload.MagsLoaded = ActiveAmmoDef.AmmoDef.Const.MagsToLoad <= Reload.CurrentMags || Comp.Session.IsCreative ? ActiveAmmoDef.AmmoDef.Const.MagsToLoad : Reload.CurrentMags;
                 if (!isPhantom && Comp.CoreInventory.ItemsCanBeRemoved(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
                     Comp.CoreInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, Reload.MagsLoaded);
                 else if (!isPhantom && Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(Reload.MagsLoaded, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)) {
                     Comp.CoreInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, Reload.MagsLoaded);
                 }
 
-                ProtoWeaponAmmo.CurrentMags = !isPhantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : ProtoWeaponAmmo.CurrentMags - Reload.MagsLoaded;
-                if (System.Session.IsServer && ProtoWeaponAmmo.CurrentMags == 0)
+                Reload.CurrentMags = !isPhantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : Reload.CurrentMags - Reload.MagsLoaded;
+                if (Reload.CurrentMags == 0)
                     CheckInventorySystem = true;
             }
 
@@ -298,13 +270,19 @@ namespace CoreSystems.Platform
                 var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var delay = delayTime > 0 && ShotsFired == 0;
                 if (System.WConst.ReloadTime > 0 || delay)
+                {
                     ReloadEndTick = (uint)(Comp.Session.Tick + (!delay || System.WConst.ReloadTime > delayTime ? System.WConst.ReloadTime : delayTime));
+                }
                 else Reloaded();
             }
 
             if (System.Session.MpActive && System.Session.IsServer)
-                System.Session.SendWeaponReload(this);
+            {
+                if (ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && Comp.Data.Repo.Values.State.PlayerId > 0)
+                    Reload.WaitForClient = !System.Session.IsHost;
 
+                System.Session.SendWeaponReload(this);
+            }
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return;
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
@@ -328,7 +306,7 @@ namespace CoreSystems.Platform
                     ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                     EstimatedCharge = MaxCharge;
 
-                    if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadEndTick < uint.MaxValue - 1)
+                    if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && LoadingWait)
                         return;
                 }
                 else if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging && ReloadEndTick != uint.MaxValue)
@@ -338,7 +316,6 @@ namespace CoreSystems.Platform
                 }
 
                 ProtoWeaponAmmo.CurrentAmmo = Reload.MagsLoaded * ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
                 if (System.Session.IsServer) {
 
                     ++Reload.EndId;
@@ -347,12 +324,15 @@ namespace CoreSystems.Platform
                         System.Session.SendWeaponReload(this);
 
                     if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        --ProtoWeaponAmmo.CurrentMags;
+                        --Reload.CurrentMags;
                 }
                 else {
                     ClientReloading = false;
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
+                    ServerQueuedAmmo = false;
+                    if (ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && System.Session.PlayerId == Comp.Data.Repo.Values.State.PlayerId)
+                        System.Session.SendClientReady(this);
                 }
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
@@ -367,6 +347,12 @@ namespace CoreSystems.Platform
 
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
+                ProjectileCounter = 0;
+                if (DelayedCycleId >= 0)
+                {
+                    AmmoName = ActiveAmmoDef.AmmoName;
+                    DelayedCycleId = -1;
+                }
             }
         }
 
@@ -387,6 +373,7 @@ namespace CoreSystems.Platform
             LastLoadedTick = Comp.Session.Tick;
             Loading = false;
             ReloadEndTick = uint.MaxValue;
+            ProjectileCounter = 0;
         }
     }
 }

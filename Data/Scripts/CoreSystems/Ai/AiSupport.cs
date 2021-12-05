@@ -137,34 +137,24 @@ namespace CoreSystems.Support
                     break;
             }
         }
-        
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
+
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, ref XorShiftRandomStruct rng)
         {
             var count = cardsToSort - firstCard;
-            if (prevDeckLen < count) {
+            if (prevDeckLen < count)
+            {
                 deck = new int[count];
                 prevDeckLen = count;
             }
 
-            Random rnd;
-            if (type == RandomType.Acquire) {
-                rnd = rng.AcquireRandom;
-                rng.AcquireCurrentCounter += count;
-            }
-            else {
-                rnd = rng.ClientProjectileRandom;
-                rng.ClientProjectileCurrentCounter += count;
-            }
-
-            for (int i = 0; i < count; i++) {
-
-                var j = i < cardsToShuffle ? rnd.Next(i + 1) : i;
+            for (int i = 0; i < count; i++)
+            {
+                var j = i < cardsToShuffle ? rng.Range(0, i + 1) : i;
                 deck[i] = deck[j];
                 deck[j] = firstCard + i;
             }
             return deck;
         }
-
 
         internal void ComputeAccelSphere()
         {
@@ -311,9 +301,8 @@ namespace CoreSystems.Support
                 return;
             }
 
-            if (!ScanInProgress && Session.Tick - ProjectileTicker > 59 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 119) {
+            if (!ScanInProgress && Session.Tick - ProjectileTicker > 29 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 29) {
 
-                //lock (DbLock)
                 using (DbLock.AcquireExclusiveUsing())
                 {
                     if (ScanInProgress)

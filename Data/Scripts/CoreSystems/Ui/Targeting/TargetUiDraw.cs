@@ -368,18 +368,19 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     hudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
 
                     var color = Color.White;
+                    var lockColor = Color.White;
+
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     
                     switch (lockMode)
                     {
                         case FocusData.LockModes.None:
-                            color = Color.White;
+                            lockColor = Color.White;
                             break;
                         case FocusData.LockModes.Locked:
-                            color = s.Count < 60 ? Color.White : new Color(0, 50, 0, hudOpacity);
+                            lockColor = s.Count < 60 ? Color.White : new Color(0, 50, 0, hudOpacity);
                             break;
                     }
-
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
                     for (int j = 0; j < 11; j++)
                     {
@@ -387,7 +388,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                         Vector2 textOffset;
                         if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                         {
-                            var textColor = Color.White;
+                            var textColor = j != 10 ? Color.White : lockColor;
                             var fontSize = (float)Math.Round(21 * fontScale, 2);
                             var fontHeight = 0.75f;
                             var fontAge = -1;
@@ -505,7 +506,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     break;
                 case 7:
                     var type = targetState.ShieldMod > 0 ? "ENERGY" : targetState.ShieldMod < 0 ? "KINETIC" : "NEUTRAL";
-                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? Math.Round(1 / (2 - Math.Abs(targetState.ShieldMod)), 1) : 1;
+                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? Math.Round(Math.Abs(targetState.ShieldMod), 2) : 1;
                     textStr = $"{type}: {value}x";
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 3);

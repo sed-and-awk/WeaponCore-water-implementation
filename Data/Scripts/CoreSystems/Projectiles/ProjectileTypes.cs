@@ -38,7 +38,7 @@ namespace CoreSystems.Support
         internal Vector3D PrevProjectilePos;
         internal Vector3D PrevTargetPos;
         internal Hit Hit;
-        internal WeaponRandomGenerator WeaponRng;
+        internal XorShiftRandomStruct Random;
         internal FakeTargets DummyTargets;
         internal List<Action<long, int, ulong, long, Vector3D, bool>> Monitors;
         internal int TriggerGrowthSteps;
@@ -417,7 +417,7 @@ namespace CoreSystems.Support
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
-                frag.WeaponRng = p.Info.WeaponRng;
+                frag.Random = new XorShiftRandomStruct(p.Info.Random.NextUInt64());
                 frag.IsFiringPlayer = p.Info.IsFiringPlayer;
                 frag.ClientSent = p.Info.ClientSent;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
@@ -428,9 +428,8 @@ namespace CoreSystems.Support
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Fragment.Degrees, 0, 360));
                 posValue *= 0.5f;
-                var randomFloat1 = (float)(frag.WeaponRng.TurretRandom.NextDouble() * posValue);
-                var randomFloat2 = (float)(frag.WeaponRng.TurretRandom.NextDouble() * MathHelper.TwoPi);
-                frag.WeaponRng.TurretCurrentCounter += 2;
+                var randomFloat1 = (float)(frag.Random.NextDouble() * posValue);
+                var randomFloat2 = (float)(frag.Random.NextDouble() * MathHelper.TwoPi);
                 var mutli = p.Info.AmmoDef.Fragment.Reverse ? -1 : 1;
 
                 var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
@@ -482,7 +481,7 @@ namespace CoreSystems.Support
                 p.Info.UniqueMuzzleId = frag.System.Session.UniqueMuzzleId.Id;
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
-                p.Info.WeaponRng = frag.WeaponRng;
+                p.Info.Random = frag.Random;
                 p.Info.ClientSent = frag.ClientSent;
                 p.Info.IsFiringPlayer = frag.IsFiringPlayer;
                 p.Info.BaseDamagePool = frag.AmmoDef.Const.BaseDamage;
@@ -531,7 +530,7 @@ namespace CoreSystems.Support
         public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
-        public WeaponRandomGenerator WeaponRng;
+        public XorShiftRandomStruct Random;
         public bool Guidance;
         public bool ClientSent;
         public bool IsFiringPlayer;

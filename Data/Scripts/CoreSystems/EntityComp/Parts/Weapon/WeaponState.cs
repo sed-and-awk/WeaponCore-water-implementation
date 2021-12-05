@@ -52,9 +52,9 @@ namespace CoreSystems.Platform
             if (Comp.Session.PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
             {
                 var validManual = Comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Manual && Comp.Data.Repo.Values.State.TrackingReticle && fakeTargets.ManualTarget.FakeInfo.WorldPosition != Vector3D.Zero;
-                var validPainter = Comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && !fakeTargets.PaintedTarget.Dirty && fakeTargets.PaintedTarget.LocalPosition != Vector3D.Zero;
+                var validPainter = Comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && fakeTargets.PaintedTarget.LocalPosition != Vector3D.Zero;
                 var fakeTarget = validPainter && preferPainted ? fakeTargets.PaintedTarget : validManual ? fakeTargets.ManualTarget : null;
-                if (fakeTarget == null || fakeTarget.Dirty)
+                if (fakeTarget == null)
                     return false;
 
                 fakeTargetInfo = fakeTarget.LastInfoTick != System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Comp.Ai) : fakeTarget.FakeInfo;
@@ -120,7 +120,7 @@ namespace CoreSystems.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if (!ActiveAmmoDef.AmmoDef.Const.Reloadable && !Comp.UnlimitedPower && !ExitCharger)
+                if (!ActiveAmmoDef.AmmoDef.Const.Reloadable && !Comp.ModOverride && !ExitCharger)
                     ChargeReload();
             }
             IsShooting = true;

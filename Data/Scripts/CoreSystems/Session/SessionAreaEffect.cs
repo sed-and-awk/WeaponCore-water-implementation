@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using CoreSystems.Support;
@@ -9,6 +10,8 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.ObjectBuilders;
+using VRage.Utils;
 using VRageMath;
 using static CoreSystems.Support.WeaponDefinition;
 using static CoreSystems.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
@@ -31,7 +34,7 @@ namespace CoreSystems
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal bool ClientEwarStale;
 
-        private static void PushPull(HitEntity hitEnt, ProInfo info)
+        private static void ForceFields(HitEntity hitEnt, ProInfo info)
         {
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
@@ -40,38 +43,82 @@ namespace CoreSystems
             if (hitEnt.Entity.Physics == null || !hitEnt.Entity.Physics.Enabled || hitEnt.Entity.Physics.IsStatic || !hitEnt.HitPos.HasValue)
                 return;
 
-            var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
-
-            Vector3D forceFrom = Vector3D.Zero;
-            Vector3D forceTo = Vector3D.Zero;
-            Vector3D forcePosition = Vector3D.Zero;
-
-            if (forceDef.ForceFrom == Force.ProjectileLastPosition) forceFrom = hitEnt.Intersection.From;
-            else if (forceDef.ForceFrom == Force.ProjectileOrigin) forceFrom = info.Origin;
-            else if (forceDef.ForceFrom == Force.HitPosition) forceFrom = hitEnt.HitPos.Value;
-            else if (forceDef.ForceFrom == Force.TargetCenter) forceFrom = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.ForceFrom == Force.TargetCenterOfMass) forceFrom = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            if (forceDef.ForceTo == Force.ProjectileLastPosition) forceTo = hitEnt.Intersection.From;
-            else if (forceDef.ForceTo == Force.ProjectileOrigin) forceTo = info.Origin;
-            else if (forceDef.ForceTo == Force.HitPosition) forceTo = hitEnt.HitPos.Value;
-            else if (forceDef.ForceTo == Force.TargetCenter) forceTo = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.ForceTo == Force.TargetCenterOfMass) forceTo = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            if (forceDef.Position == Force.ProjectileLastPosition) forcePosition = hitEnt.Intersection.From;
-            else if (forceDef.Position == Force.ProjectileOrigin) forcePosition = info.Origin;
-            else if (forceDef.Position == Force.HitPosition) forcePosition = hitEnt.HitPos.Value;
-            else if (forceDef.Position == Force.TargetCenter) forcePosition = hitEnt.Entity.PositionComp.WorldAABB.Center;
-            else if (forceDef.Position == Force.TargetCenterOfMass) forcePosition = hitEnt.Entity.Physics.CenterOfMassWorld;
-
-            var hitDir = forceTo - forceFrom;
-
-            Vector3D normHitDir;
-            Vector3D.Normalize(ref hitDir, out normHitDir);
-
-            normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
             if (info.System.Session.IsServer)
-                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
+            {
+                var massMulti = 1f;
+
+                Ai.TargetInfo tInfo;
+                if (info.Ai.Targets.TryGetValue(hitEnt.Entity, out tInfo) && tInfo.TargetAi?.ShieldBlock != null && info.System.Session.SApi.IsFortified(tInfo.TargetAi.ShieldBlock))
+                    massMulti = 10f;
+
+                var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
+
+                Vector3D forceFrom = Vector3D.Zero;
+                Vector3D forceTo = Vector3D.Zero;
+                Vector3D forcePosition = Vector3D.Zero;
+                Vector3D normHitDir;
+                Vector3D hitDir;
+
+                if (forceDef.ForceFrom == Force.ProjectileLastPosition) forceFrom = hitEnt.Intersection.From;
+                else if (forceDef.ForceFrom == Force.ProjectileOrigin) forceFrom = info.Origin;
+                else if (forceDef.ForceFrom == Force.HitPosition) forceFrom = hitEnt.HitPos.Value;
+                else if (forceDef.ForceFrom == Force.TargetCenter) forceFrom = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.ForceFrom == Force.TargetCenterOfMass) forceFrom = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                if (forceDef.ForceTo == Force.ProjectileLastPosition) forceTo = hitEnt.Intersection.From;
+                else if (forceDef.ForceTo == Force.ProjectileOrigin) forceTo = info.Origin;
+                else if (forceDef.ForceTo == Force.HitPosition) forceTo = hitEnt.HitPos.Value;
+                else if (forceDef.ForceTo == Force.TargetCenter) forceTo = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.ForceTo == Force.TargetCenterOfMass) forceTo = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                if (forceDef.Position == Force.ProjectileLastPosition) forcePosition = hitEnt.Intersection.From;
+                else if (forceDef.Position == Force.ProjectileOrigin) forcePosition = info.Origin;
+                else if (forceDef.Position == Force.HitPosition) forcePosition = hitEnt.HitPos.Value;
+                else if (forceDef.Position == Force.TargetCenter) forcePosition = hitEnt.Entity.PositionComp.WorldAABB.Center;
+                else if (forceDef.Position == Force.TargetCenterOfMass) forcePosition = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+                hitDir = forceTo - forceFrom;
+
+                Vector3D.Normalize(ref hitDir, out normHitDir);
+
+                double force;
+                if (info.AmmoDef.Const.AreaEffect != TractorField)
+                {
+                    normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
+                    force = info.AmmoDef.Const.AreaEffectDamage;
+                }
+                else
+                {
+                    var distFromFocalPoint = forceDef.TractorRange - hitEnt.HitDist ?? info.ProjectileDisplacement;
+                    var positive = distFromFocalPoint > 0;
+                    normHitDir = positive ? normHitDir : -normHitDir;
+                    force = positive ?MathHelper.Lerp(distFromFocalPoint, forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage) : MathHelper.Lerp(Math.Abs(distFromFocalPoint), forceDef.TractorRange, info.AmmoDef.Const.AreaEffectDamage);
+                }
+                var massMod = !forceDef.DisableRelativeMass ? hitEnt.Entity.Physics.Mass : 1;
+                
+                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (((force * massMod)) / massMulti), forcePosition, Vector3.Zero);
+                if (forceDef.ShooterFeelsForce && info.Ai?.GridEntity != null)
+                {
+
+                    if (forceDef.Position == Force.HitPosition) forcePosition = info.Origin;
+                    else if (forceDef.Position == Force.TargetCenter) forcePosition = info.Ai.GridEntity.PositionComp.WorldAABB.Center;
+                    else forcePosition = info.Ai.GridEntity.Physics.CenterOfMassWorld;
+
+                    hitDir = forceFrom - forceTo;
+                    Vector3D.Normalize(ref hitDir, out normHitDir);
+
+                    if (info.AmmoDef.Const.AreaEffect != TractorField)
+                        normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
+                    else {
+                        var distFromFocalPoint = forceDef.TractorRange - info.ProjectileDisplacement;
+                        var positive = distFromFocalPoint > 0;
+                        normHitDir = positive ? normHitDir : -normHitDir;
+
+                    }
+
+                    info.Ai.GridEntity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -normHitDir * ((force * massMod) * massMod), forcePosition, Vector3.Zero);
+                }
+            }
 
             if (depletable)
                 info.BaseHealthPool -= healthPool;
@@ -79,9 +126,9 @@ namespace CoreSystems
 
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
-            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField)
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField || info.AmmoDef.Const.AreaEffect == TractorField)
             {
-                PushPull(hitEnt, info);
+                ForceFields(hitEnt, info);
                 return;
             }
 
@@ -101,9 +148,9 @@ namespace CoreSystems
 
         private void UpdateEffect(HitEntity hitEnt, ProInfo info)
         {
-            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField)
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField || info.AmmoDef.Const.AreaEffect == TractorField)
             {
-                PushPull(hitEnt, info);
+                ForceFields(hitEnt, info);
                 return;
             }
 
@@ -168,7 +215,6 @@ namespace CoreSystems
             {
                 var cubeBlock = block.FatBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
-
                 IMyFunctionalBlock funcBlock = null;
                 if (fieldType != DotField)
                 {
@@ -295,7 +341,7 @@ namespace CoreSystems
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    var healthPool = v.Value.AmmoDef.Const.Health;
+                    var healthPool = v.Value.AmmoDef.Const.Health > 0 ? v.Value.AmmoDef.Const.Health : float.MaxValue;
                     ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, v.Value.System.WeaponIdHash, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);

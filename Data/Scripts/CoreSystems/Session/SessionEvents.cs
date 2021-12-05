@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.Definitions;
@@ -30,7 +31,7 @@ namespace CoreSystems
                     PlanetMap.TryAdd(planet.EntityId, planet);
 
                 var grid = entity as MyCubeGrid;
-                if (grid != null) grid.AddedToScene += GridAddedToScene;
+                if (grid != null) grid.AddedToScene += AddGridToMap;
                 if (!PbApiInited && entity is IMyProgrammableBlock) PbActivate = true;
                 var placer = entity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
@@ -200,39 +201,38 @@ namespace CoreSystems
             }
         }
 
-        private void GridAddedToScene(MyEntity myEntity)
+        private void AddGridToMap(MyEntity myEntity)
         {
             try
             {
-                NewGrids.Enqueue(myEntity as MyCubeGrid);
+                var grid = myEntity as MyCubeGrid;
+
+                if (grid != null)
+                {
+                    var allFat = ConcurrentListPool.Get();
+
+                    var gridFat = grid.GetFatBlocks();
+                    for (int i = 0; i < gridFat.Count; i++) allFat.Add(gridFat[i]);
+                    allFat.ApplyAdditions();
+
+                    var gridMap = GridMapPool.Get();
+
+                    if (grid.Components.TryGet(out gridMap.Targeting))
+                        gridMap.Targeting.AllowScanning = false;
+                    gridMap.Trash = true;
+
+                    gridMap.MyCubeBocks = allFat;
+                    GridToInfoMap.TryAdd(grid, gridMap);
+                    grid.OnFatBlockAdded += ToGridMap;
+                    grid.OnFatBlockRemoved += FromGridMap;
+                    grid.OnClose += RemoveGridFromMap;
+                    using (_dityGridLock.Acquire())
+                        DirtyGridInfos.Add(grid);
+                }
+                else Log.Line($"GridAddedToScene entity was not a grid");
+
             }
             catch (Exception ex) { Log.Line($"Exception in GridAddedToScene: {ex}", null, true); }
-        }
-
-        private void AddGridToMap()
-        {
-            MyCubeGrid grid;
-            while (NewGrids.TryDequeue(out grid))
-            {
-                var allFat = ConcurrentListPool.Get();
-
-                var gridFat = grid.GetFatBlocks();
-                for (int i = 0; i < gridFat.Count; i++) allFat.Add(gridFat[i]);
-                allFat.ApplyAdditions();
-
-                var gridMap = GridMapPool.Get();
-
-                if (grid.Components.TryGet(out gridMap.Targeting))
-                    gridMap.Targeting.AllowScanning = false;
-                gridMap.Trash = true;
-
-                gridMap.MyCubeBocks = allFat;
-                GridToInfoMap.TryAdd(grid, gridMap);
-                grid.OnFatBlockAdded += ToGridMap;
-                grid.OnFatBlockRemoved += FromGridMap;
-                grid.OnClose += RemoveGridFromMap;
-                DirtyGridInfos.Add(grid);
-            }
         }
 
         private void RemoveGridFromMap(MyEntity myEntity)
@@ -249,8 +249,9 @@ namespace CoreSystems
                 grid.OnFatBlockAdded -= ToGridMap;
                 grid.OnFatBlockRemoved -= FromGridMap;
                 grid.OnClose -= RemoveGridFromMap;
-                grid.AddedToScene -= GridAddedToScene;
-                DirtyGridInfos.Add(grid);
+                grid.AddedToScene -= AddGridToMap;
+                using (_dityGridLock.Acquire())
+                    DirtyGridInfos.Add(grid);
             }
             else Log.Line($"grid not removed and list not cleaned: marked:{grid.MarkedForClose}({grid.Closed}) - inScene:{grid.InScene}");
         }
@@ -263,10 +264,10 @@ namespace CoreSystems
                 if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
                 {
                     gridMap.MyCubeBocks.Add(myCubeBlock);
-                    gridMap.MyCubeBocks.ApplyAdditions();
-                    DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                    using (_dityGridLock.Acquire())
+                        DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
-                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose} - name:{myCubeBlock.DebugName}");
 
             }
             catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
@@ -279,10 +280,11 @@ namespace CoreSystems
                 GridMap gridMap;
                 if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
                 {
-                    gridMap.MyCubeBocks.Remove(myCubeBlock, true);
-                    DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                    gridMap.MyCubeBocks.Remove(myCubeBlock);
+                    using (_dityGridLock.Acquire())
+                        DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
-                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose} - name:{myCubeBlock.DebugName}");
             }
             catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }

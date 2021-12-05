@@ -229,11 +229,15 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValueWeapon;
-                var name = weapon.System.PartName + ": ";
+                
+                
+                var currLock = _session.TrackingAi.Construct.Data.Repo.FocusData.Locked[0].ToString();
+                var needsLock = weapon.System.LockOnFocus && currLock == "None" ? ": " + _session.UiInput.ActionKey.ToString() : ": Locked";
+                var name = weapon.System.PartName + (weapon.System.LockOnFocus ? needsLock : "");
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var showReloadIcon = (weapon.Loading || _session.Tick - weapon.LastLoadedTick < 60);
+                var showReloadIcon = (weapon.Loading || weapon.Reload.WaitForClient || _session.Tick - weapon.LastLoadedTick < 60);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();

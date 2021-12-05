@@ -19,6 +19,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         internal bool DrawReticle;
         internal uint ReticleOnSelfTick;
         internal uint MasterUpdateTick;
+        internal uint LastTrackTick;
         internal int ReticleAgeOnSelf;
         internal readonly char FocusChar = "_"[0];
         internal Hud.Hud.TextureMap FocusTextureMap;

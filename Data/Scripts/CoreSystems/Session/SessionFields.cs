@@ -20,6 +20,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Library.Threading;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -100,7 +101,7 @@ namespace CoreSystems
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
-        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> DirtyGridInfos = new HashSet<MyCubeGrid>();
 
         internal readonly MyConcurrentHashSet<Weapon> PartToPullConsumable = new MyConcurrentHashSet<Weapon>();
 
@@ -110,7 +111,6 @@ namespace CoreSystems
         internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
         internal readonly CachingHashSet<AiCharger> ChargingParts = new CachingHashSet<AiCharger>();
 
-        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
         internal readonly ConcurrentQueue<IMyAutomaticRifleGun> DelayedHandWeaponsSpawn = new ConcurrentQueue<IMyAutomaticRifleGun>();
@@ -146,8 +146,6 @@ namespace CoreSystems
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> CoreSystemsDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
-        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
-        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<MyStringHash, AreaRestriction> AreaRestrictions = new Dictionary<MyStringHash, AreaRestriction>(MyStringHash.Comparer);
@@ -167,6 +165,8 @@ namespace CoreSystems
         internal readonly Dictionary<WeaponDefinition.AmmoDef, Dictionary<string, string>> AmmoValuesMap = new Dictionary<WeaponDefinition.AmmoDef, Dictionary<string, string>>();
         internal readonly Dictionary<WeaponDefinition, Dictionary<string, string>> WeaponValuesMap = new Dictionary<WeaponDefinition, Dictionary<string, string>>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
+        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -199,6 +199,9 @@ namespace CoreSystems
         internal readonly HashSet<MyDefinitionId> CoreSystemsUpgradeDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsRifleDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsPhantomDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<ArmorDefinition> CoreSystemsArmorDefs = new HashSet<ArmorDefinition>();
+
+        internal readonly HashSet<MyStringHash> PerformanceWarning = new HashSet<MyStringHash>();
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
@@ -221,6 +224,7 @@ namespace CoreSystems
         ///
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
+        internal readonly CubeCompare CubeComparer = new CubeCompare();
         internal readonly FutureEvents FutureEvents = new FutureEvents();
         internal readonly BoundingFrustumD CameraFrustrum = new BoundingFrustumD();
         internal readonly Guid CompDataGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
@@ -245,7 +249,7 @@ namespace CoreSystems
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
         private readonly EwaredBlocksPacket _cachedEwarPacket = new EwaredBlocksPacket();
-
+        private SpinLockRef _dityGridLock = new SpinLockRef();
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
@@ -255,7 +259,6 @@ namespace CoreSystems
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
         internal List<UpgradeDefinition> UpgradeDefinitions = new List<UpgradeDefinition>();
         internal List<SupportDefinition> SupportDefinitions = new List<SupportDefinition>();
-
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal Color[] HeatEmissives;
@@ -399,10 +402,11 @@ namespace CoreSystems
         internal bool CameraDetected;
         internal bool LeadGroupActive;
         internal bool ArmorCoreActive;
-
+        internal bool DebugMod;
+        internal bool AntiSmartActive;
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
-            //76561198339035377, // king_of_draconia
+            76561198339035377, // king_of_draconia for harassing modders and users of mods.
         };
 
         internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()

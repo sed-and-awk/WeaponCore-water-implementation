@@ -439,11 +439,11 @@ namespace CoreSystems.Platform
             var info = GetScope.Info;
 
             var checkLevel = Comp.Ai.IsStatic ? 1 : 5;
-            bool losBlocekd = false;
+            bool losBlocked = false;
             for (int j = 0; j < 10; j++)
             {
 
-                if (losBlocekd)
+                if (losBlocked)
                     break;
 
                 var angle = GetAngle();
@@ -468,10 +468,10 @@ namespace CoreSystems.Platform
                             break;
                     }
                 }
-                losBlocekd = blockedDir >= 4;
+                losBlocked = blockedDir >= 4;
             }
 
-            PauseShoot = losBlocekd;
+            PauseShoot = losBlocked;
 
             return !PauseShoot;
         }
@@ -509,6 +509,7 @@ namespace CoreSystems.Platform
         {
             if (PosChangedTick != System.Session.Tick)
                 UpdatePivotPos();
+
             var info = GetScope.Info;
 
             var checkLevel = Comp.Ai.IsStatic ? 1 : 5;
@@ -735,11 +736,11 @@ namespace CoreSystems.Platform
             }
             return false;
         }
-
         private bool RayCheckTest()
         {
-            var trackingCheckPosition = GetScope.Info.Position;
-
+            var scopeInfo = GetScope.Info;
+            var trackingCheckPosition = ScopeDistToCheckPos > 0 ? scopeInfo.Position - (scopeInfo.Direction * ScopeDistToCheckPos) : scopeInfo.Position;
+            
             if (System.Session.DebugLos && Target.TargetEntity != null)
             {
                 var trackPos = BarrelOrigin + (MyPivotFwd * MuzzleDistToBarrelCenter);

@@ -733,7 +733,6 @@ namespace CoreSystems
                 if (!string.IsNullOrEmpty(modPath))
                     ModInfo.TryAdd(mod.GetPath(), mod);
 
-
                 if (mod.PublishedFileId == 1918681825 || mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055)
                     validId = true;
 
@@ -744,17 +743,28 @@ namespace CoreSystems
                     ReplaceVanilla = true;
                 else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement") || mod.Name.StartsWith("WCVanilla") || mod.FriendlyName.StartsWith("WCVanilla"))
                     ReplaceVanilla = true;
-                else if (mod.PublishedFileId == 2189703321) {
-                    if (mod.Name != ModContext.ModId)
-                        SuppressWc = true;
-                }
+                else if (mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055) 
+                    DebugMod = true;
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;
                 else if ((mod.Name == "WeaponCore" || mod.Name == "CoreSystems") && ModContext.ModId != mod.Name)
                     SuppressWc = true;
             }
+
             if (!validId && Session.SessionSettings.OnlineMode != MyOnlineModeEnum.OFFLINE)
                 SuppressWc = true;
+
+            if (DebugMod)
+            {
+                foreach (var mod in Session.Mods)
+                {
+                    if (mod.Name == ModContext.ModId && mod.PublishedFileId == 1918681825)
+                    {
+                        SuppressWc = true;
+                        break;
+                    }
+                }
+            }
         }
 
         public string ModPath()
@@ -854,7 +864,7 @@ namespace CoreSystems
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
-        internal MyEntity CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = long.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, bool addToPrunning = false, bool shadows = false)
+        internal MyEntity CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = int.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, bool addToPrunning = false, bool shadows = false)
         {
             if (!Inited) lock (InitObj) Init();
 
@@ -893,7 +903,7 @@ namespace CoreSystems
             if (ammoName != null && AmmoMaps.TryGetValue(phantomType, out ammoMap) && ammoMap.TryGetValue(ammoName, out ammoType))
                 comp.DefaultAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
 
-            comp.DefaultReloads = defaultReloads;
+            comp.DefaultReloads = (int)defaultReloads;
             comp.DefaultTrigger = trigger;
             comp.HasCloseConsition = closeWhenOutOfAmmo;
 
