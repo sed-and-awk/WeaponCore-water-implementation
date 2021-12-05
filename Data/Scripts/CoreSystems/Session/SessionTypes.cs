@@ -65,6 +65,14 @@ namespace CoreSystems
             internal uint HitTick;
         }
 
+        internal class CubeCompare : IComparer<MyCubeBlock>
+        {
+            public int Compare(MyCubeBlock x, MyCubeBlock y)
+            {
+                return x.EntityId.CompareTo(y.EntityId);
+            }
+        }
+
         internal class ProblemReport
         {
             internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();
@@ -305,6 +313,8 @@ namespace CoreSystems
                     {"RootAiId", () => GetAi()?.Construct.RootAi?.TopEntity.EntityId.ToString() ?? string.Empty },
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
+                    {"AiIsPowered", () => GetAi()?.HasPower.ToString() ?? string.Empty },
+                    {"AiInit", () => GetAi()?.AiInit.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.InventoryMonitor.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
@@ -440,7 +450,7 @@ namespace CoreSystems
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.AmmoTypeId}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.AmmoTypeId}"); }
                     },
                     {"Action", () => {
                             var message = string.Empty;
@@ -468,7 +478,7 @@ namespace CoreSystems
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentMags}"); }
                     },
                     {"LastEvent", () => {
                             var message = string.Empty;

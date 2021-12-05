@@ -6,11 +6,13 @@ using Jakaria;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using static CoreSystems.Support.WeaponDefinition.TargetingDef.BlockTypes;
@@ -22,6 +24,7 @@ namespace CoreSystems
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
+        public uint LastSortTick;
         public int MostBlocks;
         public uint PowerCheckTick;
         public bool SuspectedDrone;
@@ -32,6 +35,7 @@ namespace CoreSystems
             Targeting = null;
             FakeController.SlimBlock = null;
             MyCubeBocks.ClearImmediate();
+            LastSortTick = 0;
             MostBlocks = 0;
             PowerCheckTick = 0;
             SuspectedDrone = false;
@@ -206,11 +210,14 @@ namespace CoreSystems
 
         internal void CheckDirtyGridInfos()
         {
-            if (!NewGrids.IsEmpty)
-                AddGridToMap();
-
-            if ((!GameLoaded || Tick20) && DirtyGridInfos.Count > 0)
+            if ((!GameLoaded || Tick20))
             {
+                using (_dityGridLock.Acquire())
+                {
+                    if (DirtyGridInfos.Count <= 0)
+                        return;
+                }
+
                 if (GridTask.valid && GridTask.Exceptions != null)
                     TaskHasErrors(ref GridTask, "GridTask");
                 if (!GameLoaded) UpdateGrids();
@@ -249,16 +256,13 @@ namespace CoreSystems
             ActiveMarks.Clear();
             foreach (var pair in PlayerDummyTargets)
             {
-
                 IMyPlayer player;
                 if (Players.TryGetValue(pair.Key, out player))
                 {
-
                     var painted = pair.Value.PaintedTarget;
                     MyEntity target;
-                    if (!painted.Dirty && painted.EntityId != 0 && Tick - painted.LastInfoTick < 300 && !MyUtils.IsZero(painted.LocalPosition) && MyEntities.TryGetEntityById(painted.EntityId, out target))
+                    if (painted.EntityId != 0 && MyEntities.TryGetEntityById(painted.EntityId, out target))
                     {
-
                         var grid = target as MyCubeGrid;
                         if (player.IdentityId == PlayerId && grid != null)
                         {
@@ -291,69 +295,17 @@ namespace CoreSystems
             }
         }
 
-
-        private bool GetClosestLocalPos(MyCubeGrid grid, Vector3I center, double areaRadius, out Vector3D newWorldPos)
-        {
-            if (areaRadius < 3 && grid.GridSizeEnum == MyCubeSize.Large) areaRadius = 3;
-
-            List<Vector3I> tmpSphereOfV3S;
-            areaRadius = Math.Ceiling(areaRadius);
-            if (grid.GridSizeEnum == MyCubeSize.Large && LargeBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S) || SmallBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S))
-            {
-                var gMinX = grid.Min.X;
-                var gMinY = grid.Min.Y;
-                var gMinZ = grid.Min.Z;
-                var gMaxX = grid.Max.X;
-                var gMaxY = grid.Max.Y;
-                var gMaxZ = grid.Max.Z;
-
-                for (int i = 0; i < tmpSphereOfV3S.Count; i++)
-                {
-                    var v3ICheck = center + tmpSphereOfV3S[i];
-                    var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
-                    if (!contained) continue;
-
-                    MyCube cube;
-                    if (grid.TryGetCube(v3ICheck, out cube))
-                    {
-                        IMySlimBlock slim = cube.CubeBlock;
-                        if (slim.Position == v3ICheck)
-                        {
-                            newWorldPos = grid.GridIntegerToWorld(slim.Position);
-                            return true;
-                        }
-                    }
-                }
-            }
-            newWorldPos = Vector3D.Zero;
-            return false;
-        }
-        /*
-        IEnumerable<Vector3I> NearLine(Vector3I start, LineD line)
-        {
-            MinHeap blocks;
-            HashSet<Vector3I> seen = new HashSet<Vector3I> {start};
-            blocks.Add(dist(line, start), start);
-            while (!blocks.Empty)
-            {
-                var next = blocks.RemoveMin();
-                yield return next;
-                foreach (var neighbor in Neighbors(next))
-                {
-                    if (seen.add(neighbor))
-                        blocks.Add(dist(line, neighbor), neighbor);
-                }
-            }
-        }
-        */
-
         private void UpdateGrids()
         {
             DeferedUpBlockTypeCleanUp();
 
             DirtyGridsTmp.Clear();
-            DirtyGridsTmp.AddRange(DirtyGridInfos);
-            DirtyGridInfos.Clear();
+            using (_dityGridLock.Acquire())
+            {
+                DirtyGridsTmp.AddRange(DirtyGridInfos);
+                DirtyGridInfos.Clear();
+            }
+
             for (int i = 0; i < DirtyGridsTmp.Count; i++)
             {
                 var grid = DirtyGridsTmp[i];
@@ -372,6 +324,12 @@ namespace CoreSystems
                 if (GridToInfoMap.TryGetValue(grid, out gridMap))
                 {
                     var allFat = gridMap.MyCubeBocks;
+                    allFat.ApplyChanges();
+                    if (gridMap.LastSortTick == 0 || Tick - gridMap.LastSortTick > 600)
+                    {
+                        gridMap.LastSortTick = Tick + 1;
+                        allFat.Sort(CubeComparer);
+                    }
                     var terminals = 0;
                     var tStatus = gridMap.Targeting == null || gridMap.Targeting.AllowScanning;
                     var thrusters = 0;
@@ -379,6 +337,7 @@ namespace CoreSystems
                     var powerProducers = 0;
                     var warHead = 0;
                     var working = 0;
+                    var functional = 0;
                     for (int j = 0; j < allFat.Count; j++)
                     {
                         var fat = allFat[j];
@@ -388,9 +347,11 @@ namespace CoreSystems
                         {
 
                             if (fat.MarkedForClose) continue;
-                            if (fat.IsWorking && ++working == 1)
-                            {
+                            if (fat.IsWorking)
+                                ++working;
 
+                            if (++functional == 1)
+                            {
                                 var oldCube = (gridMap.FakeController.SlimBlock as IMySlimBlock)?.FatBlock as MyCubeBlock;
                                 if (oldCube == null || oldCube.MarkedForClose || oldCube.CubeGrid != grid)
                                 {
@@ -398,7 +359,6 @@ namespace CoreSystems
                                     GridDistributors[grid] = gridMap;
                                 }
                             }
-
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
                             var bomb = fat as IMyWarhead;
@@ -434,13 +394,13 @@ namespace CoreSystems
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (upgrade != null || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
+                            else if (upgrade != null || fat is IMyRadioAntenna  || fat is IMyLaserAntenna || fat is MyRemoteControl || fat is IMyShipToolBase || fat is IMyMedicalRoom || fat is IMyCameraBlock) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust)
                             {
                                 newTypeMap[Thrust].Add(fat);
                                 thrusters++;
                             }
-                            else if (fat is MyGyro)
+                            else if (fat is MyGyro || cockpit != null && cockpit.EnableShipControl)
                             {
                                 newTypeMap[Steering].Add(fat);
                                 gyros++;

@@ -191,7 +191,7 @@ namespace CoreSystems.Api
                 NonArmor,
             }
 
-            [ProtoMember(1)] internal string SubtypeId;
+            [ProtoMember(1)] internal string[] SubtypeIds;
             [ProtoMember(2)] internal ArmorType Kind;
             [ProtoMember(3)] internal double KineticResistance;
             [ProtoMember(4)] internal double EnergeticResistance;
@@ -427,11 +427,12 @@ namespace CoreSystems.Api
                     [ProtoMember(12)] internal int DelayAfterBurst;
                     [ProtoMember(13)] internal bool DegradeRof;
                     [ProtoMember(14)] internal int BarrelSpinRate;
-                    [ProtoMember(15)] internal bool FireFullBurst;
-                    [ProtoMember(16)] internal bool GiveUpAfterBurst;
+                    [ProtoMember(15)] internal bool FireFull;
+                    [ProtoMember(16)] internal bool GiveUpAfter;
                     [ProtoMember(17)] internal bool DeterministicSpin;
                     [ProtoMember(18)] internal bool SpinFree;
                     [ProtoMember(19)] internal bool StayCharged;
+                    [ProtoMember(20)] internal int MagsToLoad;
                 }
 
 
@@ -462,13 +463,9 @@ namespace CoreSystems.Api
                 {
                     public enum HardwareType
                     {
-                        BlockWeapon,
-                        HandWeapon,
-                        PassiveArmor,
-                        ActiveArmor,
-                        RegenArmor,
-                        Upgrade,
-                        Phantom,
+                        BlockWeapon = 0,
+                        HandWeapon = 1,
+                        Phantom = 6,
                     }
 
                     [ProtoMember(1)] internal float RotateRate;
@@ -484,6 +481,7 @@ namespace CoreSystems.Api
                     [ProtoMember(11)] internal int HomeAzimuth;
                     [ProtoMember(12)] internal int HomeElevation;
                     [ProtoMember(13)] internal CriticalDef CriticalReaction;
+                    [ProtoMember(14)] internal float IdlePower;
 
                     [ProtoContract]
                     public struct CriticalDef
@@ -831,6 +829,7 @@ namespace CoreSystems.Api
                         DotField,
                         PushField,
                         PullField,
+                        TractorField,
                     }
 
                     [ProtoMember(1)] internal double AreaEffectRadius;
@@ -887,6 +886,9 @@ namespace CoreSystems.Api
                             [ProtoMember(1)] internal Force ForceFrom;
                             [ProtoMember(2)] internal Force ForceTo;
                             [ProtoMember(3)] internal Force Position;
+                            [ProtoMember(4)] internal bool DisableRelativeMass;
+                            [ProtoMember(5)] internal double TractorRange;
+                            [ProtoMember(6)] internal bool ShooterFeelsForce;
                         }
                     }
 

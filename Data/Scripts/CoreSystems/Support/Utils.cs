@@ -5,9 +5,336 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using VRage.Collections;
 using VRage.Library.Threading;
+using VRageMath;
 
 namespace CoreSystems.Support
 {
+
+    public struct XorShiftRandomStruct
+    {
+
+        // Constants
+        private const double DoubleUnit = 1.0 / (int.MaxValue + 1.0);
+
+        // State Fields
+        private ulong _x;
+        private ulong _y;
+
+        // Buffer for optimized bit generation.
+        private ulong _buffer;
+        private ulong _bufferMask;
+
+        /// <summary>
+        ///   Constructs a new  generator
+        ///   with the supplied seed.
+        /// </summary>
+        /// <param name="seed">
+        ///   The seed value.
+        /// </param>
+        public XorShiftRandomStruct(ulong seed)
+        {
+            _x = seed << 3; _y = seed >> 3;
+            _buffer = 0;
+            _bufferMask = 0;
+        }
+
+        /// <summary>
+        ///   Reinits existing Random class
+        ///   with the supplied seed.
+        /// </summary>
+        /// <param name="seed">
+        ///   The seed value.
+        /// </param>
+        public void Reinit(ulong seed)
+        {
+            _x = seed << 3; _y = seed >> 3;
+            _buffer = 0;
+            _bufferMask = 0;
+
+            // 
+            // random isn't very random unless we do the below.... likely because hashes produce incrementing numbers for Int3 conversions.
+            //
+
+            var temp1 = _y; _x ^= _x << 23; var temp2 = _x ^ _y ^ (_x >> 17) ^ (_y >> 26); _x = temp1; _y = temp2;
+
+            var tempX = _y; _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26); var newSeed = tempY + _y; _x = tempX; _y = tempY;
+
+            _x = newSeed << 3; _y = newSeed >> 3;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom boolean.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom boolean.
+        /// </returns>
+        public bool NextBoolean()
+        {
+            if (_bufferMask > 0)
+            {
+                var _ = (_buffer & _bufferMask) == 0;
+                _bufferMask >>= 1;
+                return _;
+            }
+
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            _buffer = tempY + _y;
+            _x = tempX;
+            _y = tempY;
+
+            _bufferMask = 0x8000000000000000;
+            return (_buffer & 0xF000000000000000) == 0;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom byte.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom byte.
+        /// </returns>
+
+        public byte NextByte()
+        {
+            if (_bufferMask >= 8)
+            {
+                byte _ = (byte)_buffer;
+                _buffer >>= 8;
+                _bufferMask >>= 8;
+                return _;
+            }
+
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            _buffer = tempY + _y;
+            _x = tempX;
+            _y = tempY;
+
+            _bufferMask = 0x8000000000000;
+            return (byte)(_buffer >>= 8);
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 16-bit signed integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 16-bit signed integer.
+        /// </returns>
+
+        public short NextInt16()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = (short)(tempY + _y);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 16-bit unsigned integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 16-bit unsigned integer.
+        /// </returns>
+        public ushort NextUInt16()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = (ushort)(tempY + _y);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 32-bit signed integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 32-bit signed integer.
+        /// </returns>
+        public int NextInt32()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = (int)(tempY + _y);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 32-bit unsigned integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 32-bit unsigned integer.
+        /// </returns>
+        public uint NextUInt32()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = (uint)(tempY + _y);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 64-bit signed integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 64-bit signed integer.
+        /// </returns>
+        public long NextInt64()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = (long)(tempY + _y);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom 64-bit unsigned integer.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom 64-bit unsigned integer.
+        /// </returns>
+        public ulong NextUInt64()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var _ = tempY + _y;
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom double between
+        ///   0 and 1 non-inclusive.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom double.
+        /// </returns>
+        public double NextDouble()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var tempZ = tempY + _y;
+            var _ = DoubleUnit * (0x7FFFFFFF & tempZ);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        /// <summary>
+        ///   Generates a pseudorandom decimal between
+        ///   0 and 1 non-inclusive.
+        /// </summary>
+        /// <returns>
+        ///   A pseudorandom decimal.
+        /// </returns>
+        public decimal NextDecimal()
+        {
+            var tempX = _y;
+            _x ^= _x << 23; var tempY = _x ^ _y ^ (_x >> 17) ^ (_y >> 26);
+
+            var tempZ = tempY + _y;
+
+            var h = (int)(tempZ & 0x1FFFFFFF);
+            var m = (int)(tempZ >> 16);
+            var l = (int)(tempZ >> 32);
+
+            var _ = new decimal(l, m, h, false, 28);
+
+            _x = tempX;
+            _y = tempY;
+
+            return _;
+        }
+
+        public ulong Range(ulong aMin, ulong aMax)
+        {
+            return aMin + NextUInt64() % (aMax - aMin);
+        }
+        public int Range(int aMin, int aMax)
+        {
+            var rndInt = (int)NextUInt64();
+            var value = aMin + rndInt % (aMax - aMin);
+
+            if (value < aMin || value > aMax)
+                value *= -1;
+
+            return value;
+        }
+
+        public double Range(double aMin, double aMax)
+        {
+            var value = aMin + NextDouble() * (aMax - aMin);
+            if (value < aMin || value > aMax)
+                value *= -1;
+
+            return value;
+        }
+
+        public float Range(float aMin, float aMax)
+        {
+            var value = aMin + NextDouble() * (aMax - aMin);
+            if (value < aMin || value > aMax)
+                value *= -1;
+
+            return (float)value;
+        }
+
+        // corrects bit alignment which might shift the probability slightly to the
+        // lower numbers based on the choosen range.
+        public ulong FairRange(ulong aRange)
+        {
+            ulong dif = ulong.MaxValue % aRange;
+            // if aligned or range too big, just pick a number
+            if (dif == 0 || ulong.MaxValue / (aRange / 4UL) < 2UL)
+                return NextUInt64() % aRange;
+            ulong v = NextUInt64();
+            // avoid the last incomplete set
+            while (ulong.MaxValue - v < dif)
+                v = NextUInt64();
+            return v % aRange;
+        }
+        public ulong FairRange(ulong aMin, ulong aMax)
+        {
+            return aMin + FairRange(aMax - aMin);
+        }
+        public Vector3D Vector(double radius)
+        {
+            return new Vector3D(Range(-radius, radius), Range(-radius, radius), Range(-radius, radius));
+        }
+    }
+
     internal class RunningAverage
     {
         private readonly int _size;

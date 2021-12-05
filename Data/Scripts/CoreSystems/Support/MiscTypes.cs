@@ -16,6 +16,7 @@ namespace CoreSystems.Support
         internal States CurrentState = States.NotSet;
         internal bool HasTarget;
         internal bool IsAligned;
+        internal bool SoftProjetileReset;
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetChanged;
@@ -36,6 +37,7 @@ namespace CoreSystems.Support
         internal int BlockPrevDeckLen;
         internal uint ExpiredTick;
         internal uint ResetTick;
+        internal uint ProjectileEndTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
         internal double HitShortDist;
@@ -88,19 +90,51 @@ namespace CoreSystems.Support
             IsTargetStorage = main;
         }
 
-        internal void PushTargetToClient(Weapon weapon)
+        internal void PushTargetToClient(Weapon w)
         {
-            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
+            if (!w.System.Session.MpActive || w.System.Session.IsClient)
                 return;
 
-            weapon.TargetData.TargetPos = TargetPos;
-            weapon.TargetData.PartId = weapon.PartId;
-            weapon.TargetData.EntityId = weapon.Target.TargetId;
-            weapon.System.Session.SendTargetChange(weapon.Comp, weapon.PartId);
+            w.TargetData.TargetPos = TargetPos;
+            w.TargetData.PartId = w.PartId;
+            w.TargetData.EntityId = w.Target.TargetId;
+            
+            if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.Target.TargetId != 0)
+                w.ProjectileCounter = 0;
+
+            w.System.Session.SendTargetChange(w.Comp, w.PartId);
         }
 
         internal void ClientUpdate(Weapon w, ProtoWeaponTransferTarget tData)
         {
+
+            if (w.System.Session.Tick < w.Target.ProjectileEndTick)
+            {
+                var first = w.Target.SoftProjetileReset;
+                if (first)
+                {
+                    w.TargetData.WeaponRandom.AcquireRandom = new XorShiftRandomStruct((ulong)w.TargetData.WeaponRandom.CurrentSeed);
+                    w.Target.SoftProjetileReset = false;
+                }
+
+                if (first || w.System.Session.Tick20)
+                {
+                    Ai.TargetType targetType;
+                    Ai.AcquireProjectile(w, out targetType);
+
+                    if (targetType == Ai.TargetType.None)
+                    {
+                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+
+                        if (w.Target.CurrentState != States.NoTargetsSeen)
+                            w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle && w.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Painter);
+                    }
+                }
+
+                return;
+            }
+
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
             {
@@ -130,8 +164,10 @@ namespace CoreSystems.Support
                         }
                     }
                 }
-                w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
-                w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
+
+                if (w.System.Session.Tick != w.Target.ProjectileEndTick)
+                    w.TargetData.WeaponRandom.AcquireRandom = new XorShiftRandomStruct((ulong)w.TargetData.WeaponRandom.CurrentSeed);
+
                 ClientDirty = false;
             }
         }
@@ -201,6 +237,7 @@ namespace CoreSystems.Support
             TopEntityId = 0;
             TargetId = 0;
             ResetTick = expiredTick;
+            SoftProjetileReset = false;
             if (expire)
             {
                 StateChange(false, reason);

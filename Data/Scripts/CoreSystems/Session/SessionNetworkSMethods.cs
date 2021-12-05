@@ -50,7 +50,7 @@ namespace CoreSystems
                 ai.Construct.UpdateConstructsPlayers(entity, playerId, dPacket.Data);
                 data.Report.PacketValid = true;
             }
-            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{EntityAIs.ContainsKey(topEntity)} - masterAi:{EntityToMasterAi.ContainsKey(topEntity)} - IdToComp:{IdToCompMap.ContainsKey(entity.EntityId)} - playerId:{playerId}({packet.SenderId}) - marked:{entity.MarkedForClose}({topEntity.MarkedForClose}) - active:{dPacket.Data}");
+            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{EntityAIs.ContainsKey(topEntity)} - masterAi:{EntityToMasterAi.ContainsKey(topEntity)} - IdToComp:{IdToCompMap.ContainsKey(entity.EntityId)} - playerId:{playerId}({packet.SenderId}) - marked:{entity.MarkedForClose}({topEntity.MarkedForClose}) - active:{dPacket.Data} - inGridMap:{GridToInfoMap.ContainsKey(topEntity)} - controlName:{entity.DebugName}");
 
             return true;
         }
@@ -124,10 +124,10 @@ namespace CoreSystems
             return true;
         }
 
-        private bool ServerMarkedTargetUpdate(PacketObj data)
+        private bool ServerPaintedTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var targetPacket = (FakeTargetPacket)packet;
+            var targetPacket = (PaintedTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
@@ -159,7 +159,7 @@ namespace CoreSystems
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             comp.Data.Repo.Values.State.PlayerId = cyclePacket.PlayerId;
-            comp.Platform.Weapons[cyclePacket.PartId].ChangeAmmo(cyclePacket.NewAmmoId);
+            comp.Platform.Weapons[cyclePacket.PartId].QueueAmmoChange(cyclePacket.NewAmmoId);
             data.Report.PacketValid = true;
 
             return true;
@@ -407,6 +407,27 @@ namespace CoreSystems
                     Packet = mouseUpdatePacket,
                     SingleClient = true,
                 });
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ServerClientReady(PacketObj data)
+        {
+            var packet = data.Packet;
+            var readyPacket = (ClientReadyPacket)packet;
+
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready), Msg("WeaponId", readyPacket.WeaponId >= 0));
+
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var weapon = collection[readyPacket.WeaponId];
+
+            weapon.Reload.WaitForClient = false;
+            SendWeaponReload(weapon);
 
             data.Report.PacketValid = true;
 

@@ -77,11 +77,13 @@ namespace CoreSystems.Platform
         internal uint ElevationTick;
         internal uint AzimuthTick;
         internal uint FastTargetResetTick;
+
         internal float HeatPerc;
         internal int BarrelRate;
         internal int ShotsFired;
         internal int LastMuzzle;
         internal int MiddleMuzzleIndex;
+        internal int DelayedCycleId;
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
@@ -98,7 +100,7 @@ namespace CoreSystems.Platform
         internal LineD MyAimTestLine;
         internal LineD MyShootAlignmentLine;
         internal LineD AzimuthFwdLine;
-
+        internal XorShiftRandomStruct XorRnd;
 
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
@@ -107,7 +109,7 @@ namespace CoreSystems.Platform
         internal MathFuncs.Cone AimCone;
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
 
-
+        internal string AmmoName = "";
         internal ProtoWeaponPartState PartState;
         internal ProtoWeaponReload Reload;
         internal ProtoWeaponTransferTarget TargetData;
@@ -147,6 +149,7 @@ namespace CoreSystems.Platform
         internal int ClientEndId;
         internal int ClientMakeUpShots;
         internal int ClientLastShotId;
+        internal int ProjectileCounter;
         internal float HeatPShot;
         internal float HsRate;
         internal float CurrentAmmoVolume;
@@ -169,7 +172,9 @@ namespace CoreSystems.Platform
         internal double MinTargetDistanceSqr;
         internal double MinTargetDistanceBufferSqr;
         internal double MuzzleDistToBarrelCenter;
+        internal double ScopeDistToCheckPos;
         internal bool ClientReloading;
+        internal bool ServerQueuedAmmo;
         internal bool Rotating;
         internal bool IsTurret;
         internal bool TurretMode;
@@ -200,19 +205,14 @@ namespace CoreSystems.Platform
         {
             get
             {
-                var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
+                var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0 || Reload.WaitForClient);
                 var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot;
-
-                /*
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
-                var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
-                */
                 return shotReady;
             }
         }
 
+        internal bool LoadingWait => ReloadEndTick < uint.MaxValue - 1;
         internal Dummy GetScope => Scope ?? Dummies[MiddleMuzzleIndex];
 
         internal struct AmmoLoad
@@ -234,16 +234,6 @@ namespace CoreSystems.Platform
             Comp = comp;
             System = system;
             Init(comp, system, partId);
-            
-            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
-            foreach (var set in AnimationsSet) {
-                foreach (var pa in set.Value) {
-                    comp.AllAnimations.Add(pa);
-                    AnimationLookup.Add(pa.AnimationId, pa);
-                }
-            }
-
-            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
 
             MyStringHash subtype;
             if (comp.Session.VanillaIds.TryGetValue(comp.Id, out subtype)) {
@@ -315,6 +305,9 @@ namespace CoreSystems.Platform
                     HitEffects = new MyParticleEffect[System.Values.Assignments.Muzzles.Length];
             }
 
+            if (System.TurretMovement != WeaponSystem.TurretType.Fixed)
+                Comp.HasAim = true;
+
             PrimaryWeaponGroup = PartId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
             TurretMode = System.Values.HardPoint.Ai.TurretController;
@@ -352,6 +345,26 @@ namespace CoreSystems.Platform
             SpinPart = new PartInfo {Entity = spinPart};
             MuzzlePart = new PartInfo { Entity = entity };
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
+
+            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
+            foreach (var set in AnimationsSet)
+            {
+                foreach (var pa in set.Value)
+                {
+                    var modifiesCore = pa.Part == azimuthPart || pa.Part == elevationPart || pa.Part == spinPart || pa.Part == entity;
+                    if (modifiesCore)
+                    {
+                        Comp.AnimationsModifyCoreParts = true;
+                        if (!System.Session.DedicatedServer && System.Session.PerformanceWarning.Add(Comp.SubTypeId))
+                            Log.Line($"{Comp.SubtypeName} - {System.PartName} - Animation modifies core subparts, performance impact");
+                    }
+
+                    comp.AllAnimations.Add(pa);
+                    AnimationLookup.Add(pa.AnimationId, pa);
+                }
+            }
+
+            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts);
 
             var burstDelay = System.Values.HardPoint.Loading.DelayAfterBurst;
             ShowReload = Comp.Session.HandlesInput && (System.WConst.ReloadTime >= 240 || System.Values.HardPoint.Loading.ShotsInBurst > 0 && burstDelay >= 240);
@@ -396,6 +409,9 @@ namespace CoreSystems.Platform
             }
 
             HasHardPointSound = HardPointSound != null;
+
+            if (System.HasAntiSmart)
+                System.Session.AntiSmartActive = true;
         }
 
         private void FuckMyLife()

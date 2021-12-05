@@ -107,7 +107,7 @@ namespace CoreSystems.Support
             if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet.EntityId, out water))
                 waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
             var numOfTargets = ai.SortedTargets.Count;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, ai.DetectionInfo.DroneCount, w.TargetData.WeaponRandom, Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, ai.DetectionInfo.DroneCount, ref w.TargetData.WeaponRandom.AcquireRandom);
 
             for (int i = 0; i < numOfTargets; i++)
             {
@@ -164,7 +164,7 @@ namespace CoreSystems.Support
                     var targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
                     var predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
 
-                    if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, true)) continue;
+                    if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, ref w.XorRnd, w, true)) continue;
                     target.TransferTo(w.Target, w.Comp.Session.Tick, true);
 
                     var validTarget = w.Target.TargetEntity != null;
@@ -224,7 +224,7 @@ namespace CoreSystems.Support
             var numOfTargets = ai.SortedTargets.Count;
             var hasOffset = offset > 0;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets, p.Info.WeaponRng, ReAcquire);
+            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets, ref p.Info.Random);
 
             for (int i = 0; i < adjTargetCount; i++)
             {
@@ -270,7 +270,7 @@ namespace CoreSystems.Support
 
                     if (!s.TrackGrids || !overRides.Grids || !focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
-                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget, overRides)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, null, ReAcquire, ref waterSphere, ref p.Info.Random, null, !focusTarget, overRides)) continue;
                     acquired = true;
                     break;
                 }
@@ -344,7 +344,8 @@ namespace CoreSystems.Support
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
 
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.TargetData.WeaponRandom, Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, ref w.TargetData.WeaponRandom.AcquireRandom);
+
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)
@@ -414,7 +415,7 @@ namespace CoreSystems.Support
                         var targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
                         var predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, ref w.XorRnd, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
 
@@ -472,7 +473,7 @@ namespace CoreSystems.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None; }
         }
 
-        private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true, ProtoWeaponOverrides overRides = null)
+        private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, ref XorShiftRandomStruct xRnd, Weapon w = null, bool checkPower = true, ProtoWeaponOverrides overRides = null)
         {
             if (system.TargetSubSystems)
             {
@@ -500,7 +501,7 @@ namespace CoreSystems.Support
                             if (GetClosestHitableBlockOfType(subSystemList, ai, target, info, weaponPos, targetLinVel, targetAccel, ref waterSphere, w, checkPower))
                                 return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type, ref waterSphere, checkPower)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type, ref waterSphere, ref xRnd,  checkPower)) return true;
                     }
 
                     if (focusSubSystem) break;
@@ -509,10 +510,10 @@ namespace CoreSystems.Support
                 if (system.OnlySubSystems || focusSubSystem && subSystem != Any) return false;
             }
             GridMap gridMap;
-            return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
+            return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, ref xRnd, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, ref XorShiftRandomStruct xRnd, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -542,7 +543,7 @@ namespace CoreSystems.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, wRng, type);
+            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, ref xRnd);
             var physics = system.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
@@ -842,7 +843,7 @@ namespace CoreSystems.Support
             }
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.TargetData.WeaponRandom, Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, ref w.TargetData.WeaponRandom.AcquireRandom);
 
             for (int x = 0; x < numOfTargets; x++)
             {

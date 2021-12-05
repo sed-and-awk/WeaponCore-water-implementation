@@ -217,6 +217,7 @@ namespace CoreSystems
 
         private void CompileWeaponStructures()
         {
+
             foreach (var x in WeaponDefinitions)
             {
                 if (x.HardPoint.HardWare.Type == BlockWeapon || x.HardPoint.HardWare.Type == HandWeapon)
@@ -257,6 +258,7 @@ namespace CoreSystems
                     }
                 }
             }
+
             foreach (var x in WeaponDefinitions)
             {
                 for (int i = 0; i < x.Assignments.MountPoints.Length; i++)

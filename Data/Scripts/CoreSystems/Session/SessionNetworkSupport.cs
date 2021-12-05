@@ -243,9 +243,8 @@ namespace CoreSystems
         {
             if (IsServer)
             {
-
                 const PacketType type = PacketType.WeaponComp;
-                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true, true);
 
                 PacketInfo oldInfo;
                 WeaponCompPacket iPacket;
@@ -476,7 +475,7 @@ namespace CoreSystems
                 {
 
                     const PacketType type = PacketType.TargetChange;
-                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
                     var collection = comp.TypeSpecific != CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
                     var w = collection[partId];
@@ -510,10 +509,12 @@ namespace CoreSystems
             else Log.Line("SendTargetChange should never be called on Client");
         }
 
-        internal void SendWeaponReload(Weapon w)
+        internal void SendWeaponReload(Weapon w, bool resetWait = false)
         {
             if (IsServer)
             {
+                if (resetWait)
+                    w.Reload.WaitForClient = false;
 
                 if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values))
                 {
@@ -648,12 +649,12 @@ namespace CoreSystems
 
         internal void SendFixedGunHitEvent(MyEntity triggerEntity, MyEntity hitEnt, Vector3 origin, Vector3 velocity, Vector3 up, int muzzleId, int systemId, int ammoIndex, float maxTrajectory)
         {
-            if (triggerEntity == null) return;
+            if (triggerEntity == null || hitEnt == null) return;
 
             var comp = triggerEntity.Components.Get<CoreComponent>();
 
             int weaponId;
-            if (comp.Ai?.TopEntity != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
+            if (comp?.Ai?.TopEntity != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
@@ -817,6 +818,21 @@ namespace CoreSystems
             else Log.Line("SendMouseUpdate should never be called on Dedicated");
         }
 
+        internal void SendClientReady(Weapon w)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new ClientReadyPacket
+                {
+                    EntityId = w.Comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ClientReady,
+                    WeaponId = w.PartId
+                });
+            }
+            else Log.Line("SendClientReady on anything but client");
+        }
+
         internal void SendActiveControlUpdate(Ai ai, MyEntity entity, bool active)
         {
             if (IsClient)
@@ -931,7 +947,7 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FakeTargetPacket
+                PacketsToServer.Add(new PaintedTargetPacket
                 {
                     EntityId = ai.TopEntity.EntityId,
                     SenderId = ai.Session.MultiplayerId,
@@ -945,7 +961,7 @@ namespace CoreSystems
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = ai.TopEntity,
-                    Packet = new FakeTargetPacket
+                    Packet = new PaintedTargetPacket
                     {
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,

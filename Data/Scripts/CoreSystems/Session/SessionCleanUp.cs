@@ -194,7 +194,8 @@ namespace CoreSystems
             ModelMaps.Clear();
 
             PlayerEntityIdInRange.Clear();
-            DirtyGridInfos.Clear();
+            using (_dityGridLock.Acquire())
+                DirtyGridInfos.Clear();
 
             DsUtil.Purge();
             DsUtil2.Purge();
@@ -213,8 +214,6 @@ namespace CoreSystems
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
             AcquireTargets.Clear();
-            LargeBlockSphereDb.Clear();
-            SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
             _subTypeIdWeaponDefs.Clear();
             WeaponDefinitions.Clear();

@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreSystems.Platform;
+using VRage.Game.ObjectBuilders.Definitions;
 using static CoreSystems.Support.Ai;
 namespace CoreSystems.Support
 {
@@ -71,7 +72,7 @@ namespace CoreSystems.Support
                         }
                         Ai.CompChange(false, this);
                     }
-                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.EntityAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
+                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.EntityAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai} - sameTopEntity:{comp.TopEntity == Ai.TopEntity} - inScene:{comp.CoreEntity.InScene} - LastRemoveFromScene:{LastRemoveFromScene} - LastAddToScene:{LastAddToScene} - Tick:{Session.Tick}");
 
                     if (Ai.CompBase.Count == 0) {
                         Ai ai;
@@ -84,6 +85,8 @@ namespace CoreSystems.Support
                     Ai = null;
                 }
                 else if (Platform.State != CorePlatform.PlatformState.Delay) Log.Line($"CompRemove: Ai already null - PartState:{Platform.State} - Status:{Status}");
+
+                LastRemoveFromScene = Session.Tick;
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}", null, true); }
         }

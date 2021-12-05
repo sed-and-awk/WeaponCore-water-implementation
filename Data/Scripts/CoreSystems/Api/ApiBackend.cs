@@ -37,6 +37,7 @@ namespace CoreSystems.Api
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetCorePhantoms"] = new Action<ICollection<MyDefinitionId>>(GetCorePhantoms),
                 ["GetCoreRifles"] = new Action<ICollection<MyDefinitionId>>(GetCoreRifles),
+                ["GetCoreArmors"] = new Action<IList<byte[]>>(GetCoreArmors),
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>>(GetSortedThreats),
@@ -59,7 +60,7 @@ namespace CoreSystems.Api
                 ["GetHeatLevel"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, float>(GetHeatLevel),
                 ["GetCurrentPower"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, float>(GetCurrentPower),
                 ["GetMaxPower"] = new Func<MyDefinitionId, float>(GetMaxPower),
-                ["DisableRequiredPower"] = new Action<Sandbox.ModAPI.IMyTerminalBlock>(DisableRequiredPower),
+                ["DisableRequiredPower"] = new Action<Sandbox.ModAPI.IMyTerminalBlock>(ModOverride),
                 ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
                 ["HasCoreWeapon"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, bool>(HasCoreWeapon),
                 ["GetOptimalDps"] = new Func<IMyEntity, float>(GetOptimalDps),
@@ -470,7 +471,7 @@ namespace CoreSystems.Api
         internal static void PbMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>();
-            if (comp != null && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Add(callback);
         }
 
@@ -478,7 +479,7 @@ namespace CoreSystems.Api
         internal static void PbUnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>();
-            if (comp != null && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Remove(callback);
         }
 
@@ -521,6 +522,11 @@ namespace CoreSystems.Api
                 collection.Add(def);
         }
 
+        private void GetCoreArmors(IList<byte[]> collection)
+        {
+            foreach (var def in _session.CoreSystemsArmorDefs)
+                collection.Add(MyAPIGateway.Utilities.SerializeToBinary(def));
+        }
         private void GetCoreTurrets(ICollection<MyDefinitionId> collection)
         {
             foreach (var def in _session.CoreSystemsTurretBlockDefs)
@@ -530,7 +536,7 @@ namespace CoreSystems.Api
         internal long GetPlayerController(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
+            if (comp?.Platform != null && comp.Platform.State == Ready)
                 return comp.Data.Repo.Values.State.PlayerId;
 
             return -1;
@@ -539,7 +545,7 @@ namespace CoreSystems.Api
         internal Matrix GetWeaponAzimuthMatrix(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
+            if (comp?.Platform != null && comp.Platform.State == Ready)
             {
                 var weapon = comp.Platform.Weapons[weaponId];
                 var matrix = weapon.AzimuthPart?.Entity?.PositionComp.LocalMatrixRef ?? Matrix.Zero;
@@ -552,7 +558,7 @@ namespace CoreSystems.Api
         internal Matrix GetWeaponElevationMatrix(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
+            if (comp?.Platform != null && comp.Platform.State == Ready)
             {
                 var weapon = comp.Platform.Weapons[weaponId];
                 var matrix = weapon.ElevationPart?.Entity?.PositionComp.LocalMatrixRef ?? Matrix.Zero;
@@ -641,7 +647,7 @@ namespace CoreSystems.Api
         private static MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var weapon = comp.Platform.Weapons[weaponId];
                 if (weapon.Target.IsFakeTarget)
@@ -658,14 +664,14 @@ namespace CoreSystems.Api
         private static void SetWeaponTarget(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, IMyEntity target, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
                 Ai.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
         }
 
         private static void FireWeaponOnce(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var foundWeapon = false;
                 for (int i = 0; i < comp.Platform.Weapons.Count; i++)
@@ -685,7 +691,7 @@ namespace CoreSystems.Api
         private static void ToggleWeaponFire(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, bool on, bool allWeapons = true, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 for (int i = 0; i < comp.Platform.Weapons.Count; i++)
                 {
@@ -709,7 +715,7 @@ namespace CoreSystems.Api
         private static bool IsWeaponReadyToFire(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId && comp.IsWorking)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId && comp.IsWorking)
             {
                 for (int i = 0; i < comp.Platform.Weapons.Count; i++)
                 {
@@ -725,7 +731,7 @@ namespace CoreSystems.Api
         private static float GetMaxWeaponRange(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
                 return (float)comp.Platform.Weapons[weaponId].MaxTargetDistance;
 
             return 0f;
@@ -734,7 +740,7 @@ namespace CoreSystems.Api
         private static bool GetTurretTargetTypes(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, ICollection<string> collection, int weaponId = 0)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var weapon = comp.Platform.Weapons[weaponId];
                 var threats = weapon.System.Values.Targeting.Threats;
@@ -752,12 +758,15 @@ namespace CoreSystems.Api
         private static void SetBlockTrackingRange(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, float range)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
+            if (comp?.Platform != null && comp.Platform.State == Ready)
             {
-                var origRangeRequest = range;
                 double maxBlockRange = 0d;
                 for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                     var w = comp.Platform.Weapons[i];
+                    
+                    if (w.ActiveAmmoDef == null)
+                        return;
+
                     var hardPointMax = w.System.WConst.MaxTargetDistance;
                     var ammoMax = w.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
                     var weaponRange = Math.Min(hardPointMax, ammoMax);
@@ -774,7 +783,7 @@ namespace CoreSystems.Api
         private static bool IsTargetAligned(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
 
@@ -794,7 +803,7 @@ namespace CoreSystems.Api
         private static MyTuple<bool, Vector3D?> IsTargetAlignedExtended(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
 
@@ -811,7 +820,7 @@ namespace CoreSystems.Api
         private static bool CanShootTarget(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
 
                 var w = comp.Platform.Weapons[weaponId];
@@ -834,7 +843,7 @@ namespace CoreSystems.Api
         private static Vector3D? GetPredictedTargetPosition(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
                 w.NewTarget.TargetEntity = (MyEntity)targetEnt;
@@ -849,7 +858,7 @@ namespace CoreSystems.Api
         private static float GetHeatLevel(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.MaxHeat > 0)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.MaxHeat > 0)
             {
                 return comp.CurrentHeat;
             }
@@ -859,7 +868,7 @@ namespace CoreSystems.Api
         private static float GetCurrentPower(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
+            if (comp?.Platform != null && comp.Platform.State == Ready)
                 return comp.SinkPower;
 
             return 0f;
@@ -870,11 +879,11 @@ namespace CoreSystems.Api
             return 0f; //Need to implement
         }
 
-        private static void DisableRequiredPower(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
+        private static void ModOverride(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready)
-                comp.UnlimitedPower = true;
+            if (comp?.Platform != null && comp.Platform.State == Ready)
+                comp.ModOverride = true;
         }
 
         private bool HasGridAi(IMyEntity entity)
@@ -895,7 +904,7 @@ namespace CoreSystems.Api
             if (weaponBlock != null)
             {
                 var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-                if (comp != null && comp.Platform.State == Ready)
+                if (comp?.Platform != null && comp.Platform.State == Ready)
                     return comp.PeakDps;
             }
             else
@@ -911,7 +920,7 @@ namespace CoreSystems.Api
         private static string GetActiveAmmo(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
                 return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.AmmoRound;
 
             return null;
@@ -920,7 +929,7 @@ namespace CoreSystems.Api
         private static void SetActiveAmmo(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, string ammoTypeStr)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
                 for (int i = 0; i < w.System.AmmoTypes.Length; i++)
@@ -929,7 +938,7 @@ namespace CoreSystems.Api
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         if (comp.Session.IsServer) {
-                            w.ProtoWeaponAmmo.AmmoTypeId = i;
+                            w.Reload.AmmoTypeId = i;
                             if (comp.Session.MpActive)
                                 comp.Session.SendWeaponReload(w);
                         }
@@ -974,7 +983,7 @@ namespace CoreSystems.Api
         internal static void MonitorProjectileCallback(MyEntity entity, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = entity.Components.Get<CoreComponent>();
-            if (comp != null && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId]?.Add(callback);
         }
 
@@ -982,7 +991,7 @@ namespace CoreSystems.Api
         internal static void UnMonitorProjectileCallback(MyEntity entity, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = entity.Components.Get<CoreComponent>();
-            if (comp != null && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId]?.Remove(callback);
         }
 
@@ -1010,7 +1019,7 @@ namespace CoreSystems.Api
         {
 
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready) {
+            if (comp?.Platform != null && comp.Platform.State == Ready) {
                 
                 var ai = comp.Ai;
                 
@@ -1048,7 +1057,7 @@ namespace CoreSystems.Api
         internal MyTuple<Vector3D, Vector3D> GetWeaponScope(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
                 var info = w.GetScope.Info;
@@ -1075,7 +1084,7 @@ namespace CoreSystems.Api
         {
             var result = new MyTuple<bool, bool, Vector3D?>(false, false, null);
             var comp = phantom.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
-            if (comp != null && target != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            if (comp?.Platform != null && target != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
                 var w = comp.Collection[weaponId];
 
@@ -1137,16 +1146,7 @@ namespace CoreSystems.Api
                     {
                         if (ammoType.AmmoName == ammoName)
                         {
-                            if (_session.IsServer)
-                            {
-                                w.ProposedAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
-                                w.ChangeActiveAmmoServer();
-                            }
-                            else
-                            {
-                                w.ProtoWeaponAmmo.AmmoTypeId = ammoType.AmmoDef.Const.AmmoIdxPos;
-                                w.ChangeActiveAmmoClient();
-                            }
+                            w.QueueAmmoChange(ammoType.AmmoDef.Const.AmmoIdxPos);
                             break;
                         }
                     }
@@ -1164,7 +1164,7 @@ namespace CoreSystems.Api
                 if (weaponId < wComp.Collection.Count)
                 {
                     var w = wComp.Collection[weaponId];
-                    w.ProtoWeaponAmmo.CurrentMags = magCount;
+                    w.Reload.CurrentMags = (int)magCount;
                 }
             }
         }

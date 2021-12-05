@@ -258,8 +258,9 @@ namespace CoreSystems.Control
                     continue;
 
                 var availAmmo = w.System.AmmoTypes.Length;
-                var currActive = w.System.AmmoTypes[w.ProtoWeaponAmmo.AmmoTypeId];
-                var next = (w.ProtoWeaponAmmo.AmmoTypeId + 1) % availAmmo;
+                var aId = w.DelayedCycleId >= 0 ? w.DelayedCycleId : w.Reload.AmmoTypeId;
+                var currActive = w.System.AmmoTypes[aId];
+                var next = (aId + 1) % availAmmo;
                 var currDef = w.System.AmmoTypes[next];
 
                 var change = false;
@@ -277,7 +278,9 @@ namespace CoreSystems.Control
                 }
 
                 if (change)
-                    w.ChangeAmmo(next);
+                {
+                    w.QueueAmmoChange(next);
+                }
             }
         }
 
@@ -557,8 +560,7 @@ namespace CoreSystems.Control
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.ConsumableSelectionPartIds.Count == 0) return;
             var w = comp.Collection[comp.ConsumableSelectionPartIds[0]];
-            if (w.ActiveAmmoDef == null) return;
-            sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
+            sb.Append(w.AmmoName);
         }
 
         internal static void RepelWriter(IMyTerminalBlock blk, StringBuilder sb)
