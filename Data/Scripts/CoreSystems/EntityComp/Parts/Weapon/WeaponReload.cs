@@ -15,7 +15,6 @@ namespace CoreSystems.Platform
 
             if (ActiveAmmoDef == ammoType)
                 return;
-            
 
             if (proposed)
             {
@@ -38,9 +37,6 @@ namespace CoreSystems.Platform
             UpdateRof();
             SetWeaponDps();
             UpdateWeaponRange();
-
-            //if (System.Session.MpActive)
-            //    System.Session.SendWeaponAmmoData(this);
         }
 
         internal void ChangeActiveAmmoClient()
@@ -118,20 +114,15 @@ namespace CoreSystems.Platform
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Remove(this);
                 NoMagsToLoad = false;
                 LastMagSeenTick = System.Session.Tick;
-
-                //if (System.Session.MpActive)
-                //    System.Session.SendWeaponAmmoData(this);
             }
             else if (nothingToLoad)
             {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Add(this);
 
-                if (!NoMagsToLoad) {
+                if (!NoMagsToLoad) 
                     CheckInventorySystem = true;
-                    //if (System.Session.MpActive)
-                    //    System.Session.SendWeaponAmmoData(this);
-                }
+
                 NoMagsToLoad = true;
             }
 

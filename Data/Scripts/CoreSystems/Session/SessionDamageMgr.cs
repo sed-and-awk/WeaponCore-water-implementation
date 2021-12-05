@@ -593,7 +593,7 @@ namespace CoreSystems
                 SmallBlockSphereDb.Add(radiusInMeters, blockSphereLst);
         }
 
-        private void DamageGridNew(HitEntity hitEnt, ProInfo t, bool canDamage)
+        private void DamageGrid2(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
             //DamageGrid2(hitEnt, t,  canDamage);
             //return;
@@ -702,10 +702,10 @@ namespace CoreSystems
 
                 if (hasAreaDmg)
                 {
-                    BlocksInRange(rootBlock, grid, areaRadius, SlimsSortedList);
+                    Test(rootBlock, grid, areaRadius, SlimsSortedList);
                     dmgCount = SlimsSortedList.Count;
                     radiating = dmgCount > 0;
-                    //Log.Line($"get area blocks: {dmgCount}");
+                    Log.Line($"get area blocks: {dmgCount}");
                 }
 
 
@@ -713,10 +713,11 @@ namespace CoreSystems
                 {
                     novaing = true;
                     Log.Line($"get nova blocks");
-                    BlocksInRange(rootBlock, grid, detonateRadius, SlimsSortedList);
+                    Test(rootBlock, grid, detonateRadius, SlimsSortedList);
                     dmgCount = SlimsSortedList.Count;
                 }
 
+                Log.Line($"{dmgCount}");
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = dmgCount > 1 && radiantEffect ? SlimsSortedList[j].Slim : rootBlock;
@@ -1322,6 +1323,60 @@ namespace CoreSystems
                     list.Add(new RadiatedBlock { Slim = slim, Distance = Vector3I.DistanceManhattan(rootPos, next) + 1, Hits = count });
                     last = slim;
                     ++index;
+                }
+            }
+        }
+
+        public static void Test(IMySlimBlock root, MyCubeGrid grid, double radius, List<RadiatedBlock> list)
+        {
+            var rootPos = root.Position;
+            radius *= grid.GridSizeR;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            double radiusSq = radius * radius;
+            int radiusCeil = (int)Math.Ceiling(radius);
+            int i, j, k;
+            Vector3I max2 = Vector3I.Min(Vector3I.One * radiusCeil, gridMax);
+            Vector3I min2 = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin);
+            
+            var count = 0;
+            var index = -1;
+            IMySlimBlock last = null;
+            
+            for (i = min2.X; i <= max2.X; ++i)
+            {
+                for (j = min2.Y; j <= max2.Y; ++j)
+                {
+                    for (k = min2.Z; k <= max2.Z; ++k)
+                    {
+                        if (i * i + j * j + k * k < radiusSq)
+                        {
+                            MyCube cube;
+                            var vector3I = rootPos + new Vector3I(i, j, k);
+
+                            if (grid.TryGetCube(vector3I, out cube))
+                            {
+                                var slim = (IMySlimBlock)cube.CubeBlock;
+                                if (slim.IsDestroyed)
+                                    continue;
+                                ++count;
+                                if (slim == last || slim == root)
+                                    continue;
+
+                                if (last != null && count > 1)
+                                {
+                                    var result = list[index];
+                                    result.Hits = count - 1;
+                                    list[index] = result;
+                                    count = 1;
+                                }
+                                Log.Line($"{slim.Position} - {Vector3I.DistanceManhattan(rootPos, slim.Position)}");
+                                list.Add(new RadiatedBlock { Slim = slim, Distance = Vector3I.DistanceManhattan(rootPos, slim.Position) + 1, Hits = count });
+                                last = slim;
+                                ++index;
+                            }
+                        }
+                    }
                 }
             }
         }
