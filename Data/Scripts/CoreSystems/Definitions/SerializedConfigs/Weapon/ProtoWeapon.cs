@@ -179,8 +179,10 @@ namespace CoreSystems
             if (sync.Revision > Revision || force)
             {
                 Revision = sync.Revision;
+                var newReload = StartId != sync.StartId && EndId == sync.EndId;
                 StartId = sync.StartId;
                 EndId = sync.EndId;
+
                 MagsLoaded = sync.MagsLoaded;
                 
                 WaitForClient = sync.WaitForClient;
@@ -189,7 +191,14 @@ namespace CoreSystems
                 AmmoTypeId = sync.AmmoTypeId;
 
                 if (oldAmmoId != AmmoTypeId)
+                {
+                    w.ServerQueuedAmmo = newReload;
+
+                    if (newReload)
+                        w.AmmoName = w.System.AmmoTypes[AmmoTypeId].AmmoName;
+
                     w.ChangeActiveAmmoClient();
+                }
 
                 w.ClientReload(true);
             }

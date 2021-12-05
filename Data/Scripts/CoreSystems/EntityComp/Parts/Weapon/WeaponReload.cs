@@ -65,21 +65,22 @@ namespace CoreSystems.Platform
 
         internal void QueueAmmoChange(int newAmmoId)
         {
-            if (ClientMakeUpShots == 0 && (!ClientReloading || ProtoWeaponAmmo.CurrentAmmo == 0))
+            var serverAccept = System.Session.IsServer && (!Loading || DelayedCycleId < 0);
+            var clientAccept = System.Session.IsClient && ClientMakeUpShots == 0 && !ServerQueuedAmmo && (!ClientReloading || ProtoWeaponAmmo.CurrentAmmo == 0);
+            if (clientAccept || serverAccept)
             {
                 DelayedCycleId = newAmmoId;
                 AmmoName = System.AmmoTypes[newAmmoId].AmmoNameQueued;
+
+                if (System.Session.IsClient)
+                    ChangeAmmo(newAmmoId);
             }
-            
-            if (System.Session.IsClient)
-                ChangeAmmo(newAmmoId);
         }
 
         internal void ChangeAmmo(int newAmmoId)
         {
             if (System.Session.IsServer)
             {
-                DelayedCycleId = -1;
                 ProposedAmmoId = newAmmoId;
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var canReload = ProtoWeaponAmmo.CurrentAmmo == 0;
@@ -327,10 +328,9 @@ namespace CoreSystems.Platform
                 }
                 else {
                     ClientReloading = false;
-                    DelayedCycleId = -1;
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
-
+                    ServerQueuedAmmo = false;
                     if (ActiveAmmoDef.AmmoDef.Const.SlowFireFixedWeapon && System.Session.PlayerId == Comp.Data.Repo.Values.State.PlayerId)
                         System.Session.SendClientReady(this);
                 }
@@ -348,7 +348,11 @@ namespace CoreSystems.Platform
                 Loading = false;
                 ReloadEndTick = uint.MaxValue;
                 ProjectileCounter = 0;
-                AmmoName = ActiveAmmoDef.AmmoName;
+                if (DelayedCycleId >= 0)
+                {
+                    AmmoName = ActiveAmmoDef.AmmoName;
+                    DelayedCycleId = -1;
+                }
             }
         }
 

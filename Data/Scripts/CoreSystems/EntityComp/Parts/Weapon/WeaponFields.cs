@@ -174,6 +174,7 @@ namespace CoreSystems.Platform
         internal double MuzzleDistToBarrelCenter;
         internal double ScopeDistToCheckPos;
         internal bool ClientReloading;
+        internal bool ServerQueuedAmmo;
         internal bool Rotating;
         internal bool IsTurret;
         internal bool TurretMode;
