@@ -301,9 +301,8 @@ namespace CoreSystems.Support
                 return;
             }
 
-            if (!ScanInProgress && Session.Tick - ProjectileTicker > 59 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 119) {
+            if (!ScanInProgress && Session.Tick - ProjectileTicker > 29 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 29) {
 
-                //lock (DbLock)
                 using (DbLock.AcquireExclusiveUsing())
                 {
                     if (ScanInProgress)

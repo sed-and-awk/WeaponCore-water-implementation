@@ -65,8 +65,11 @@ namespace CoreSystems.Platform
 
         internal void QueueAmmoChange(int newAmmoId)
         {
-            DelayedCycleId = newAmmoId;
-            AmmoName = System.AmmoTypes[newAmmoId].AmmoNameQueued;
+            if (!ClientReloading && !Reload.WaitForClient && ClientMakeUpShots == 0)
+            {
+                DelayedCycleId = newAmmoId;
+                AmmoName = System.AmmoTypes[newAmmoId].AmmoNameQueued;
+            }
             
             if (System.Session.IsClient)
                 ChangeAmmo(newAmmoId);

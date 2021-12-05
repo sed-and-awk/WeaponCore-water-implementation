@@ -93,7 +93,7 @@ namespace CoreSystems
                 if (Tick120 && CompsDelayed.Count > 0)
                     DelayedComps();
 
-                if (Tick20 && !DelayedAiClean.IsEmpty)
+                if (Tick10 && !DelayedAiClean.IsEmpty)
                     DelayedAiCleanup();
 
                 if (CompReAdds.Count > 0)

@@ -67,7 +67,7 @@ namespace CoreSystems.Platform
             if (Comp.CoreEntity.MarkedForClose) 
                 return PlatformCrash(Comp, true, false, $"Your block subTypeId ({Comp.SubtypeName}) markedForClose, init platform invalid, I am crashing now Dave.");
             
-            if (Comp.IsBlock && (!Comp.Cube.IsFunctional || Comp.Cube.MarkedForClose)) {
+            if (Comp.IsBlock && (!Comp.Cube.IsFunctional || Comp.Cube.MarkedForClose || Comp.Ai != null && Comp.Ai.MarkedForClose)) {
                 State = PlatformState.Delay;
                 return State;
             }
