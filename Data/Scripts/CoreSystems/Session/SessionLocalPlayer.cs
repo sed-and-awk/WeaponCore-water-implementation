@@ -275,7 +275,6 @@ namespace CoreSystems
                 if (EntityAIs.TryGetValue(badBlock.CubeGrid, out gridAi) && gridAi.CompBase.TryGetValue(badBlock, out comp))
                 {
                     _uninitializedBlocks.RemoveAtFast(i);
-                    Log.Line($"quick remove");
                     continue;
                 }
 
@@ -392,8 +391,10 @@ namespace CoreSystems
 
         internal void TargetSelection()
         {
-            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
+            if (InGridAiBlock && (UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight && PlayerDummyTargets[PlayerId].PaintedTarget.EntityId == 0))
+            {
                 TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
+            }
 
             if (UiInput.ActionKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestAddLock(TrackingAi);

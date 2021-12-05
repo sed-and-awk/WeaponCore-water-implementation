@@ -22,7 +22,7 @@ namespace CoreSystems.Platform
             internal readonly List<Weapon> Collection;
             internal Weapon TrackingWeapon;
             internal int DefaultAmmoId;
-            internal long DefaultReloads;
+            internal int DefaultReloads;
             internal TriggerActions DefaultTrigger;
             internal uint LastRayCastTick;
             internal float EffectiveDps;
@@ -91,7 +91,7 @@ namespace CoreSystems.Platform
                 for (int i = 0; i < Collection.Count; i++)
                 {
                     var w = Collection[i];
-                    w.UpdatePivotPos();
+                        w.UpdatePivotPos();
 
                     if (Session.IsClient)
                         w.Target.ClientDirty = true;
@@ -120,7 +120,11 @@ namespace CoreSystems.Platform
 
                     if (Session.IsServer)
                         w.ChangeActiveAmmoServer();
-                    else w.ChangeActiveAmmoClient();
+                    else
+                    {
+                        w.ChangeActiveAmmoClient();
+                        w.AmmoName = w.ActiveAmmoDef.AmmoName;
+                    }
 
                     if (w.ActiveAmmoDef.AmmoDef == null || !w.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && w.System.AmmoTypes.Length > 1)
                     {
@@ -219,7 +223,7 @@ namespace CoreSystems.Platform
 
                 for (int i = 0; i < wCount; i++) {
                     var w = Collection[i];
-                    if (w.ProtoWeaponAmmo.CurrentMags == 0 && w.ProtoWeaponAmmo.CurrentAmmo == 0)
+                    if (w.Reload.CurrentMags == 0 && w.ProtoWeaponAmmo.CurrentAmmo == 0)
                         ++outCount;
                 }
                 return outCount == wCount;
@@ -302,7 +306,10 @@ namespace CoreSystems.Platform
                         if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOn)
                         {
                             foreach (var w in Collection)
-                                Session.SendWeaponAmmoData(w);
+                            {
+                                //Session.SendWeaponAmmoData(w);
+                                Session.SendWeaponReload(w);
+                            }
                         }
                     }
 
@@ -482,6 +489,9 @@ namespace CoreSystems.Platform
                     case "Armed":
                         o.Armed = enabled;
                         break;
+                    case "Debug":
+                        o.Debug = enabled;
+                        break;
                 }
 
                 ResetCompState(comp, playerId, clearTargets, resetState);
@@ -550,7 +560,10 @@ namespace CoreSystems.Platform
                 if (IsWorking)
                 {
                     foreach (var w in Collection)
+                    {
                         Session.SendWeaponAmmoData(w);
+                        Session.SendWeaponReload(w);
+                    }
                 }
             }
 

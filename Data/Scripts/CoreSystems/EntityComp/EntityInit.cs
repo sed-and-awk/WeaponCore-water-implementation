@@ -3,7 +3,6 @@ using CoreSystems.Platform;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Game.ModAPI;
 using static CoreSystems.CompData;

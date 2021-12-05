@@ -145,6 +145,7 @@ namespace CoreSystems
         {
             foreach (var armorDef in armorDefs)
             {
+                CoreSystemsArmorDefs.Add(armorDef);
                 var values = new ResistanceValues();
                 var resistanceEnabled = !((armorDef.KineticResistance == 0 && armorDef.EnergeticResistance == 0) || (armorDef.KineticResistance == 1 && armorDef.EnergeticResistance == 1));
 

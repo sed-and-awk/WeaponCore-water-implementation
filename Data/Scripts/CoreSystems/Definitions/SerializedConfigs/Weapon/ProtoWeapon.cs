@@ -17,9 +17,6 @@ namespace CoreSystems
 
         public void ResetToFreshLoadState(Weapon.WeaponComponent comp)
         {
-            //Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
-            //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
-            //Values.PartState.PlayerId = -1;
             Values.State.TrackingReticle = false;
             Values.Set.DpsModifier = 1;
             Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
@@ -39,10 +36,9 @@ namespace CoreSystems
                 var wr = Values.Reloads[i];
                 var wa = Ammos[i];
                 var we = comp.Collection[i];
-                wa.AmmoCycleId = comp.DefaultAmmoId;
-                
+
                 if (comp.DefaultReloads != 0)
-                    we.ProtoWeaponAmmo.CurrentMags = comp.DefaultReloads;
+                    we.Reload.CurrentMags = comp.DefaultReloads;
                 
                 ws.Heat = 0;
                 ws.Overheated = false;
@@ -55,6 +51,7 @@ namespace CoreSystems
                 }
 
                 wr.StartId = 0;
+                wr.WaitForClient = false;
             }
             ResetCompBaseRevisions();
         }
@@ -78,9 +75,9 @@ namespace CoreSystems
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int CurrentAmmo; //save
         [ProtoMember(3)] public float CurrentCharge; //save
-        [ProtoMember(4)] public long CurrentMags; // save
-        [ProtoMember(5)] public int AmmoTypeId; //save
-        [ProtoMember(6)] public int AmmoCycleId; //save
+        //[ProtoMember(4)] public long CurrentMags; // save
+        //[ProtoMember(5)] public int AmmoTypeId; //remove me
+        //[ProtoMember(6)] public int AmmoCycleId; //remove me
 
         public bool Sync(Weapon w, ProtoWeaponAmmo sync)
         {
@@ -88,32 +85,10 @@ namespace CoreSystems
             {
                 Revision = sync.Revision;
 
-                if (CurrentAmmo != sync.CurrentAmmo)
-                {
-
-                    var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
-                    var notShotBlocked = !w.PreFired && !w.Loading && !w.FinishShots && !w.IsShooting;
-                    if (!notShotBlocked && !ammoSpent)
-                    {
-
-                        //Log.Line($"Syncing AmmoValues: - currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - LastShootTick:{w.System.Session.Tick - w.LastShootTick} - IsShooting:{w.IsShooting} - finish:{w.FinishBurst} - start:{w.ClientStartId}({w.Reload.StartId})[{w.ClientLastShotId}] - end:{w.ClientEndId}({w.Reload.EndId})");
-                        CurrentAmmo = sync.CurrentAmmo;
-                    }
-                    //else Log.Line($"spent:{ammoSpent} - notBlocked:{notShotBlocked} - syncAmmo:{sync.CurrentAmmo} - endIdMatch:{w.Reload.EndId == w.ClientEndId}() - startIdMatch:{w.Reload.StartId == w.ClientStartId}");
-                }
-
+                CurrentAmmo = sync.CurrentAmmo;
                 CurrentCharge = sync.CurrentCharge;
+                w.ClientMakeUpShots = 0;
 
-                if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)
-                    w.ClientReload(true);
-
-                CurrentMags = sync.CurrentMags;
-                AmmoTypeId = sync.AmmoTypeId;
-
-                if (sync.AmmoCycleId > AmmoCycleId)
-                    w.ChangeActiveAmmoClient();
-
-                AmmoCycleId = sync.AmmoCycleId;
                 return true;
             }
             return false;
@@ -133,7 +108,6 @@ namespace CoreSystems
         {
             if (sync.Revision > Revision)
             {
-
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State, ProtoWeaponState.Caller.CompData);
@@ -150,7 +124,7 @@ namespace CoreSystems
 
         }
 
-        public void UpdateCompPacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(Weapon.WeaponComponent comp, bool clean = false, bool resetRnd = false)
         {
             ++Revision;
             ++State.Revision;
@@ -182,7 +156,9 @@ namespace CoreSystems
                 }
                 ++wr.Revision;
                 ++t.Revision;
-                t.WeaponRandom.ReInitRandom();
+                
+                if (resetRnd)
+                    t.WeaponRandom.ReInitRandom();
             }
         }
     }
@@ -194,15 +170,35 @@ namespace CoreSystems
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
         [ProtoMember(4)] public int MagsLoaded = 1;
+        [ProtoMember(5)] public bool WaitForClient; //don't save
+        [ProtoMember(6)] public int AmmoTypeId; //save
+        [ProtoMember(7)] public int CurrentMags; // save
 
         public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {
             if (sync.Revision > Revision || force)
             {
                 Revision = sync.Revision;
+                var newReload = StartId != sync.StartId && EndId == sync.EndId;
                 StartId = sync.StartId;
                 EndId = sync.EndId;
+
                 MagsLoaded = sync.MagsLoaded;
+                
+                WaitForClient = sync.WaitForClient;
+                
+                var oldAmmoId = AmmoTypeId;
+                AmmoTypeId = sync.AmmoTypeId;
+
+                if (oldAmmoId != AmmoTypeId)
+                {
+                    w.ServerQueuedAmmo = newReload;
+
+                    if (newReload)
+                        w.AmmoName = w.System.AmmoTypes[AmmoTypeId].AmmoName;
+
+                    w.ChangeActiveAmmoClient();
+                }
 
                 w.ClientReload(true);
             }
@@ -352,7 +348,33 @@ namespace CoreSystems
                 w.TargetData.WeaponRandom.Sync(WeaponRandom);
 
                 var target = w.Target;
-                target.IsProjectile = EntityId == -1;
+
+                var newProjectile = EntityId == -1;
+                var noTarget = EntityId == 0;
+
+                if (!w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !noTarget)
+                    w.ProjectileCounter = 0;
+
+                if (newProjectile)
+                {
+                    target.ProjectileEndTick = 0;
+                    target.SoftProjetileReset = false;
+                    target.IsProjectile = true;
+                }
+                else if (noTarget && target.IsProjectile)
+                {
+                    target.SoftProjetileReset = true;
+                    target.ProjectileEndTick = w.System.Session.Tick + 62;
+                }
+                else
+                {
+                    target.ProjectileEndTick = 0;
+                    target.SoftProjetileReset = false;
+                    target.IsProjectile = false;
+                }
+
+
+
                 target.IsFakeTarget = EntityId == -2;
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;
@@ -361,43 +383,6 @@ namespace CoreSystems
             return false;
         }
 
-        public void WeaponInit(Weapon w)
-        {
-            WeaponRandom.Init(w.UniqueId);
-
-            var rand = WeaponRandom;
-            rand.CurrentSeed = w.UniqueId;
-            rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-
-            rand.TurretRandom = new Random(rand.CurrentSeed);
-            rand.AcquireRandom = new Random(rand.CurrentSeed);
-        }
-
-        public void PartRefreshClient(Weapon w)
-        {
-            try
-            {
-                var rand = WeaponRandom;
-
-                rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-                rand.TurretRandom = new Random(rand.CurrentSeed);
-                rand.AcquireRandom = new Random(rand.CurrentSeed);
-
-                for (int j = 0; j < rand.TurretCurrentCounter; j++)
-                    rand.TurretRandom.Next();
-
-                for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
-                    rand.ClientProjectileRandom.Next();
-
-                for (int j = 0; j < rand.AcquireCurrentCounter; j++)
-                    rand.AcquireRandom.Next();
-
-                return;
-            }
-            catch (Exception e) { Log.Line("Client Weapon Values Failed To load re-initing... how?", null, true); }
-
-            WeaponInit(w);
-        }
         internal void ClearTarget()
         {
             ++Revision;

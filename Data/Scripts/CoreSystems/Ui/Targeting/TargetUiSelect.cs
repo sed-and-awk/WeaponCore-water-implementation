@@ -183,7 +183,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
 
-                if (!foundTarget && !markTargetPos)
+                if (!foundTarget)
                     fakeTarget.Update(end, s.Tick);
             }
         }

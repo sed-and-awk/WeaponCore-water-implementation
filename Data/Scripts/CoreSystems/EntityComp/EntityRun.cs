@@ -2,6 +2,7 @@
 using CoreSystems.Platform;
 using Sandbox.Game.Entities;
 using VRage.Game.Components;
+using VRageMath;
 using static CoreSystems.Session;
 using static CoreSystems.Support.Ai;
 
@@ -16,9 +17,12 @@ namespace CoreSystems.Support
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene) {
 
+                    LastAddToScene = Session.Tick;
                     if (Platform.State == CorePlatform.PlatformState.Fresh)
                         PlatformInit();
                 }
+                else 
+                    Log.Line($"Tried to add comp but it was not in scene");
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}", null, true); }
         }
@@ -89,8 +93,8 @@ namespace CoreSystems.Support
                     //if (Type == CompType.Weapon && Platform.PartState == CorePlatform.PlatformState.Inited)
                         //Platform.ResetParts(this);
 
-                    Entity.NeedsWorldMatrix = true;
-
+                    Entity.NeedsWorldMatrix = NeedsWorldMatrix;
+                    WorldMatrixEnabled = NeedsWorldMatrix;
                     if (!Ai.AiInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                     else OnAddedToSceneTasks(true);
 
@@ -128,7 +132,8 @@ namespace CoreSystems.Support
                         if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                             Platform.ResetParts();
 
-                        Entity.NeedsWorldMatrix = true;
+                        Entity.NeedsWorldMatrix = NeedsWorldMatrix; 
+                        WorldMatrixEnabled = NeedsWorldMatrix;
 
                         // ReInit Counters
                         if (!Ai.PartCounting.ContainsKey(SubTypeId)) // Need to account for reinit case
@@ -198,8 +203,18 @@ namespace CoreSystems.Support
 
                 if (IsBlock)
                 {
-                    for (int i = 0; i < Platform.Weapons.Count; i++)
-                        Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, FunctionalBlock.Enabled, 1);
+                    MyOrientedBoundingBoxD obb;
+                    SUtils.GetBlockOrientedBoundingBox(Cube, out obb);
+                    foreach (var weapon in Platform.Weapons)
+                    {
+                        var scopeInfo = weapon.GetScope.Info;
+                        if (!obb.Contains(ref scopeInfo.Position))
+                        {
+                            var rayBack = new RayD(scopeInfo.Position, -scopeInfo.Direction);
+                            weapon.ScopeDistToCheckPos = obb.Intersects(ref rayBack) ?? 0;
+                        }
+                        Session.FutureEvents.Schedule(weapon.DelayedStart, FunctionalBlock.Enabled, 1);
+                    }
                 }
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

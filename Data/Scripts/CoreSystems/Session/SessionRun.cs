@@ -93,7 +93,7 @@ namespace CoreSystems
                 if (Tick120 && CompsDelayed.Count > 0)
                     DelayedComps();
 
-                if (Tick20 && !DelayedAiClean.IsEmpty)
+                if (Tick10 && !DelayedAiClean.IsEmpty)
                     DelayedAiCleanup();
 
                 if (CompReAdds.Count > 0)
@@ -294,7 +294,7 @@ namespace CoreSystems
                     Ai.FakeTargets fakeTargets;
                     if (TrackingAi != null && PlayerDummyTargets.TryGetValue(PlayerId, out fakeTargets)) {
 
-                        if (fakeTargets.ManualTarget.LastUpdateTick == Tick)
+                        if (fakeTargets.ManualTarget.LastUpdateTick == Tick && Tick - TargetUi.LastTrackTick <= 1)
                             SendAimTargetUpdate(TrackingAi, fakeTargets.ManualTarget);
 
                         if (fakeTargets.PaintedTarget.LastUpdateTick == Tick)

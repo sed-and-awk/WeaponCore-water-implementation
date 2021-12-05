@@ -197,35 +197,39 @@ namespace CoreSystems.Support
 
         internal void Init(MyEntity topEntity, Session session, CoreComponent.CompTypeSpecific type)
         {
-            TopEntity = topEntity;
-            GridEntity = topEntity as MyCubeGrid;
-            AiType = GridEntity != null ? AiTypes.Grid : type == CoreComponent.CompTypeSpecific.Rifle ? AiTypes.Player : AiTypes.Phantom;
-            DeadSphereRadius = GridEntity?.GridSizeHalf + 0.1 ?? 1.35;
+            try
+            {
+                TopEntity = topEntity;
+                GridEntity = topEntity as MyCubeGrid;
+                AiType = GridEntity != null ? AiTypes.Grid : type == CoreComponent.CompTypeSpecific.Rifle ? AiTypes.Player : AiTypes.Phantom;
+                DeadSphereRadius = GridEntity?.GridSizeHalf + 0.1 ?? 1.35;
 
-            TopEntity.Flags |= (EntityFlags)(1 << 31);
-            Closed = false;
-            MarkedForClose = false;
-            
-            MaxTargetingRange = session.Settings.Enforcement.MinHudFocusDistance;
-            MaxTargetingRangeSqr = MaxTargetingRange * MaxTargetingRange;
+                TopEntity.Flags |= (EntityFlags)(1 << 31);
+                Closed = false;
+                MarkedForClose = false;
 
-            Session = session;
+                MaxTargetingRange = session.Settings.Enforcement.MinHudFocusDistance;
+                MaxTargetingRangeSqr = MaxTargetingRange * MaxTargetingRange;
 
-            if (CreatedTick == 0) 
-                CreatedTick = session.Tick;
+                Session = session;
 
-            AiMarkedTick = uint.MaxValue;
-            RegisterMyGridEvents(true);
-            AiSpawnTick = Session.Tick;
+                if (CreatedTick == 0)
+                    CreatedTick = session.Tick;
 
-            topEntity.Components.Add(AiComp);
+                AiMarkedTick = uint.MaxValue;
+                RegisterMyGridEvents(true);
+                AiSpawnTick = Session.Tick;
+
+                topEntity.Components.Add(AiComp);
 
 
-            Data.Init(this);
-            Construct.Init(this);
+                Data.Init(this);
+                Construct.Init(this);
 
-            if (Session.IsClient)
-                Session.SendUpdateRequest(TopEntity.EntityId, PacketType.ClientAiAdd);
+                if (Session.IsClient)
+                    Session.SendUpdateRequest(TopEntity.EntityId, PacketType.ClientAiAdd);
+            }
+            catch (Exception ex) { Log.Line($"Exception in AiInit - TopEntityNull:{TopEntity == null} - GridEntityNull:{GridEntity == null} - AiType:{AiType}: {ex}", null, true); }
         }
     }
 }

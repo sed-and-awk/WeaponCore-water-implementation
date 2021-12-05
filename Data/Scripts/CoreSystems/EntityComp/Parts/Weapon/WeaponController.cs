@@ -124,9 +124,6 @@ namespace CoreSystems.Platform
         {
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            var parentPart = ParentIsSubpart ? AzimuthPart.Parent : Comp.CoreEntity;
-            var worldMatrix = parentPart.PositionComp.WorldMatrixRef;
-
             PosChangedTick = Comp.Session.Tick;
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
@@ -134,7 +131,6 @@ namespace CoreSystems.Platform
             BarrelOrigin = weaponCenter;
             
             var centerTestPos = azimuthMatrix.Translation;
-            var muzzleRadius = MuzzlePart.Entity.PositionComp.LocalVolume.Radius;
             MyPivotUp = azimuthMatrix.Up;
             MyPivotFwd = elevationMatrix.Forward;
 
@@ -147,6 +143,8 @@ namespace CoreSystems.Platform
             }
             else
             {
+                var parentPart = ParentIsSubpart ? AzimuthPart.Parent : Comp.CoreEntity;
+                var worldMatrix = parentPart.PositionComp.WorldMatrixRef;
                 var forward = !AlternateForward ? worldMatrix.Forward : Vector3D.TransformNormal(AzimuthInitFwdDir, worldMatrix);
 
                 Vector3D left;
@@ -171,6 +169,7 @@ namespace CoreSystems.Platform
                 double myPivotUpDot;
                 Vector3D.Dot(ref MyPivotUp, ref barrelUp, out myPivotUpDot);
 
+                var muzzleRadius = MuzzlePart.Entity.PositionComp.LocalVolume.Radius;
                 var pivotOffsetMagnitude = MathHelperD.Clamp(azToMuzzleDot / myPivotUpDot, -muzzleRadius, muzzleRadius);
                 
                 var pivotOffset = pivotOffsetMagnitude * MyPivotUp - (pivotOffsetMagnitude * MyPivotFwd);

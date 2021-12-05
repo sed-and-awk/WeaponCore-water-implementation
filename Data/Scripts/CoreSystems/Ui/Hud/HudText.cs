@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CoreSystems.Support;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -42,7 +43,12 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                     var scaledWidth = textAdd.FontSize * (needResize ? size : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
                     messageLength += scaledWidth;
 
-                    var cm = CharacterMap[textAdd.Font][c];
+                    var map = CharacterMap[textAdd.Font];
+
+                    TextureMap cm;
+                    if (!map.TryGetValue(c, out cm))
+                        continue;
+
                     var td = _textDataPool.Get();
 
                     td.Material = cm.Material;

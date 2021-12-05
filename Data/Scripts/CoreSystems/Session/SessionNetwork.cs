@@ -85,6 +85,11 @@ namespace CoreSystems
                             ClientFakeTargetUpdate(packetObj);
                             break;
                     }
+                    case PacketType.PaintedTargetUpdate:
+                    {
+                            ClientPaintedTargetUpdate(packetObj);
+                            break;
+                    }
                     case PacketType.PlayerIdUpdate: 
                     {
                             ClientPlayerIdUpdate(packetObj); 
@@ -265,7 +270,7 @@ namespace CoreSystems
                 }
                 case PacketType.PaintedTargetUpdate:
                 {
-                    ServerMarkedTargetUpdate(packetObj);
+                    ServerPaintedTargetUpdate(packetObj);
                     break;
                 }
                 case PacketType.AmmoCycleRequest: {
@@ -302,6 +307,11 @@ namespace CoreSystems
                 }
                 case PacketType.RequestMouseStates: {
                     ServerRequestMouseStates(packetObj);
+                    break;
+                }
+                case PacketType.ClientReady:
+                {
+                        ServerClientReady(packetObj);
                     break;
                 }
                 case PacketType.RequestShootUpdate: {

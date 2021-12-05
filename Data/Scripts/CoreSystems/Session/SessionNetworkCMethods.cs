@@ -60,12 +60,8 @@ namespace CoreSystems
             if (EntityToMasterAi.TryGetValue(myGrid, out ai)) {
                 var rootConstruct = ai.Construct.RootAi.Construct;
 
-                if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision) {
-
-                    rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
-                    rootConstruct.UpdateLeafs();
-                }
-                else Log.Line($"ClientConstructGroups Version failure - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
+                rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
+                rootConstruct.UpdateLeafs();
 
                 data.Report.PacketValid = true;
             }
@@ -127,6 +123,7 @@ namespace CoreSystems
             if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
                 Log.Line($"ClientWeaponComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
 
+            if (comp.IsBomb) comp.Cube.UpdateTerminal();
             data.Report.PacketValid = true;
 
             return true;
@@ -279,6 +276,39 @@ namespace CoreSystems
                     FakeTargets dummyTargets;
                     if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets)) {
                         dummyTargets.ManualTarget.Sync(targetPacket, ai);
+                    }
+                    else
+                        return Error(data, Msg("Player dummy target not found"));
+                }
+                else
+                    return Error(data, Msg("SteamToPlayer missing Player"));
+
+                data.Report.PacketValid = true;
+            }
+            else
+                return Error(data, Msg($"GridId: {packet.EntityId}", myGrid != null), Msg("Ai"));
+
+            return true;
+        }
+
+        private bool ClientPaintedTargetUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            data.ErrorPacket.NoReprocess = true;
+            var targetPacket = (PaintedTargetPacket)packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+            Ai ai;
+            if (myGrid != null && EntityAIs.TryGetValue(myGrid, out ai))
+            {
+
+                long playerId;
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                {
+
+                    FakeTargets dummyTargets;
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets))
+                    {
                         dummyTargets.PaintedTarget.Sync(targetPacket, ai);
                     }
                     else

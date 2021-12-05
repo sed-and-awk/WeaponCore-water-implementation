@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents.Renders;
 using Sandbox.ModAPI;
+using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.ModAPI;
 using VRageMath;
+using VRageRender;
 using static CoreSystems.Support.CoreComponent.Start;
 using static CoreSystems.Support.CoreComponent.CompTypeSpecific;
 using static CoreSystems.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -63,7 +67,7 @@ namespace CoreSystems.Platform
             if (Comp.CoreEntity.MarkedForClose) 
                 return PlatformCrash(Comp, true, false, $"Your block subTypeId ({Comp.SubtypeName}) markedForClose, init platform invalid, I am crashing now Dave.");
             
-            if (Comp.IsBlock && (!Comp.Cube.IsFunctional || Comp.Cube.MarkedForClose)) {
+            if (Comp.IsBlock && (!Comp.Cube.IsFunctional || Comp.Cube.MarkedForClose || Comp.Ai != null && Comp.Ai.MarkedForClose)) {
                 State = PlatformState.Delay;
                 return State;
             }
@@ -102,7 +106,11 @@ namespace CoreSystems.Platform
             Parts.Entity = (MyEntity)Comp.Entity;
             Parts.NameToEntity["None"] = Parts.Entity;
             Parts.EntityToName[Parts.Entity] = "None";
-            return GetParts();
+
+            var initState = GetParts();
+
+            Comp.NeedsWorldMatrix = Comp.TypeSpecific == VanillaTurret || Comp.HasAim || Comp.AnimationsModifyCoreParts || Comp.Entity.NeedsWorldMatrix;
+            return initState;
         }
 
         private PlatformState GetParts()
@@ -151,7 +159,7 @@ namespace CoreSystems.Platform
                 var partHashId = Structure.PartHashes[index];
                 CoreSystem coreSystem;
                 if (!Structure.PartSystems.TryGetValue(partHashId, out coreSystem) || !(coreSystem is WeaponSystem))
-                    return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
+                    return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid weapon system - id:{partHashId} - isWeapon:{coreSystem is WeaponSystem}, I am crashing now Dave.");
 
                 var system = (WeaponSystem)coreSystem;
                 var muzzlePartName = system.MuzzlePartName.String != "Designator" ? system.MuzzlePartName.String : system.ElevationPartName.String;
@@ -185,15 +193,29 @@ namespace CoreSystems.Platform
                         spinPart = muzzlePartEntity;
                 }
 
-                azimuthPart.NeedsWorldMatrix = true;
-                elevationPart.NeedsWorldMatrix = true;
 
                 var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
                 if (Comp.TypeSpecific != Phantom) Weapons.Add(weapon);
                 else Phantoms.Add(weapon);
+                
+                SetupWorldMatrix(azimuthPart);
+                SetupWorldMatrix(elevationPart);
+
                 CompileTurret(weapon);
             }
             return State;
+        }
+
+        private void SetupWorldMatrix(MyEntity part, bool optimizeOnly = false)
+        {
+            if (part != null && part != Comp.Entity)
+            {
+                part.RemoveFromGamePruningStructure();
+                part.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+                part.Render.NeedsDrawFromParent = true;
+                if (!optimizeOnly) 
+                    part.NeedsWorldMatrix = true;
+            }
         }
 
         private PlatformState UpgradeParts()
@@ -237,6 +259,7 @@ namespace CoreSystems.Platform
             var mPartName = weaponSystem.MuzzlePartName.String;
             if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || weaponSystem.DesignatorWeapon)
             {
+                SetupWorldMatrix(muzzlePart, true);
                 var azimuthPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.AzimuthPartName.String) ? "MissileTurretBase1" : weaponSystem.AzimuthPartName.String : weaponSystem.AzimuthPartName.String;
                 var elevationPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.ElevationPartName.String) ? "MissileTurretBarrels" : weaponSystem.ElevationPartName.String : weaponSystem.ElevationPartName.String;
                 if (weaponSystem.DesignatorWeapon)
@@ -258,11 +281,12 @@ namespace CoreSystems.Platform
                     weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                     weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
                     weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
-                    weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
+                    SetupWorldMatrix(weapon.MuzzlePart.Entity, true);
                 }
 
                 if (weapon.System.HasBarrelRotation && weapon.SpinPart.Entity != null)
                 {
+
                     if (weapon.SpinPart.Entity == muzzlePart)
                     {
                         weapon.SpinPart.ToTransformation = weapon.MuzzlePart.ToTransformation;
@@ -278,7 +302,7 @@ namespace CoreSystems.Platform
                         weapon.SpinPart.ToTransformation = spinPartPosTo;
                         weapon.SpinPart.FromTransformation = spinPartPosFrom;
                         weapon.SpinPart.PartLocalLocation = spinPartLocation;
-                        weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                        SetupWorldMatrix(weapon.SpinPart.Entity, true);
                     }
                 }
 
@@ -313,7 +337,6 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                         weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
                         weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrixRef;
-                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
 
                     }
                     else
@@ -325,8 +348,6 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                         weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
                         weapon.AzimuthPart.OriginalPosition = MatrixD.Zero;
-                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-
                     }
 
                     if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
@@ -351,8 +372,7 @@ namespace CoreSystems.Platform
                         weapon.ElevationPart.FullRotationStep = fullStepElRotation;
                         weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
                         weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
-                        weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrix;
-                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                        weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrixRef;
 
                     }
                     else if (elevationPartName == "None")
@@ -364,7 +384,6 @@ namespace CoreSystems.Platform
                         weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
                         weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
                         weapon.ElevationPart.OriginalPosition = MatrixD.Zero;
-                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
                 }
 
@@ -409,6 +428,7 @@ namespace CoreSystems.Platform
                     MyEntity ent;
                     if (Parts.NameToEntity.TryGetValue(partName, out ent))
                     {
+                        SetupWorldMatrix(ent, true);
                         weapon.HeatingParts.Add(ent);
                         try
                         {
@@ -460,6 +480,10 @@ namespace CoreSystems.Platform
 
                 if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || weaponSystem.DesignatorWeapon)
                 {
+
+                    if (muzzlePart != null)
+                        SetupWorldMatrix(muzzlePart, true);
+
                     if (!registered)
                     {
                         Parts.NameToEntity.FirstPair().Value.OnClose += Comp.SubpartClosed;
@@ -473,14 +497,14 @@ namespace CoreSystems.Platform
                     {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
-                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+                        SetupWorldMatrix(azimuthPartEntity, true);
                     }
 
                     MyEntity elevationPartEntity;
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
-                        weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                        SetupWorldMatrix(elevationPartEntity, true);
                     }
 
                     if (weapon.System.HasBarrelRotation) {
@@ -491,8 +515,7 @@ namespace CoreSystems.Platform
 
                         if (spinPart != null) {
                             weapon.SpinPart.Entity = spinPart;
-                            if (spinPart != muzzlePart)
-                                weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                            SetupWorldMatrix(weapon.SpinPart.Entity, true);
                         }
                     }
 
@@ -522,6 +545,7 @@ namespace CoreSystems.Platform
                             MyEntity part;
                             if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part) && !(string.IsNullOrEmpty(animation.SubpartId) || animation.SubpartId == "None"))
                             {
+                                SetupWorldMatrix(part, true);
                                 animation.Part = part;
                                 //if (animation.Running)
                                 //  animation.Paused = true;
@@ -538,7 +562,10 @@ namespace CoreSystems.Platform
 
                             MyEntity part;
                             if (Parts.NameToEntity.TryGetValue(particle.PartName, out part))
+                            {
+                                SetupWorldMatrix(part, true);
                                 particle.MyDummy.Entity = part;
+                            }
                         }
                     }
 
@@ -573,6 +600,7 @@ namespace CoreSystems.Platform
                         MyEntity ent;
                         if (Parts.NameToEntity.TryGetValue(partName, out ent))
                         {
+                            SetupWorldMatrix(ent, true);
                             weapon.HeatingParts.Add(ent);
                             try
                             {
@@ -664,7 +692,7 @@ namespace CoreSystems.Platform
                 }
             }
         }
-        
+
         internal PlatformState PlatformCrash(CoreComponent comp, bool markInvalid, bool suppress, string message)
         {
             if (suppress)

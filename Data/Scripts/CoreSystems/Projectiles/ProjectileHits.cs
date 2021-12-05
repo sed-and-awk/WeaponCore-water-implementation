@@ -33,7 +33,7 @@ namespace CoreSystems.Projectiles
 
                 var p = ValidateHits[x];
                 var shieldByPass = p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
-                var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
+                var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField || p.Info.AmmoDef.Const.AreaEffect == TractorField);
 
                 p.FinalizeIntersection = false;
                 p.Info.ShieldInLine = false;
@@ -165,7 +165,7 @@ namespace CoreSystems.Projectiles
                                         {
                                             p.Info.ShieldBypassed = true;
                                             modifiedBypassMod = bypassAmmo && faceInfo.Item1 ? 0f : modifiedBypassMod;
-                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.2f;
+                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.15f;
                                         }
                                         else p.Info.ShieldBypassMod = 1f;
                                     }

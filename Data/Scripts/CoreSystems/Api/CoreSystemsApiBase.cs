@@ -22,7 +22,8 @@ namespace CoreSystems.Api
         private Action<ICollection<MyDefinitionId>> _getCoreStaticLaunchers;
         private Action<ICollection<MyDefinitionId>> _getCoreTurrets;
         private Action<ICollection<MyDefinitionId>> _getCorePhantoms;
-        private Action<ICollection<MyDefinitionId>> _getCoreRifles; 
+        private Action<ICollection<MyDefinitionId>> _getCoreRifles;
+        private Action<IList<byte[]>> _getCoreArmors;
 
         private Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>> _getSortedThreats;
         private Action<IMyEntity, ICollection<IMyEntity>> _getObstructions;
@@ -45,6 +46,7 @@ namespace CoreSystems.Api
         public void GetAllCoreTurrets(ICollection<MyDefinitionId> collection) => _getCoreTurrets?.Invoke(collection);
         public void GetAllCorePhantoms(ICollection<MyDefinitionId> collection) => _getCorePhantoms?.Invoke(collection);
         public void GetAllCoreRifles(ICollection<MyDefinitionId> collection) => _getCoreRifles?.Invoke(collection);
+        public void GetAllCoreArmors(IList<byte[]> collection) => _getCoreArmors?.Invoke(collection);
 
         public MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim) =>
             _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
@@ -149,6 +151,8 @@ namespace CoreSystems.Api
             AssignMethod(delegates, "GetCoreTurrets", ref _getCoreTurrets);
             AssignMethod(delegates, "GetCorePhantoms", ref _getCorePhantoms);
             AssignMethod(delegates, "GetCoreRifles", ref _getCoreRifles);
+            AssignMethod(delegates, "GetCoreArmors", ref _getCoreArmors);
+
             AssignMethod(delegates, "GetBlockWeaponMap", ref _getBlockWeaponMap);
             AssignMethod(delegates, "GetSortedThreats", ref _getSortedThreats);
             AssignMethod(delegates, "GetObstructions", ref _getObstructions);

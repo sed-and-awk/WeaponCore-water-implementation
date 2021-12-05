@@ -14,6 +14,16 @@ namespace CoreSystems.Support
 {
     internal static class SUtils
     {
+        public static double Clamp01(double value)
+        {
+            if (value < 0.0)
+                return 0.0d;
+            return value > 1.0 ? 1d : value;
+        }
+
+        public static double Lerp(double a, double b, double t) => a + (b - a) * Clamp01(t);
+
+        public static double InverseLerp(double a, double b, double value) => a != b ? Clamp01((value - a) / (b - a)) : 0.0f;
 
         public static Vector3 ColorToHSVOffset(Color color)
         {
@@ -368,8 +378,8 @@ namespace CoreSystems.Support
             var quat = Quaternion.CreateFromRotationMatrix(block.PositionComp.WorldMatrixRef);
             double factor = (block.BlockDefinition.CubeSize == MyCubeSize.Large ? 2.5d : 0.5d);
             var halfExtents = new Vector3D(block.BlockDefinition.Size) * factor / 2d;
-            var worldMin = Vector3D.Transform(new Vector3D(block.Min) * factor, block.CubeGrid.WorldMatrix);
-            var worldMax = Vector3D.Transform(new Vector3D(block.Max) * factor, block.CubeGrid.WorldMatrix);
+            var worldMin = Vector3D.Transform(new Vector3D(block.Min) * factor, block.CubeGrid.PositionComp.WorldMatrixRef);
+            var worldMax = Vector3D.Transform(new Vector3D(block.Max) * factor, block.CubeGrid.PositionComp.WorldMatrixRef);
             blockBox = new MyOrientedBoundingBoxD((worldMin + worldMax) / 2d, halfExtents, quat);
         }
     }

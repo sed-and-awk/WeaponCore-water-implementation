@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using CoreSystems.Platform;
+using CoreSystems.Support;
 using ProtoBuf;
 
 namespace CoreSystems
@@ -59,14 +61,12 @@ namespace CoreSystems
     [ProtoContract]
     public class WeaponRandomGenerator
     {
-        [ProtoMember(1)] public int TurretCurrentCounter;
-        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
-        [ProtoMember(3)] public int AcquireCurrentCounter;
+        //[ProtoMember(1)] public int TurretCurrentCounter;
+        //[ProtoMember(2)] public int ClientProjectileCurrentCounter;
+        //[ProtoMember(3)] public int AcquireCurrentCounter;
         [ProtoMember(4)] public int CurrentSeed;
-        public Random TurretRandom;
-        public Random ClientProjectileRandom;
-        public Random AcquireRandom;
-        public int AcquireTmpCounter;
+        public XorShiftRandomStruct TurretRandom;
+        public XorShiftRandomStruct AcquireRandom;
 
         public enum RandomType
         {
@@ -75,34 +75,26 @@ namespace CoreSystems
             Acquire,
         }
 
-        public void Init(int uniqueId)
+        public void Init(Weapon w)
         {
-            CurrentSeed = uniqueId;
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
+            if (w.Comp.Session.IsServer)
+                CurrentSeed = int.MaxValue - w.UniqueId;
+
+            TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
+            AcquireRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }
 
         public void Sync(WeaponRandomGenerator syncFrom)
         {
             CurrentSeed = syncFrom.CurrentSeed;
-
-            TurretCurrentCounter = syncFrom.TurretCurrentCounter;
-            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
-            AcquireTmpCounter = syncFrom.AcquireCurrentCounter;
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
+            TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }
 
         internal void ReInitRandom()
         {
-            TurretCurrentCounter = 0;
-            ClientProjectileCurrentCounter = 0;
-            AcquireCurrentCounter = 0;
-            CurrentSeed = TurretRandom.Next(1, int.MaxValue);
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
+            CurrentSeed = TurretRandom.Range(1, int.MaxValue);
+            TurretRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
+            AcquireRandom = new XorShiftRandomStruct((ulong)CurrentSeed);
         }
     }
 
